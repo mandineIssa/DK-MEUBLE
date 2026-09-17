@@ -1,0 +1,95 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d:ro
+      - certbot-etc:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    # Renouvellement automatique toutes les 12 h
+    entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done;"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://dkmeuble.sn}
+        NEXT_PUBLIC_WHATSAPP: ${NEXT_PUBLIC_WHATSAPP:-221770000000}
+        NEXT_PUBLIC_PHONE_DISPLAY: ${NEXT_PUBLIC_PHONE_DISPLAY:-+221 77 000 00 00}
+        NEXT_PUBLIC_PHONE_TEL: ${NEXT_PUBLIC_PHONE_TEL:-+221770000000}
+        NEXT_PUBLIC_EMAIL: ${NEXT_PUBLIC_EMAIL:-contact@dkmeuble.sn}
+    environment:
+      - NODE_ENV=production
+    expose:
+      - "3000"
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    environment:
+      - APP_NAME=DKMEUBLE
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_KEY=${APP_KEY}
+      - APP_URL=${APP_URL}
+      - LOG_CHANNEL=stderr
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SESSION_DRIVER=database
+      - CACHE_STORE=database
+      - QUEUE_CONNECTION=database
+      - SANCTUM_STATEFUL_DOMAINS=${SANCTUM_STATEFUL_DOMAINS}
+      - CORS_ALLOWED_ORIGIN=${CORS_ALLOWED_ORIGIN}
+      - RUN_MIGRATIONS=${RUN_MIGRATIONS:-true}
+      - RUN_SEED=${RUN_SEED:-false}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@dkmeuble.sn}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-password}
+      - FILESYSTEM_DISK=public
+    expose:
+      - "8080"
+    volumes:
+      - backend-storage:/var/www/storage
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  backend-storage:
+  certbot-etc:
+  certbot-www:

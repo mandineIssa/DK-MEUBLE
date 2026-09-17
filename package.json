@@ -1,0 +1,16 @@
+{
+  "name": "dk-meuble",
+  "version": "1.0.0",
+  "description": "Site vitrine MVP : catalogue, devis, contact, WhatsApp, admin — sans paiement en ligne.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

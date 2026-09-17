@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --plp-accent: #ff7a00;
+  --plp-accent-text: #ff7a00;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #f5f5f5;
+  color: #0b0b0b;
+}
+
+/* Badge « +10 ans » façon coup de pinceau */
+.brush-badge {
+  clip-path: polygon(
+    4% 28%,
+    18% 8%,
+    55% 2%,
+    88% 12%,
+    98% 42%,
+    92% 78%,
+    70% 98%,
+    28% 96%,
+    6% 72%
+  );
+}
