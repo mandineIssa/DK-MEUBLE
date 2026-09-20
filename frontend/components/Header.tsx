@@ -15,11 +15,6 @@ function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
-function isHighlighted(label: string, href: string) {
-  const key = `${label} ${href}`.toLowerCase();
-  return key.includes("destock") || key.includes("service");
-}
-
 const FALLBACK_NAV = [
   { label: "Nos produits", href: "/produits" },
   { label: "Promotion", href: "/promo" },
@@ -212,19 +207,14 @@ export default function Header() {
           <nav className="flex min-w-0 flex-1 items-stretch justify-center overflow-x-auto">
             {navLinks.map((link) => {
               const active = isActive(pathname, link.href);
-              const highlight = isHighlighted(link.label, link.href);
               return (
                 <Link
                   key={link.href + link.label}
                   href={link.href}
                   className={`whitespace-nowrap px-3 py-3.5 text-[11px] font-bold uppercase tracking-wide transition xl:px-4 xl:text-xs ${
-                    highlight
-                      ? active
-                        ? "bg-brand-orange text-white"
-                        : "bg-brand-orange/90 text-white hover:bg-brand-orange"
-                      : active
-                        ? "text-brand-orange"
-                        : "text-white/90 hover:text-brand-orange"
+                    active
+                      ? "text-brand-orange"
+                      : "text-white/90 hover:text-brand-orange"
                   }`}
                 >
                   {link.label}
@@ -258,11 +248,9 @@ export default function Header() {
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
                   className={`block rounded-lg px-3 py-3 text-sm font-semibold uppercase ${
-                    isHighlighted(link.label, link.href)
-                      ? "bg-brand-orange text-white"
-                      : isActive(pathname, link.href)
-                        ? "bg-white/10 text-brand-orange"
-                        : "text-white"
+                    isActive(pathname, link.href)
+                      ? "bg-white/10 text-brand-orange"
+                      : "text-white"
                   }`}
                 >
                   {link.label}

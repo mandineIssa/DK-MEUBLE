@@ -19,6 +19,7 @@ class OrderService
         private CartService $carts,
         private SmsSender $sms,
         private NotificationService $notifications,
+        private OrderReceiptService $receipts,
     ) {}
 
     public function checkout(Cart $cart, array $data, ?int $customerId = null): Order
@@ -191,6 +192,14 @@ class OrderService
                 'note' => $note,
             ]);
         });
+
+        if ($status === 'confirmee') {
+            try {
+                $this->receipts->ensure($order->fresh(['items', 'deliveryZone', 'showroom']));
+            } catch (\Throwable $e) {
+                // non-blocking : le téléchargement pourra régénérer le reçu
+            }
+        }
 
         $templates = CheckoutSettings::get()['notification_templates'] ?? [];
         if (! empty($templates[$status])) {

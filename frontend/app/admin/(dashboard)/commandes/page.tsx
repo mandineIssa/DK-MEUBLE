@@ -24,6 +24,17 @@ export default function AdminCommandesPage() {
     await load();
   }
 
+  async function downloadReceipt(o: AdminOrder) {
+    try {
+      await adminApi.downloadOrderReceipt(o.id, o.reference);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Téléchargement impossible");
+    }
+  }
+
+  const canDownloadReceipt = (s: string) =>
+    ["confirmee", "en_preparation", "expediee", "livree"].includes(s);
+
   return (
     <div className="p-6 md:p-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -56,15 +67,26 @@ export default function AdminCommandesPage() {
                   {o.total.toLocaleString("fr-FR")} FCFA
                 </p>
               </div>
-              <select
-                className="rounded-xl border px-2 py-1 text-sm"
-                value={o.order_status}
-                onChange={(e) => setOrderStatus(o.id, e.target.value)}
-              >
-                {statuses.filter(Boolean).map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
+              <div className="flex flex-wrap items-center gap-2">
+                {canDownloadReceipt(o.order_status) && (
+                  <button
+                    type="button"
+                    onClick={() => downloadReceipt(o)}
+                    className="rounded-xl border border-brand-orange px-3 py-1.5 text-sm font-semibold text-brand-orange hover:bg-brand-orange hover:text-white"
+                  >
+                    Télécharger le reçu
+                  </button>
+                )}
+                <select
+                  className="rounded-xl border px-2 py-1 text-sm"
+                  value={o.order_status}
+                  onChange={(e) => setOrderStatus(o.id, e.target.value)}
+                >
+                  {statuses.filter(Boolean).map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </article>
         ))}

@@ -137,27 +137,38 @@ export default function CommandePage() {
           </div>
           {form.delivery_method === "domicile" ? (
             <>
-              <select
-                required
-                className="w-full rounded-xl border px-3 py-2"
-                value={form.delivery_zone_id}
-                onChange={(e) => setForm((f) => ({ ...f, delivery_zone_id: e.target.value }))}
-              >
-                <option value="">Zone de livraison *</option>
-                {zones.map((z) => (
-                  <option key={z.id} value={z.id}>
-                    {z.zone_name} — {z.delivery_fee.toLocaleString("fr-FR")} FCFA
-                    {z.estimated_delay ? ` (${z.estimated_delay})` : ""}
-                  </option>
-                ))}
-              </select>
-              <textarea
-                required
-                placeholder="Adresse de livraison *"
-                className="w-full rounded-xl border px-3 py-2"
-                value={form.address}
-                onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-              />
+              <label className="block text-sm font-medium text-brand-black/70">
+                Zone de livraison *
+                <select
+                  required
+                  className="mt-1 w-full rounded-xl border border-brand-black/15 bg-white px-3 py-2.5 text-sm text-brand-black"
+                  value={form.delivery_zone_id}
+                  onChange={(e) => setForm((f) => ({ ...f, delivery_zone_id: e.target.value }))}
+                >
+                  <option value="">Choisir une zone…</option>
+                  {zones.map((z) => (
+                    <option key={z.id} value={z.id}>
+                      {z.zone_name} — {z.delivery_fee.toLocaleString("fr-FR")} FCFA
+                      {z.estimated_delay ? ` (${z.estimated_delay})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {zones.length === 0 ? (
+                <p className="text-xs text-red-600">
+                  Aucune zone configurée. Ajoutez-en dans Admin → Livraison.
+                </p>
+              ) : null}
+              <label className="block text-sm font-medium text-brand-black/70">
+                Adresse de livraison *
+                <textarea
+                  required
+                  placeholder="Quartier, rue, repère…"
+                  className="mt-1 w-full rounded-xl border border-brand-black/15 bg-white px-3 py-2.5 text-sm"
+                  value={form.address}
+                  onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
+                />
+              </label>
             </>
           ) : (
             <select

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\CheckoutSettings;
+use App\Services\OrderReceiptService;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -49,6 +50,11 @@ class OrderController extends Controller
         $updated = $orders->updateStatus($order, $data['order_status'], $request->user()?->id, $data['note'] ?? null);
 
         return response()->json($updated);
+    }
+
+    public function receipt(Order $order, OrderReceiptService $receipts): StreamedResponse
+    {
+        return $receipts->download($order);
     }
 
     public function export(): StreamedResponse

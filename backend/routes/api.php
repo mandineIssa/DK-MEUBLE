@@ -190,6 +190,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::put('/orders/settings', [AdminOrderController::class, 'updateSettings']);
     Route::get('/orders', [AdminOrderController::class, 'index']);
     Route::get('/orders/{order}', [AdminOrderController::class, 'show']);
+    Route::get('/orders/{order}/receipt', [AdminOrderController::class, 'receipt']);
     Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus']);
 
     Route::apiResource('delivery-zones', AdminDeliveryZoneController::class)->except(['show']);

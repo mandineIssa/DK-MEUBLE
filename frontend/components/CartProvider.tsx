@@ -68,7 +68,7 @@ function CartAddedModal({
           type="button"
           onClick={onClose}
           aria-label="Fermer"
-          className="absolute -right-3 -top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-[#c41e3a] text-white shadow-md ring-2 ring-white transition hover:bg-[#a01830]"
+          className="absolute -right-3 -top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-brand-orange text-white shadow-md ring-2 ring-white transition hover:bg-brand-orange-dark"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round">
             <path d="M7 7l10 10M17 7 7 17" />

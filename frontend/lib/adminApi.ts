@@ -561,6 +561,30 @@ export const adminApi = {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
+  async downloadOrderReceipt(id: number, reference: string) {
+    await ensureCsrf();
+    const headers: Record<string, string> = { Accept: "application/pdf" };
+    const xsrf = getCookie("XSRF-TOKEN");
+    if (xsrf) headers["X-XSRF-TOKEN"] = xsrf;
+    const res = await fetch(`${API_URL}/api/admin/orders/${id}/receipt`, {
+      credentials: "include",
+      headers,
+    });
+    if (res.status === 401) {
+      if (typeof window !== "undefined") window.location.href = "/admin/login";
+      throw new Error("Session expirée, veuillez vous reconnecter.");
+    }
+    if (!res.ok) throw new Error("Téléchargement du reçu impossible.");
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `recu-${reference}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  },
   getOrderSettings: () => adminRequest<Record<string, unknown>>("/api/admin/orders/settings"),
   updateOrderSettings: (data: Record<string, unknown>) =>
     adminRequest<Record<string, unknown>>("/api/admin/orders/settings", {
