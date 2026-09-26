@@ -26,22 +26,23 @@ class OAuthController extends Controller
     public function redirect(string $provider): RedirectResponse|Response
     {
         $this->assertProvider($provider);
+        $frontend = $this->frontendUrl();
 
         if (! $this->isConfigured($provider)) {
-            return redirect(config('app.frontend_url').'/compte/connexion?error=oauth_config');
+            return redirect($frontend.'/compte/connexion?error=oauth_config');
         }
 
         try {
             return Socialite::driver($provider)->stateless()->redirect();
         } catch (Throwable $e) {
-            return redirect(config('app.frontend_url').'/compte/connexion?error=oauth_config');
+            return redirect($frontend.'/compte/connexion?error=oauth_config');
         }
     }
 
     public function callback(string $provider, Request $request): RedirectResponse
     {
         $this->assertProvider($provider);
-        $frontend = rtrim(config('app.frontend_url', 'http://localhost:3000'), '/');
+        $frontend = $this->frontendUrl();
 
         if (! $this->isConfigured($provider)) {
             return redirect($frontend.'/compte/connexion?error=oauth_config');
@@ -88,5 +89,30 @@ class OAuthController extends Controller
     {
         return filled(config("services.{$provider}.client_id"))
             && filled(config("services.{$provider}.client_secret"));
+    }
+
+    private function frontendUrl(): string
+    {
+        $configured = rtrim((string) config('app.frontend_url', ''), '/');
+
+        if ($configured !== '' && ! str_contains($configured, 'localhost')) {
+            return $configured;
+        }
+
+        $referer = (string) request()->headers->get('Referer', '');
+        if ($referer !== '') {
+            $parts = parse_url($referer);
+            if (! empty($parts['scheme']) && ! empty($parts['host']) && ! str_contains($parts['host'], 'localhost')) {
+                $port = isset($parts['port']) ? ':'.$parts['port'] : '';
+
+                return $parts['scheme'].'://'.$parts['host'].$port;
+            }
+        }
+
+        if ($configured !== '') {
+            return $configured;
+        }
+
+        return 'https://dkhometech.sn';
     }
 }

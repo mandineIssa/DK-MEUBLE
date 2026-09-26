@@ -431,6 +431,18 @@ class CategoryService
                     'Radio', 'Régulateur de Tension', 'Lampe led',
                 ],
             ],
+            [
+                'name' => 'Destockage',
+                'slug' => 'destockage',
+                'popular' => false,
+                'children' => [],
+            ],
+            [
+                'name' => 'Reconditionné',
+                'slug' => 'reconditionne',
+                'popular' => false,
+                'children' => [],
+            ],
         ];
 
         $created = 0;

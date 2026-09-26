@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, MouseEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { customerApi } from "@/lib/customerApi";
@@ -11,16 +11,42 @@ const countries = [
   { code: "225", label: "CI +225", flag: "🇨🇮" },
 ];
 
+const OAUTH_ERROR_MESSAGES: Record<string, string> = {
+  oauth_config:
+    "La connexion Google / Facebook n’est pas encore disponible. Utilisez votre numéro de téléphone pour continuer.",
+  oauth_failed:
+    "La connexion a échoué. Réessayez ou connectez-vous avec votre numéro de téléphone.",
+  oauth:
+    "Une erreur est survenue. Réessayez ou utilisez votre numéro de téléphone.",
+};
+
 export default function LoginForm() {
   const router = useRouter();
   const [dial, setDial] = useState("221");
   const [local, setLocal] = useState("");
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
+  const [providers, setProviders] = useState({ google: false, facebook: false });
+
+  useEffect(() => {
+    customerApi.getOAuthProviders().then(setProviders).catch(() => {});
+
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("error");
+    if (err && OAUTH_ERROR_MESSAGES[err]) {
+      setInfo(OAUTH_ERROR_MESSAGES[err]);
+      params.delete("error");
+      const qs = params.toString();
+      const next = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+      window.history.replaceState({}, "", next);
+    }
+  }, []);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
+    setInfo("");
     const digits = local.replace(/\D/g, "");
     if (digits.length < 8) {
       setError("Numéro de téléphone invalide.");
@@ -42,8 +68,21 @@ export default function LoginForm() {
     }
   }
 
+  function onOAuthClick(provider: "google" | "facebook", e: MouseEvent) {
+    if (providers[provider]) return;
+    e.preventDefault();
+    setError("");
+    const label = provider === "google" ? "Google" : "Facebook";
+    setInfo(
+      `La connexion via ${label} sera bientôt disponible. En attendant, utilisez votre numéro de téléphone.`
+    );
+  }
+
   const inputClass =
     "w-full rounded-xl border border-brand-black/15 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-orange";
+
+  const oauthBtnClass =
+    "flex w-full items-center justify-center gap-2 rounded-full border border-brand-black/15 py-2.5 text-sm font-semibold text-brand-black hover:bg-[#f7f7f7]";
 
   return (
     <div className="mx-auto w-full max-w-md">
@@ -93,6 +132,11 @@ export default function LoginForm() {
         </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {info ? (
+          <p className="rounded-xl bg-brand-orange/10 px-3 py-2.5 text-sm text-brand-black/80">
+            {info}
+          </p>
+        ) : null}
 
         <button
           type="submit"
@@ -109,7 +153,8 @@ export default function LoginForm() {
 
         <a
           href={customerApi.oauthUrl("facebook")}
-          className="flex w-full items-center justify-center gap-2 rounded-full border border-brand-black/15 py-2.5 text-sm font-semibold text-brand-black hover:bg-[#f7f7f7]"
+          onClick={(e) => onOAuthClick("facebook", e)}
+          className={oauthBtnClass}
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5 fill-[#1877F2]" aria-hidden>
             <path d="M14 9h3V6h-3c-1.7 0-3 1.3-3 3v2H8v3h3v7h3v-7h3l1-3h-4V9c0-.6.4-1 1-1Z" />
@@ -119,7 +164,8 @@ export default function LoginForm() {
 
         <a
           href={customerApi.oauthUrl("google")}
-          className="flex w-full items-center justify-center gap-2 rounded-full border border-brand-black/15 py-2.5 text-sm font-semibold text-brand-black hover:bg-[#f7f7f7]"
+          onClick={(e) => onOAuthClick("google", e)}
+          className={oauthBtnClass}
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
             <path
