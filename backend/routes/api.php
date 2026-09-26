@@ -150,6 +150,7 @@ Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->group(funct
 Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/dashboard/stats', [AdminDashboardController::class, 'stats']);
 

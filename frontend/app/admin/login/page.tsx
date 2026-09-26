@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
 import { adminApi } from "@/lib/adminApi";
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -25,10 +23,10 @@ export default function AdminLoginPage() {
     setLoading(true);
     try {
       await adminApi.login(email, password);
-      router.push("/admin");
+      // Navigation dure : le token est déjà en localStorage
+      window.location.replace("/admin");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Identifiants incorrects.");
-    } finally {
       setLoading(false);
     }
   }

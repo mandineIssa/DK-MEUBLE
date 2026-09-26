@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { adminApi } from "@/lib/adminApi";
 
 const links = [
@@ -302,7 +302,6 @@ const links = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
 
   async function handleLogout() {
     try {
@@ -310,7 +309,7 @@ export default function AdminSidebar() {
     } catch {
       /* session déjà expirée */
     }
-    router.push("/admin/login");
+    window.location.replace("/admin/login");
   }
 
   return (
