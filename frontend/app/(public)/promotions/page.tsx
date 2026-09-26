@@ -187,7 +187,7 @@ export default async function PromotionsPage({
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 md:grid-cols-[240px_1fr] md:px-6 md:py-10">
+      <div className="mx-auto grid max-w-7xl gap-8 overflow-x-hidden px-4 py-8 md:grid-cols-[240px_minmax(0,1fr)] md:overflow-visible md:px-6 md:py-10">
         {/* Filtres catégories */}
         <aside
           className="h-fit rounded-2xl border bg-[var(--body-bg)] p-4 shadow-sm"
@@ -243,7 +243,7 @@ export default async function PromotionsPage({
           </div>
         </aside>
 
-        <div>
+        <div className="min-w-0">
           {result.data.length === 0 ? (
             <div
               className="rounded-2xl border bg-[var(--body-bg)] px-6 py-14 text-center shadow-sm"
@@ -273,7 +273,7 @@ export default async function PromotionsPage({
               </div>
             </div>
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid w-full min-w-0 gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {result.data.map((promo) => {
                 const product = promo.product;
                 const img = product?.images?.[0]?.path;

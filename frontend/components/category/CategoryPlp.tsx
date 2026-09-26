@@ -457,10 +457,10 @@ export default function CategoryPlp({
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 md:grid-cols-[260px_1fr] md:px-6 md:py-10">
+      <div className="mx-auto grid max-w-7xl gap-8 overflow-x-hidden px-4 py-8 md:grid-cols-[260px_minmax(0,1fr)] md:overflow-visible md:px-6 md:py-10">
         <aside className="hidden h-fit md:block">{Filters}</aside>
 
-        <div>
+        <div className="min-w-0">
           <div className="mb-2 md:hidden">
             <button
               type="button"

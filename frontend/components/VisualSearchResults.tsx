@@ -71,7 +71,7 @@ export default function VisualSearchResults() {
           Aucun produit correspondant.
         </p>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid w-full min-w-0 gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {data.products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

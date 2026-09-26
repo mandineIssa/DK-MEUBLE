@@ -33,12 +33,12 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <article
-      className="group relative rounded-xl bg-[var(--body-bg)] transition hover:-translate-y-0.5 hover:shadow-md"
+      className="group relative w-full min-w-0 overflow-hidden rounded-xl bg-[var(--body-bg)] transition hover:-translate-y-0.5 hover:shadow-md"
       style={{ border: "1px solid var(--border-light)" }}
     >
-      <Link href={`/produits/${product.slug}`} className="block">
+      <Link href={`/produits/${product.slug}`} className="block min-w-0">
         <div
-          className="relative aspect-[4/3] overflow-hidden rounded-t-xl"
+          className="relative aspect-[4/3] w-full overflow-hidden rounded-t-xl"
           style={{ background: "var(--content-bg-alt)" }}
         >
           {cover ? (

@@ -44,10 +44,19 @@ export default function Header() {
   }, [pathname]);
 
   useEffect(() => {
-    const onScroll = () => setCompact(window.scrollY > scrollThreshold);
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onScroll = () => {
+      // Compact uniquement desktop : sur mobile ça cache la recherche
+      // et change la hauteur du sticky → clignotement / fantômes au scroll.
+      setCompact(mq.matches && window.scrollY > scrollThreshold);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    mq.addEventListener("change", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      mq.removeEventListener("change", onScroll);
+    };
   }, [scrollThreshold]);
 
   useEffect(() => {
@@ -101,14 +110,14 @@ export default function Header() {
 
   return (
     <header
-      className="sticky top-0 z-40 text-[var(--text-primary)] shadow-header"
-      style={{ background: "var(--header-bg)" }}
+      className="sticky top-0 z-40 isolate text-[var(--text-primary)] shadow-header"
+      style={{ background: "var(--header-bg, #ffffff)" }}
     >
       {/* Bande 1 — logo / recherche / icônes */}
       <div
         className={`border-b transition-[padding] duration-200 ${compact ? "py-1.5" : ""}`}
         style={{
-          background: "var(--header-bg)",
+          background: "var(--header-bg, #ffffff)",
           borderColor: "var(--border-light)",
         }}
       >
@@ -234,16 +243,14 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Recherche : visible sur mobile ; en mode compact desktop via loupe */}
+        {/* Recherche mobile : hauteur stable (pas de hide/show au scroll) */}
         <form
           onSubmit={onSearch}
           role="search"
           className={
             searchOpen
-              ? "flex items-center gap-2 px-3 pb-3"
-              : compact
-                ? "hidden"
-                : "flex items-center gap-2 px-3 pb-3 sm:hidden"
+              ? "flex items-center gap-2 px-3 pb-3 lg:flex"
+              : "flex items-center gap-2 px-3 pb-3 sm:hidden"
           }
         >
           <div

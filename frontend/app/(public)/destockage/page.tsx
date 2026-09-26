@@ -122,8 +122,8 @@ export default async function DestockagePage() {
               className="text-sm font-bold hover:underline"
               style={{ color: "var(--accent-primary)" }}
             >
-              Voir aussi le reconditionné →
-            </Link>
+            Voir aussi le reconditionné →
+          </Link>
             <Link
               href="/promotions"
               className="text-sm font-semibold hover:underline"
@@ -175,9 +175,9 @@ export default async function DestockagePage() {
               </Link>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {products.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
+        {products.map((p) => (
+          <ProductCard key={p.id} product={p} />
+        ))}
             </div>
           </section>
         ) : (

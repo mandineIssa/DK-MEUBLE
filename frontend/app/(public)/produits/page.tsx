@@ -80,8 +80,8 @@ export default async function ProductsPage({
 
       <HomeSearchBar />
 
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 md:grid-cols-[240px_1fr] md:px-6 md:py-10">
-        <aside className="h-fit rounded-2xl bg-white p-4 shadow-sm">
+      <div className="mx-auto grid max-w-7xl gap-8 overflow-x-hidden px-4 py-8 md:grid-cols-[240px_minmax(0,1fr)] md:overflow-visible md:px-6 md:py-10">
+        <aside className="hidden h-fit rounded-2xl bg-white p-4 shadow-sm md:block">
           <p className="mb-3 text-xs font-bold uppercase tracking-wide text-brand-black/50">
             Catégories
           </p>
@@ -107,8 +107,8 @@ export default async function ProductsPage({
           </ul>
         </aside>
 
-        <div>
-          <div className="mb-5 flex gap-2 overflow-x-auto pb-1 md:hidden">
+        <div className="min-w-0">
+          <div className="mb-5 flex max-w-full gap-2 overflow-x-auto pb-1 md:hidden">
             {filters.map((f) => {
               const active = (searchParams.category || "") === f.slug && !isVisual;
               const href = f.slug ? `/produits?category=${f.slug}` : "/produits";
@@ -139,7 +139,7 @@ export default async function ProductsPage({
               </Link>
             </div>
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid w-full min-w-0 gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
