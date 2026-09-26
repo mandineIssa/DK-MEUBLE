@@ -58,6 +58,10 @@ services:
       - QUEUE_CONNECTION=database
       - SANCTUM_STATEFUL_DOMAINS=${SANCTUM_STATEFUL_DOMAINS}
       - CORS_ALLOWED_ORIGIN=${CORS_ALLOWED_ORIGIN}
+      - SESSION_DOMAIN=${SESSION_DOMAIN:-.dkhometech.sn}
+      - SESSION_SECURE_COOKIE=${SESSION_SECURE_COOKIE:-true}
+      - SESSION_SAME_SITE=${SESSION_SAME_SITE:-lax}
+      - FRONTEND_URL=${FRONTEND_URL:-https://dkhometech.sn}
       - RUN_MIGRATIONS=${RUN_MIGRATIONS:-true}
       - RUN_SEED=${RUN_SEED:-false}
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@dkhometech.sn}

@@ -107,6 +107,16 @@ async function ensureCsrf(): Promise<void> {
   await fetch(`${API_URL}/sanctum/csrf-cookie`, {
     credentials: "include",
   });
+  // Le cookie XSRF-TOKEN doit être lisible sur le domaine front (SESSION_DOMAIN=.dkhometech.sn).
+  if (!getCookie("XSRF-TOKEN")) {
+    // Petit délai pour certains navigateurs qui appliquent Set-Cookie après la promesse.
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  if (!getCookie("XSRF-TOKEN")) {
+    throw new Error(
+      "Connexion impossible (CSRF). Vérifiez SESSION_DOMAIN=.dkhometech.sn sur l’API, puis rechargez la page."
+    );
+  }
 }
 
 async function adminRequest<T>(path: string, options?: RequestInit): Promise<T> {
@@ -128,6 +138,12 @@ async function adminRequest<T>(path: string, options?: RequestInit): Promise<T> 
   if (res.status === 401) {
     if (typeof window !== "undefined") window.location.href = "/admin/login";
     throw new Error("Session expirée, veuillez vous reconnecter.");
+  }
+
+  if (res.status === 419) {
+    throw new Error(
+      "Session de sécurité expirée (CSRF). Rechargez la page et réessayez. Sur le serveur : SESSION_DOMAIN=.dkhometech.sn"
+    );
   }
 
   if (!res.ok) {
