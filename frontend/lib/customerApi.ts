@@ -105,20 +105,38 @@ export async function hasCustomerSession(): Promise<boolean> {
 }
 
 export const customerApi = {
-  requestOtp: (phone: string) =>
-    bff<{ message: string; phone: string; debug?: string; debug_code?: string }>("auth/request-otp", {
+  requestOtp: (payload: { phone: string } | { email: string }) =>
+    bff<{
+      message: string;
+      channel?: "phone" | "email";
+      phone?: string;
+      email?: string;
+      debug?: string;
+      debug_code?: string;
+    }>("auth/request-otp", {
       method: "POST",
-      body: JSON.stringify({ phone }),
+      body: JSON.stringify(
+        "email" in payload
+          ? { channel: "email", email: payload.email }
+          : { channel: "phone", phone: payload.phone }
+      ),
     }),
 
-  verifyOtp: async (phone: string, code: string) => {
+  verifyOtp: async (
+    payload: ({ phone: string } | { email: string }) & { code: string }
+  ) => {
+    const body =
+      "email" in payload
+        ? { channel: "email", email: payload.email, code: payload.code }
+        : { channel: "phone", phone: payload.phone, code: payload.code };
     const data = await bff<{
       token: string;
-      customer: { id: number; phone: string; name: string | null; email: string | null };
+      channel?: "phone" | "email";
+      customer: { id: number; phone: string | null; name: string | null; email: string | null };
       is_new: boolean;
     }>("auth/verify-otp", {
       method: "POST",
-      body: JSON.stringify({ phone, code }),
+      body: JSON.stringify(body),
     });
     await setCustomerToken(data.token);
     return data;

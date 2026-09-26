@@ -1,6 +1,6 @@
 /* Minimal service worker for Web Push (sandbox / future VAPID). */
 self.addEventListener("push", (event) => {
-  let data = { title: "DK MEUBLE", body: "Nouvelle notification", link: "/" };
+  let data = { title: "DK HOMETECH", body: "Nouvelle notification", link: "/" };
   try {
     if (event.data) data = { ...data, ...event.data.json() };
   } catch (_) {}

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { hasCustomerSession } from "@/lib/customerApi";
 import { api } from "@/lib/api";
 import { useSite } from "@/components/SiteProvider";
+import { useTheme } from "@/components/ThemeProvider";
 import SiteBrand from "@/components/SiteBrand";
 import { useCartCount } from "@/components/CartProvider";
 import CategoryMegaMenu from "@/components/CategoryMegaMenu";
@@ -17,7 +18,7 @@ function isActive(pathname: string, href: string) {
 
 const FALLBACK_NAV = [
   { label: "Nos produits", href: "/produits" },
-  { label: "Promotion", href: "/promo" },
+  { label: "Promotion", href: "/promotions" },
   { label: "Reconditionné", href: "/reconditionne" },
   { label: "Destockage", href: "/destockage" },
   { label: "Services", href: "/services" },
@@ -28,15 +29,26 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const site = useSite();
+  const theme = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [navLinks, setNavLinks] = useState(FALLBACK_NAV);
   const [q, setQ] = useState("");
+  const [compact, setCompact] = useState(false);
   const cartCount = useCartCount();
+  const scrollThreshold = theme.header_compact_scroll || 80;
 
   useEffect(() => {
     hasCustomerSession().then(setLoggedIn).catch(() => setLoggedIn(false));
   }, [pathname]);
+
+  useEffect(() => {
+    const onScroll = () => setCompact(window.scrollY > scrollThreshold);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [scrollThreshold]);
 
   useEffect(() => {
     try {
@@ -81,67 +93,109 @@ export default function Header() {
     const term = q.trim();
     router.push(term ? `/produits?search=${encodeURIComponent(term)}` : "/produits");
     setMobileOpen(false);
+    setSearchOpen(false);
   }
 
+  const iconBtn =
+    "inline-flex items-center gap-1.5 rounded-lg px-2 py-2 text-[var(--text-primary)] transition hover:text-[var(--accent-primary)]";
+
   return (
-    <header className="sticky top-0 z-40 text-white">
+    <header
+      className="sticky top-0 z-40 text-[var(--text-primary)] shadow-header"
+      style={{ background: "var(--header-bg)" }}
+    >
       {/* Bande 1 — logo / recherche / icônes */}
-      <div className="bg-brand-dark">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-3 py-3 sm:px-4 md:gap-6 md:px-5 md:py-4">
+      <div
+        className={`border-b transition-[padding] duration-200 ${compact ? "py-1.5" : ""}`}
+        style={{
+          background: "var(--header-bg)",
+          borderColor: "var(--border-light)",
+        }}
+      >
+        <div
+          className={`mx-auto flex max-w-7xl items-center gap-3 px-3 sm:px-4 md:gap-6 md:px-5 ${
+            compact ? "py-1.5" : "py-3 md:py-3.5"
+          }`}
+        >
           <Link href="/" className="shrink-0" onClick={() => setMobileOpen(false)}>
-            <SiteBrand />
+            <SiteBrand compact={compact} variant="light" />
           </Link>
 
           <form
             onSubmit={onSearch}
             role="search"
-            className="hidden min-w-0 flex-1 items-center rounded-full bg-white p-1 sm:flex"
+            className={`min-w-0 flex-1 items-stretch overflow-hidden rounded-md border bg-white ${
+              compact ? "hidden md:flex" : "hidden sm:flex"
+            }`}
+            style={{ borderColor: "var(--border-light)" }}
           >
             <input
               type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Rechercher un produit…"
-              className="min-w-0 flex-1 bg-transparent px-4 py-2 text-sm text-brand-black outline-none placeholder:text-brand-black/40"
+              className="min-w-0 flex-1 bg-transparent px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)]"
               aria-label="Rechercher un produit"
             />
             <button
               type="submit"
-              className="shrink-0 rounded-full bg-brand-orange px-5 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-brand-orange-dark"
+              className="shrink-0 px-5 text-xs font-bold uppercase tracking-wide text-white transition hover:opacity-90"
+              style={{ background: "var(--accent-primary)" }}
             >
               Rechercher
             </button>
           </form>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1 md:gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-0.5 md:gap-1">
+            {/* Loupe mobile / mode compact */}
+            <button
+              type="button"
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-primary)] hover:text-[var(--accent-primary)] ${
+                compact ? "md:hidden" : "sm:hidden"
+              }`}
+              aria-label="Rechercher"
+              onClick={() => setSearchOpen((v) => !v)}
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <circle cx="11" cy="11" r="6.5" />
+                <path d="m16 16 4 4" />
+              </svg>
+            </button>
+
             <NotificationBell />
+
             <Link
               href={accountHref}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white/90 hover:bg-white/10 hover:text-brand-orange"
+              className={`${iconBtn} ${compact ? "px-2" : ""}`}
               aria-label={loggedIn ? "Mon compte" : "Connexion"}
-              title={loggedIn ? "Mon compte" : "Connexion"}
+              title={loggedIn ? "Mon compte" : "Se connecter"}
             >
               <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7">
                 <circle cx="12" cy="8" r="3.5" />
                 <path d="M5 19c0-3.5 3-6 7-6s7 2.5 7 6" />
               </svg>
+              <span className="hidden text-xs font-semibold lg:inline">
+                {loggedIn ? "Compte" : "Se connecter"}
+              </span>
             </Link>
 
             <Link
-              href="/showrooms"
-              className="hidden h-10 w-10 items-center justify-center rounded-full text-white/90 hover:bg-white/10 hover:text-brand-orange sm:inline-flex"
-              aria-label="Showrooms"
-              title="Showrooms"
+              href="/contact"
+              className={`hidden sm:inline-flex ${iconBtn}`}
+              aria-label="Aide"
+              title="Aide / Contact"
             >
               <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7">
-                <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" />
-                <circle cx="12" cy="10" r="2.2" />
+                <circle cx="12" cy="12" r="9" />
+                <path d="M9.5 9.5a2.5 2.5 0 1 1 3.8 2.1c-.8.5-1.3 1-1.3 2" />
+                <circle cx="12" cy="16.5" r="0.8" fill="currentColor" />
               </svg>
+              <span className="hidden text-xs font-semibold lg:inline">Aide</span>
             </Link>
 
             <Link
               href="/panier"
-              className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-white/90 hover:bg-white/10 hover:text-brand-orange"
+              className={`relative ${iconBtn}`}
               aria-label="Panier"
               title="Panier"
             >
@@ -150,8 +204,12 @@ export default function Header() {
                 <circle cx="18" cy="20" r="1.2" />
                 <path d="M3 4h2l2.2 11h11.3l1.8-7H7.2" />
               </svg>
+              <span className="hidden text-xs font-semibold lg:inline">Panier</span>
               {cartCount > 0 ? (
-                <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-orange px-1 text-[10px] font-bold text-white">
+                <span
+                  className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+                  style={{ background: "var(--accent-primary)" }}
+                >
                   {cartCount}
                 </span>
               ) : null}
@@ -159,7 +217,7 @@ export default function Header() {
 
             <button
               type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg lg:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-primary)] hover:text-[var(--accent-primary)] lg:hidden"
               aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
               onClick={() => setMobileOpen((v) => !v)}
             >
@@ -176,20 +234,34 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Recherche mobile */}
-        <form onSubmit={onSearch} role="search" className="flex items-center gap-2 px-3 pb-3 sm:hidden">
-          <div className="flex min-w-0 flex-1 items-center rounded-full bg-white p-1">
+        {/* Recherche : visible sur mobile ; en mode compact desktop via loupe */}
+        <form
+          onSubmit={onSearch}
+          role="search"
+          className={
+            searchOpen
+              ? "flex items-center gap-2 px-3 pb-3"
+              : compact
+                ? "hidden"
+                : "flex items-center gap-2 px-3 pb-3 sm:hidden"
+          }
+        >
+          <div
+            className="flex min-w-0 flex-1 items-stretch overflow-hidden rounded-md border bg-white"
+            style={{ borderColor: "var(--border-light)" }}
+          >
             <input
               type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Rechercher un produit…"
-              className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-brand-black outline-none"
+              className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)]"
               aria-label="Rechercher un produit"
             />
             <button
               type="submit"
-              className="shrink-0 rounded-full bg-brand-orange px-3 py-2 text-[11px] font-bold uppercase text-white"
+              className="shrink-0 px-4 text-[11px] font-bold uppercase text-white"
+              style={{ background: "var(--accent-primary)" }}
             >
               OK
             </button>
@@ -198,9 +270,15 @@ export default function Header() {
       </div>
 
       {/* Bande 2 — catégories / liens / téléphones */}
-      <div className="bg-brand-black">
+      <div
+        className={`border-b transition-all duration-200 ${compact ? "hidden lg:block" : ""}`}
+        style={{
+          background: "var(--header-nav-bg)",
+          borderColor: "var(--border-light)",
+        }}
+      >
         <div className="mx-auto hidden max-w-7xl items-center gap-4 px-3 py-0 sm:px-4 md:px-5 lg:flex">
-          <div className="shrink-0 py-3">
+          <div className="shrink-0 py-2.5">
             <CategoryMegaMenu variant="nav" />
           </div>
 
@@ -211,11 +289,10 @@ export default function Header() {
                 <Link
                   key={link.href + link.label}
                   href={link.href}
-                  className={`whitespace-nowrap px-3 py-3.5 text-[11px] font-bold uppercase tracking-wide transition xl:px-4 xl:text-xs ${
-                    active
-                      ? "text-brand-orange"
-                      : "text-white/90 hover:text-brand-orange"
-                  }`}
+                  className="whitespace-nowrap px-3 py-3 text-[11px] font-bold uppercase tracking-wide transition xl:px-4 xl:text-xs"
+                  style={{
+                    color: active ? "var(--accent-primary)" : "var(--text-primary)",
+                  }}
                 >
                   {link.label}
                 </Link>
@@ -223,22 +300,35 @@ export default function Header() {
             })}
           </nav>
 
-          <div className="shrink-0 py-2 text-right text-[11px] font-semibold leading-tight text-white/95 xl:text-xs">
+          <div
+            className="shrink-0 py-2 text-right text-[11px] font-semibold leading-tight xl:text-xs"
+            style={{ color: "var(--text-secondary)" }}
+          >
             {phones.length ? (
               phones.slice(0, 2).map((phone) => (
-                <a key={phone} href={`tel:${phone.replace(/\s/g, "")}`} className="block hover:text-brand-orange">
+                <a
+                  key={phone}
+                  href={`tel:${phone.replace(/\s/g, "")}`}
+                  className="block hover:text-[var(--accent-primary)]"
+                >
                   {phone}
                 </a>
               ))
             ) : (
-              <span className="text-white/40">Tél. à configurer</span>
+              <span className="opacity-50">Tél. à configurer</span>
             )}
           </div>
         </div>
       </div>
 
       {mobileOpen ? (
-        <div className="border-t border-white/10 bg-brand-black lg:hidden">
+        <div
+          className="border-t lg:hidden"
+          style={{
+            background: "var(--header-bg)",
+            borderColor: "var(--border-light)",
+          }}
+        >
           <div className="space-y-3 px-4 py-4">
             <CategoryMegaMenu variant="nav" />
             <nav className="space-y-1">
@@ -247,11 +337,15 @@ export default function Header() {
                   key={link.href + link.label}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`block rounded-lg px-3 py-3 text-sm font-semibold uppercase ${
-                    isActive(pathname, link.href)
-                      ? "bg-white/10 text-brand-orange"
-                      : "text-white"
-                  }`}
+                  className="block rounded-lg px-3 py-3 text-sm font-semibold uppercase"
+                  style={{
+                    color: isActive(pathname, link.href)
+                      ? "var(--accent-primary)"
+                      : "var(--text-primary)",
+                    background: isActive(pathname, link.href)
+                      ? "color-mix(in srgb, var(--accent-primary) 10%, transparent)"
+                      : undefined,
+                  }}
                 >
                   {link.label}
                 </Link>
@@ -259,15 +353,23 @@ export default function Header() {
               <Link
                 href="/showrooms"
                 onClick={() => setMobileOpen(false)}
-                className="block rounded-lg px-3 py-3 text-sm font-semibold"
+                className="block rounded-lg px-3 py-3 text-sm font-semibold text-[var(--text-primary)]"
               >
                 Showrooms
+              </Link>
+              <Link
+                href="/contact"
+                onClick={() => setMobileOpen(false)}
+                className="block rounded-lg px-3 py-3 text-sm font-semibold text-[var(--text-primary)] sm:hidden"
+              >
+                Aide / Contact
               </Link>
               {phones.map((phone) => (
                 <a
                   key={phone}
                   href={`tel:${phone.replace(/\s/g, "")}`}
-                  className="block rounded-lg px-3 py-3 text-sm font-semibold text-brand-orange"
+                  className="block rounded-lg px-3 py-3 text-sm font-semibold"
+                  style={{ color: "var(--accent-primary)" }}
                 >
                   {phone}
                 </a>

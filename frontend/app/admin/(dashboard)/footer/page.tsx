@@ -28,6 +28,28 @@ type LegalPage = {
   updated_label: string;
 };
 
+type Theme = {
+  bg_primary: string;
+  bg_secondary: string;
+  text_primary: string;
+  text_secondary: string;
+  text_muted: string;
+  accent: string;
+  link_hover: string;
+  divider: string;
+};
+
+const DEFAULT_THEME: Theme = {
+  bg_primary: "#232323",
+  bg_secondary: "#3d3d3d",
+  text_primary: "#ffffff",
+  text_secondary: "#c9c9c9",
+  text_muted: "#9a9a9a",
+  accent: "#f68b1e",
+  link_hover: "#ffffff",
+  divider: "rgba(255,255,255,0.1)",
+};
+
 const EMPTY_LEGAL: LegalPage = {
   hero: { eyebrow: "Légal", title: "", subtitle: "" },
   intro: "",
@@ -53,35 +75,56 @@ function normalizeLegal(blocks: Record<string, unknown> | undefined): LegalPage 
   };
 }
 
+function moveItem<T extends { id: number }>(list: T[], id: number, dir: -1 | 1): T[] {
+  const idx = list.findIndex((x) => x.id === id);
+  if (idx < 0) return list;
+  const j = idx + dir;
+  if (j < 0 || j >= list.length) return list;
+  const next = [...list];
+  [next[idx], next[j]] = [next[j], next[idx]];
+  return next;
+}
+
 export default function AdminFooterPage() {
-  const [tab, setTab] = useState<"settings" | "columns" | "socials" | "payments" | "legal">(
-    "settings"
-  );
+  const [tab, setTab] = useState<
+    "settings" | "theme" | "columns" | "socials" | "payments" | "legal"
+  >("settings");
   const [settings, setSettings] = useState<Record<string, unknown>>({});
+  const [theme, setTheme] = useState<Theme>(DEFAULT_THEME);
   const [columns, setColumns] = useState<Col[]>([]);
   const [socials, setSocials] = useState<
-    Array<{ id: number; platform: string; url: string; is_active: boolean }>
+    Array<{ id: number; platform: string; url: string; is_active: boolean; display_order: number }>
   >([]);
-  const [payments, setPayments] = useState<Array<{ id: number; name: string; logo_path: string }>>([]);
+  const [payments, setPayments] = useState<
+    Array<{ id: number; name: string; logo_path: string; display_order: number; is_active: boolean }>
+  >([]);
   const [msg, setMsg] = useState("");
   const [newCol, setNewCol] = useState("");
   const [linkDraft, setLinkDraft] = useState<Record<number, { label: string; url: string }>>({});
+  const [editingLink, setEditingLink] = useState<number | null>(null);
+  const [linkEdit, setLinkEdit] = useState({ label: "", url: "", opens_new_tab: false });
   const [socialDraft, setSocialDraft] = useState({ platform: "facebook", url: "" });
   const [payName, setPayName] = useState("");
   const [payFile, setPayFile] = useState<File | null>(null);
-  const [legalKey, setLegalKey] = useState<"privacy" | "cgu">("privacy");
+  const [legalKey, setLegalKey] = useState<
+    "privacy" | "cgu" | "returns" | "delivery" | "payment" | "cookies"
+  >("privacy");
   const [legal, setLegal] = useState<LegalPage>(EMPTY_LEGAL);
   const [legalBusy, setLegalBusy] = useState(false);
 
   async function refresh() {
     const res = await adminApi.getFooterAdmin();
     setSettings(res.settings || {});
+    const t = (res.settings?.theme || {}) as Partial<Theme>;
+    setTheme({ ...DEFAULT_THEME, ...t });
     setColumns(res.columns || []);
     setSocials(res.socials || []);
     setPayments(res.payments || []);
   }
 
-  async function loadLegal(key: "privacy" | "cgu") {
+  async function loadLegal(
+    key: "privacy" | "cgu" | "returns" | "delivery" | "payment" | "cookies"
+  ) {
     setLegalBusy(true);
     try {
       const page = await adminApi.getPage(key);
@@ -117,6 +160,18 @@ export default function AdminFooterPage() {
     }
   }
 
+  async function saveTheme(e: FormEvent) {
+    e.preventDefault();
+    setMsg("");
+    try {
+      await adminApi.updateFooterSettings({ theme });
+      setMsg("Thème footer enregistré.");
+      await refresh();
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : "Erreur");
+    }
+  }
+
   async function saveLegal(e: FormEvent) {
     e.preventDefault();
     setMsg("");
@@ -128,11 +183,15 @@ export default function AdminFooterPage() {
         sections: legal.sections,
         updated_label: legal.updated_label,
       });
-      setMsg(
-        legalKey === "privacy"
-          ? "Politique de confidentialité enregistrée."
-          : "CGU enregistrées."
-      );
+      const msgs: Record<string, string> = {
+        privacy: "Politique de confidentialité enregistrée.",
+        returns: "Page retours enregistrée.",
+        delivery: "Page livraison enregistrée.",
+        payment: "Page paiement enregistrée.",
+        cookies: "Page cookies enregistrée.",
+        cgu: "CGU enregistrées.",
+      };
+      setMsg(msgs[legalKey] || "Page enregistrée.");
     } catch (err) {
       setMsg(err instanceof Error ? err.message : "Erreur");
     } finally {
@@ -156,8 +215,8 @@ export default function AdminFooterPage() {
     ["app_store_url", "URL App Store (vide = masqué)", "input"],
     ["google_play_url", "URL Google Play (vide = masqué)", "input"],
     ["contact_heading", "Titre bloc Contact", "input"],
-    ["company_name", "Nom entreprise", "input"],
-    ["company_address", "Adresse", "input"],
+    ["company_name", "Nom entreprise (vide = Paramètres marque)", "input"],
+    ["company_address", "Adresse (vide = Paramètres contact)", "input"],
     ["company_phones", "Téléphones (séparés par virgule)", "input"],
     ["socials_heading", "Titre réseaux sociaux", "input"],
     ["payments_heading", "Titre modes de paiement", "input"],
@@ -166,12 +225,22 @@ export default function AdminFooterPage() {
     ["copyright_text", "Texte copyright", "input"],
   ] as const;
 
+  const themeFields: Array<[keyof Theme, string]> = [
+    ["bg_primary", "Fond newsletter / app (plus sombre)"],
+    ["bg_secondary", "Fond liens / contact / marques"],
+    ["text_primary", "Texte principal / titres"],
+    ["text_secondary", "Liens & infos contact"],
+    ["text_muted", "Labels secondaires"],
+    ["link_hover", "Liens au survol"],
+    ["divider", "Séparateurs"],
+  ];
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-extrabold text-brand-black">Footer</h1>
       <p className="mt-1 text-sm text-brand-black/50">
-        Tout le bas de page est paramétrable ici : newsletter, liens, réseaux, paiements et pages
-        légales.
+        Bas de page entièrement paramétrable : newsletter, colonnes, réseaux, paiements, thème et
+        pages légales. Aucun lien codé en dur côté front.
       </p>
       {msg ? <p className="mt-3 text-sm font-medium text-brand-orange">{msg}</p> : null}
 
@@ -179,6 +248,7 @@ export default function AdminFooterPage() {
         {(
           [
             ["settings", "Réglages & textes"],
+            ["theme", "Thème couleurs"],
             ["legal", "Pages légales"],
             ["columns", "Colonnes & liens"],
             ["socials", "Réseaux"],
@@ -256,7 +326,7 @@ export default function AdminFooterPage() {
               checked={Boolean(settings.brands_only_featured ?? false)}
               onChange={(e) => setSettings((s) => ({ ...s, brands_only_featured: e.target.checked }))}
             />
-            Uniquement marques mises en avant
+            Uniquement marques mises en avant (+ flag « afficher en footer »)
           </label>
           <label className="block text-sm">
             Nombre de colonnes (3–5)
@@ -272,6 +342,75 @@ export default function AdminFooterPage() {
           <button type="submit" className="rounded-full bg-brand-orange px-5 py-2.5 text-sm font-bold text-white">
             Enregistrer
           </button>
+        </form>
+      ) : null}
+
+      {tab === "theme" ? (
+        <form onSubmit={saveTheme} className="mt-6 max-w-2xl space-y-4 rounded-2xl bg-white p-6 shadow-sm">
+          <p className="text-sm text-brand-black/60">
+            Palette sombre du footer. L’accent orange (liens légaux) est piloté par{" "}
+            <a href="/admin/theme" className="font-semibold text-brand-orange hover:underline">
+              Admin → Thème
+            </a>{" "}
+            (`--accent-primary`), pour rester cohérent avec le header et le corps.
+          </p>
+          <div
+            className="overflow-hidden rounded-xl border"
+            style={{
+              background: theme.bg_secondary,
+              color: theme.text_primary,
+              borderColor: "#e5e5e5",
+            }}
+          >
+            <div className="px-4 py-3 text-xs font-bold uppercase" style={{ background: theme.bg_primary }}>
+              Aperçu newsletter
+            </div>
+            <div className="grid grid-cols-3 gap-3 px-4 py-4 text-xs">
+              <div>
+                <p className="font-bold uppercase">Besoin d&apos;aide</p>
+                <p style={{ color: theme.text_secondary }}>Contactez-nous</p>
+                <p style={{ color: theme.accent }}>Lien accent</p>
+              </div>
+              <div>
+                <p style={{ color: theme.text_muted }}>Adresse</p>
+                <p style={{ color: theme.text_secondary }}>Dakar, Sénégal</p>
+              </div>
+              <div>
+                <p style={{ color: theme.text_muted }}>Survol lien →</p>
+                <p style={{ color: theme.link_hover }}>Blanc</p>
+              </div>
+            </div>
+          </div>
+          {themeFields.map(([key, label]) => (
+            <label key={key} className="flex flex-wrap items-center gap-3 text-sm">
+              <span className="w-56 shrink-0">{label}</span>
+              {key !== "divider" ? (
+                <input
+                  type="color"
+                  className="h-9 w-12 cursor-pointer rounded border"
+                  value={/^#[0-9a-fA-F]{6}$/.test(theme[key]) ? theme[key] : "#000000"}
+                  onChange={(e) => setTheme((t) => ({ ...t, [key]: e.target.value }))}
+                />
+              ) : null}
+              <input
+                className="min-w-[10rem] flex-1 rounded-xl border px-3 py-2 font-mono text-xs"
+                value={theme[key]}
+                onChange={(e) => setTheme((t) => ({ ...t, [key]: e.target.value }))}
+              />
+            </label>
+          ))}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="rounded-full border px-4 py-2 text-xs font-bold"
+              onClick={() => setTheme(DEFAULT_THEME)}
+            >
+              Réinitialiser (style Jumia)
+            </button>
+            <button type="submit" className="rounded-full bg-brand-orange px-5 py-2.5 text-sm font-bold text-white">
+              Enregistrer le thème
+            </button>
+          </div>
         </form>
       ) : null}
 
@@ -296,7 +435,78 @@ export default function AdminFooterPage() {
             >
               CGU
             </button>
+            <button
+              type="button"
+              onClick={() => setLegalKey("returns")}
+              className={`rounded-full px-4 py-2 text-xs font-bold ${
+                legalKey === "returns" ? "bg-brand-black text-white" : "border"
+              }`}
+            >
+              Retours & remboursements
+            </button>
+            <button
+              type="button"
+              onClick={() => setLegalKey("delivery")}
+              className={`rounded-full px-4 py-2 text-xs font-bold ${
+                legalKey === "delivery" ? "bg-brand-black text-white" : "border"
+              }`}
+            >
+              Livraison & expédition
+            </button>
+            <button
+              type="button"
+              onClick={() => setLegalKey("payment")}
+              className={`rounded-full px-4 py-2 text-xs font-bold ${
+                legalKey === "payment" ? "bg-brand-black text-white" : "border"
+              }`}
+            >
+              Informations de paiement
+            </button>
+            <button
+              type="button"
+              onClick={() => setLegalKey("cookies")}
+              className={`rounded-full px-4 py-2 text-xs font-bold ${
+                legalKey === "cookies" ? "bg-brand-black text-white" : "border"
+              }`}
+            >
+              Politique de cookies
+            </button>
           </div>
+          {(["returns", "delivery", "payment", "cookies"] as const).includes(
+            legalKey as "returns" | "delivery" | "payment" | "cookies"
+          ) ? (
+            <p className="text-xs text-brand-black/50">
+              Les blocs avancés (catégories, FAQ…) viennent des valeurs par défaut du serveur. Ici
+              vous éditez le hero, l’intro et les sections textuelles affichées sur{" "}
+              <a
+                href={
+                  (
+                    {
+                      returns: "/retours",
+                      delivery: "/livraison",
+                      payment: "/paiement",
+                      cookies: "/cookies",
+                    } as Record<string, string>
+                  )[legalKey]
+                }
+                className="font-semibold text-brand-orange hover:underline"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {
+                  (
+                    {
+                      returns: "/retours",
+                      delivery: "/livraison",
+                      payment: "/paiement",
+                      cookies: "/cookies",
+                    } as Record<string, string>
+                  )[legalKey]
+                }
+              </a>
+              .
+            </p>
+          ) : null}
 
           {legalBusy && !legal.hero.title && !legal.intro ? (
             <p className="text-sm text-brand-black/50">Chargement…</p>
@@ -447,9 +657,39 @@ export default function AdminFooterPage() {
             </button>
           </form>
 
-          {columns.map((col) => (
+          {columns.map((col, colIdx) => (
             <div key={col.id} className="rounded-2xl bg-white p-4 shadow-sm">
               <div className="flex flex-wrap items-center gap-2">
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    className="rounded border px-2 py-0.5 text-xs disabled:opacity-30"
+                    disabled={colIdx === 0}
+                    title="Monter"
+                    onClick={async () => {
+                      const next = moveItem(columns, col.id, -1);
+                      setColumns(next);
+                      await adminApi.reorderFooterColumns(next.map((c) => c.id));
+                      await refresh();
+                    }}
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded border px-2 py-0.5 text-xs disabled:opacity-30"
+                    disabled={colIdx === columns.length - 1}
+                    title="Descendre"
+                    onClick={async () => {
+                      const next = moveItem(columns, col.id, 1);
+                      setColumns(next);
+                      await adminApi.reorderFooterColumns(next.map((c) => c.id));
+                      await refresh();
+                    }}
+                  >
+                    ↓
+                  </button>
+                </div>
                 <input
                   className="rounded-lg border px-2 py-1 text-sm font-bold"
                   defaultValue={col.title}
@@ -478,17 +718,107 @@ export default function AdminFooterPage() {
                 </button>
               </div>
               <ul className="mt-3 space-y-2 text-sm">
-                {col.links.map((l) => (
-                  <li key={l.id} className="flex flex-wrap items-center gap-2 border-b border-black/5 py-1">
-                    <span className="font-medium">{l.label}</span>
-                    <span className="text-xs text-brand-black/45">{l.url}</span>
-                    <button
-                      type="button"
-                      className="ml-auto text-xs text-red-600"
-                      onClick={() => adminApi.deleteFooterLink(l.id).then(refresh)}
-                    >
-                      ×
-                    </button>
+                {col.links.map((l, linkIdx) => (
+                  <li key={l.id} className="border-b border-black/5 py-2">
+                    {editingLink === l.id ? (
+                      <form
+                        className="flex flex-wrap items-center gap-2"
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          await adminApi.updateFooterLink(l.id, linkEdit);
+                          setEditingLink(null);
+                          await refresh();
+                        }}
+                      >
+                        <input
+                          className="rounded border px-2 py-1 text-sm"
+                          value={linkEdit.label}
+                          onChange={(e) => setLinkEdit((d) => ({ ...d, label: e.target.value }))}
+                          required
+                        />
+                        <input
+                          className="min-w-[10rem] flex-1 rounded border px-2 py-1 text-sm"
+                          value={linkEdit.url}
+                          onChange={(e) => setLinkEdit((d) => ({ ...d, url: e.target.value }))}
+                          required
+                        />
+                        <label className="flex items-center gap-1 text-xs">
+                          <input
+                            type="checkbox"
+                            checked={linkEdit.opens_new_tab}
+                            onChange={(e) =>
+                              setLinkEdit((d) => ({ ...d, opens_new_tab: e.target.checked }))
+                            }
+                          />
+                          Nouvel onglet
+                        </label>
+                        <button type="submit" className="text-xs font-bold text-brand-orange">
+                          OK
+                        </button>
+                        <button
+                          type="button"
+                          className="text-xs"
+                          onClick={() => setEditingLink(null)}
+                        >
+                          Annuler
+                        </button>
+                      </form>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex gap-1">
+                          <button
+                            type="button"
+                            className="rounded border px-1.5 text-[10px] disabled:opacity-30"
+                            disabled={linkIdx === 0}
+                            onClick={async () => {
+                              const next = moveItem(col.links, l.id, -1);
+                              await adminApi.reorderFooterLinks(next.map((x) => x.id));
+                              await refresh();
+                            }}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded border px-1.5 text-[10px] disabled:opacity-30"
+                            disabled={linkIdx === col.links.length - 1}
+                            onClick={async () => {
+                              const next = moveItem(col.links, l.id, 1);
+                              await adminApi.reorderFooterLinks(next.map((x) => x.id));
+                              await refresh();
+                            }}
+                          >
+                            ↓
+                          </button>
+                        </div>
+                        <span className="font-medium">{l.label}</span>
+                        <span className="text-xs text-brand-black/45">{l.url}</span>
+                        {l.opens_new_tab ? (
+                          <span className="text-[10px] text-brand-black/40">↗</span>
+                        ) : null}
+                        <button
+                          type="button"
+                          className="ml-auto text-xs font-semibold text-brand-orange"
+                          onClick={() => {
+                            setEditingLink(l.id);
+                            setLinkEdit({
+                              label: l.label,
+                              url: l.url,
+                              opens_new_tab: l.opens_new_tab,
+                            });
+                          }}
+                        >
+                          Éditer
+                        </button>
+                        <button
+                          type="button"
+                          className="text-xs text-red-600"
+                          onClick={() => adminApi.deleteFooterLink(l.id).then(refresh)}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -541,10 +871,55 @@ export default function AdminFooterPage() {
       {tab === "socials" ? (
         <div className="mt-6 max-w-xl space-y-3 rounded-2xl bg-white p-5 shadow-sm">
           <ul className="space-y-2 text-sm">
-            {socials.map((s) => (
-              <li key={s.id} className="flex items-center gap-2 border-b border-black/5 py-2">
+            {socials.map((s, idx) => (
+              <li key={s.id} className="flex flex-wrap items-center gap-2 border-b border-black/5 py-2">
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    className="rounded border px-1.5 text-[10px] disabled:opacity-30"
+                    disabled={idx === 0}
+                    onClick={async () => {
+                      const next = moveItem(socials, s.id, -1);
+                      setSocials(next);
+                      await adminApi.reorderFooterSocials(next.map((x) => x.id));
+                      await refresh();
+                    }}
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded border px-1.5 text-[10px] disabled:opacity-30"
+                    disabled={idx === socials.length - 1}
+                    onClick={async () => {
+                      const next = moveItem(socials, s.id, 1);
+                      setSocials(next);
+                      await adminApi.reorderFooterSocials(next.map((x) => x.id));
+                      await refresh();
+                    }}
+                  >
+                    ↓
+                  </button>
+                </div>
                 <span className="w-24 font-semibold capitalize">{s.platform}</span>
                 <span className="flex-1 truncate text-xs text-brand-black/50">{s.url}</span>
+                <label className="flex items-center gap-1 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={s.is_active}
+                    onChange={(e) =>
+                      adminApi
+                        .upsertFooterSocial({
+                          id: s.id,
+                          platform: s.platform,
+                          url: s.url,
+                          is_active: e.target.checked,
+                        })
+                        .then(refresh)
+                    }
+                  />
+                  Actif
+                </label>
                 <button
                   type="button"
                   className="text-xs text-red-600"
@@ -592,9 +967,49 @@ export default function AdminFooterPage() {
       {tab === "payments" ? (
         <div className="mt-6 max-w-xl space-y-4 rounded-2xl bg-white p-5 shadow-sm">
           <ul className="space-y-2 text-sm">
-            {payments.map((p) => (
-              <li key={p.id} className="flex items-center justify-between border-b border-black/5 py-2">
-                <span>{p.name}</span>
+            {payments.map((p, idx) => (
+              <li key={p.id} className="flex flex-wrap items-center gap-2 border-b border-black/5 py-2">
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    className="rounded border px-1.5 text-[10px] disabled:opacity-30"
+                    disabled={idx === 0}
+                    onClick={async () => {
+                      const next = moveItem(payments, p.id, -1);
+                      setPayments(next);
+                      await adminApi.reorderFooterPayments(next.map((x) => x.id));
+                      await refresh();
+                    }}
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded border px-1.5 text-[10px] disabled:opacity-30"
+                    disabled={idx === payments.length - 1}
+                    onClick={async () => {
+                      const next = moveItem(payments, p.id, 1);
+                      setPayments(next);
+                      await adminApi.reorderFooterPayments(next.map((x) => x.id));
+                      await refresh();
+                    }}
+                  >
+                    ↓
+                  </button>
+                </div>
+                <span className="flex-1">{p.name}</span>
+                <label className="flex items-center gap-1 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={p.is_active !== false}
+                    onChange={(e) =>
+                      adminApi
+                        .updateFooterPayment(p.id, { is_active: e.target.checked })
+                        .then(refresh)
+                    }
+                  />
+                  Actif
+                </label>
                 <button
                   type="button"
                   className="text-xs text-red-600"

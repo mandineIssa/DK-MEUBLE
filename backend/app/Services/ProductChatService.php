@@ -72,7 +72,7 @@ class ProductChatService
         $product = $chat->product;
         $price = $this->formatProductPrice($product);
         $text = implode("\n", [
-            '💬 Chat produit DK MEUBLE',
+            '💬 Chat produit DK HOMETECH',
             'Produit : '.($product?->name ?? '—'),
             'Prix : '.$price,
             'Client : '.($customer->name ?: '—').' / '.($customer->phone ?: '—'),

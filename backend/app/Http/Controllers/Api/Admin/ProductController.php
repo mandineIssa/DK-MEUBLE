@@ -222,7 +222,7 @@ class ProductController extends Controller
                 '0',
                 '0',
                 'published',
-                'Réfrigérateur 300L — DK MEUBLE',
+                'Réfrigérateur 300L — DK HOMETECH',
                 'Achetez un réfrigérateur 2 portes à Dakar.',
                 'https://exemple.com/photo1.jpg|https://exemple.com/photo2.jpg',
             ],

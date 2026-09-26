@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Politique de confidentialité — DK MEUBLE",
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Politique de confidentialité',
   description:
-    "Comment DK MEUBLE collecte, utilise et protège vos données personnelles (newsletter, commandes, contact).",
-};
+    'Politique de confidentialité DK HOMETECH.',
+  path: '/politique-confidentialite',
+});
 
 type Section = { title?: string; body?: string };
 

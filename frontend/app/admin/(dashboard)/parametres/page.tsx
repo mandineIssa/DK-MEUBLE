@@ -5,7 +5,7 @@ import { adminApi } from "@/lib/adminApi";
 import { imageUrl, type SiteSettings } from "@/lib/api";
 
 const empty: SiteSettings = {
-  brand: { name: "DK MEUBLE", logo_url: "" },
+  brand: { name: "DK HOMETECH", logo_url: "" },
   contact: {
     whatsapp: "",
     phone_display: "",
@@ -179,7 +179,7 @@ export default function AdminParametresPage() {
           </div>
 
           <label className="mt-4 block text-sm">
-            <span className="text-brand-black/60">Nom affiché (ex. DK MEUBLE)</span>
+            <span className="text-brand-black/60">Nom affiché (ex. DK HOMETECH)</span>
             <input
               className="mt-1 w-full rounded-xl border border-brand-black/10 px-3 py-2"
               value={form.brand.name}
@@ -279,7 +279,7 @@ export default function AdminParametresPage() {
         <section className="rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="font-bold text-brand-black">Réseaux sociaux</h2>
           <p className="mt-1 text-xs text-brand-black/50">
-            Collez l’URL complète, ex. https://facebook.com/dkmeuble
+            Collez l’URL complète, ex. https://facebook.com/dkhometech
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {(

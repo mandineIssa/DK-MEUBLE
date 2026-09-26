@@ -19,11 +19,11 @@ class PromotionService
             'max_duration_days' => 60,
             'max_active' => 100,
             'require_approval' => false,
-            'legal_text' => 'Ces offres sont proposées par DK MEUBLE. Les stocks sont limités ; une promotion peut être retirée dès rupture de stock. Les prix affichés sont valables jusqu’à la date d’expiration indiquée.',
+            'legal_text' => 'Ces offres sont proposées par DK HOMETECH. Les stocks sont limités ; une promotion peut être retirée dès rupture de stock. Les prix affichés sont valables jusqu’à la date d’expiration indiquée.',
             'newsletter_enabled' => false,
             'newsletter_frequency' => 'weekly',
             'expiry_alert_days' => 2,
-            'default_vendor_name' => 'DK MEUBLE',
+            'default_vendor_name' => 'DK HOMETECH',
         ];
     }
 

@@ -58,7 +58,7 @@ const SOCIAL_META: Omit<SiteSocial, "href">[] = [
 
 /** Valeurs vides : contact / réseaux viennent uniquement de l’admin (API). */
 export const EMPTY_SITE: SiteInfo = {
-  name: "DK MEUBLE",
+  name: "DK HOMETECH",
   logoUrl: "",
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   whatsapp: "",
@@ -70,7 +70,7 @@ export const EMPTY_SITE: SiteInfo = {
   hours: "",
   mapsEmbed: "",
   trust: ["Qualité", "Livraison partout au Sénégal", "Service de confiance"],
-  seoTitle: "DK MEUBLE",
+  seoTitle: "DK HOMETECH",
   seoDescription: "",
   socialUrls: {
     facebook: "",

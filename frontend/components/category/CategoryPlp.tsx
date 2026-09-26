@@ -438,7 +438,7 @@ export default function CategoryPlp({
           {settings.show_breadcrumb !== false && (
             <nav className="mb-2 flex flex-wrap gap-1 text-sm text-[#999]">
               <Link href="/" className="hover:text-[var(--plp-accent)]">
-                Home
+                Accueil
               </Link>
               {breadcrumb.map((b) => (
                 <span key={b.id} className="flex items-center gap-1">
@@ -498,23 +498,36 @@ export default function CategoryPlp({
           )}
 
           {data.meta.last_page > 1 ? (
-            <div className="mt-8 flex flex-wrap justify-center gap-2">
-              {Array.from({ length: data.meta.last_page }, (_, i) => i + 1).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => pushParams({ page: String(p) }, false)}
-                  className={`min-w-10 px-3 py-2 text-sm font-semibold ${
-                    data.meta.current_page === p
-                      ? "text-white"
-                      : "border border-[#ddd] bg-white text-[#333]"
-                  }`}
-                  style={data.meta.current_page === p ? { background: accent } : undefined}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
+            <nav className="mt-8 flex flex-wrap justify-center gap-2" aria-label="Pagination">
+              {Array.from({ length: data.meta.last_page }, (_, i) => i + 1).map((p) => {
+                const next = buildParams({ page: String(p) });
+                const qs = new URLSearchParams();
+                Object.entries(next).forEach(([k, v]) => {
+                  if (Array.isArray(v)) v.forEach((item) => qs.append(k, item));
+                  else if (v) qs.set(k, v);
+                });
+                const href = `${pathname}${qs.toString() ? `?${qs}` : ""}`;
+                const active = data.meta.current_page === p;
+                return (
+                  <Link
+                    key={p}
+                    href={href}
+                    scroll={false}
+                    aria-current={active ? "page" : undefined}
+                    className={`inline-flex min-w-10 items-center justify-center px-3 py-2 text-sm font-semibold ${
+                      active ? "text-white" : "border border-[#ddd] bg-white text-[#333]"
+                    }`}
+                    style={active ? { background: accent } : undefined}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      pushParams({ page: String(p) }, false);
+                    }}
+                  >
+                    {p}
+                  </Link>
+                );
+              })}
+            </nav>
           ) : null}
         </div>
       </div>

@@ -82,7 +82,7 @@ export default function NotificationBell() {
         ref={buttonRef}
         type="button"
         onClick={toggle}
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-white/90 hover:bg-white/10 hover:text-brand-orange"
+        className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-primary)] hover:text-[var(--accent-primary)]"
         aria-label="Notifications"
         aria-haspopup="dialog"
         aria-expanded={open}

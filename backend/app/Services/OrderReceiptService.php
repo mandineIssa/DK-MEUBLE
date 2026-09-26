@@ -56,7 +56,7 @@ class OrderReceiptService
 
         $brand = Setting::query()->where('key', 'brand')->value('value');
         $contact = Setting::query()->where('key', 'contact')->value('value');
-        $company = is_array($brand) ? ($brand['name'] ?? 'DK MEUBLE') : 'DK MEUBLE';
+        $company = is_array($brand) ? ($brand['name'] ?? 'DK HOMETECH') : 'DK HOMETECH';
         $phone = is_array($contact) ? ($contact['phone'] ?? '') : '';
         $email = is_array($contact) ? ($contact['email'] ?? '') : '';
         $address = is_array($contact) ? ($contact['address'] ?? '') : '';

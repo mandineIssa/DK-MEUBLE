@@ -202,6 +202,24 @@ export type SiteSettings = {
     reclamations: string;
   };
   payment_logos?: Array<{ url: string; label?: string }>;
+  theme?: {
+    header_bg?: string;
+    body_bg?: string;
+    content_bg_alt?: string;
+    text_primary?: string;
+    text_secondary?: string;
+    border_light?: string;
+    accent_primary?: string;
+    accent_primary_hover?: string;
+    price_color?: string;
+    price_strikethrough?: string;
+    success_color?: string;
+    danger_color?: string;
+    badge_bg?: string;
+    use_alt_bg_sections?: boolean;
+    header_compact_scroll?: number;
+    header_nav_bg?: string;
+  };
   homepage?: {
     nav_secondary?: Array<{ label: string; href: string; enabled?: boolean; order?: number }>;
     newsletter?: {
@@ -478,6 +496,20 @@ export const api = {
   getProduct: (slug: string) =>
     request<Product>(`/api/products/${slug}`, { cache: "no-store" }),
 
+  getProductReviews: (slug: string) =>
+    request<{
+      average: number;
+      count: number;
+      reviews: Array<{
+        id: number;
+        author_name: string;
+        rating: number;
+        title: string | null;
+        body: string;
+        created_at: string;
+      }>;
+    }>(`/api/products/${slug}/reviews`, { cache: "no-store" }),
+
   getBrands: (featured?: boolean) =>
     request<Brand[]>(`/api/brands${featured ? "?featured=1" : ""}`, { cache: "no-store" }),
 
@@ -552,6 +584,16 @@ export const api = {
         columns_count: number;
         brand_name: string;
         logo_url: string | null;
+        theme?: {
+          bg_primary?: string;
+          bg_secondary?: string;
+          text_primary?: string;
+          text_secondary?: string;
+          text_muted?: string;
+          accent?: string;
+          link_hover?: string;
+          divider?: string;
+        };
       };
       columns: Array<{
         id: number;

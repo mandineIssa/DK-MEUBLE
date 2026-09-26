@@ -80,7 +80,7 @@ export default function AdminPromotionsPage() {
       status: "draft",
       stock_quantity: "",
       is_featured: false,
-      vendor_name: settings?.default_vendor_name || "DK MEUBLE",
+      vendor_name: settings?.default_vendor_name || "DK HOMETECH",
       notes: "",
     });
   }

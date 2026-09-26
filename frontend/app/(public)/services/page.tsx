@@ -1,12 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo";
 import { api } from "@/lib/api";
 import ServiceCard from "@/components/services/ServiceCard";
 
-export const metadata: Metadata = {
-  title: "Services | DK MEUBLE",
-  description: "Livraison, installation, SAV, garantie et accompagnement autour de votre électroménager.",
-};
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Nos services',
+  description:
+    'Services DK HOMETECH : installation, réparation et accompagnement à Dakar.',
+  path: '/services',
+});
 
 export default async function ServicesPage() {
   const data = await api.getServices().catch(() => null);

@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Conditions générales d’utilisation — DK MEUBLE",
-  description: "Conditions générales d’utilisation du site DK MEUBLE.",
-};
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Conditions générales',
+  description:
+    "Conditions générales d'utilisation — DK HOMETECH.",
+  path: '/cgu',
+});
 
 type Section = { title?: string; body?: string };
 

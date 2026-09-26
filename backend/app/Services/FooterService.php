@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 
 class FooterService
 {
-    public const CACHE_KEY = 'footer:assembled:v1';
+    public const CACHE_KEY = 'footer:assembled:v2';
 
     public static function defaultSettings(): array
     {
@@ -29,7 +29,7 @@ class FooterService
             'newsletter_disclaimer' => 'Vous pouvez vous désabonner à tout moment comme décrit dans la ',
             'newsletter_cta' => "S'abonner",
             'show_newsletter' => true,
-            'app_block_title' => 'DK MEUBLE dans votre poche !',
+            'app_block_title' => 'DK HOMETECH dans votre poche !',
             'app_block_subtitle' => 'Téléchargez notre application gratuite',
             'app_store_url' => null,
             'google_play_url' => null,
@@ -45,6 +45,23 @@ class FooterService
             'brands_only_featured' => false,
             'show_brands' => true,
             'columns_count' => 4,
+            // Thème Jumia (surchargeable en admin ; null = variable CSS héritée / défaut)
+            'theme' => self::defaultTheme(),
+        ];
+    }
+
+    /** Palette par défaut inspirée Jumia (contraste WCAG AA sur fond sombre). */
+    public static function defaultTheme(): array
+    {
+        return [
+            'bg_primary' => '#232323',
+            'bg_secondary' => '#3d3d3d',
+            'text_primary' => '#ffffff',
+            'text_secondary' => '#c9c9c9',
+            'text_muted' => '#9a9a9a',
+            'accent' => '#f68b1e',
+            'link_hover' => '#ffffff',
+            'divider' => 'rgba(255,255,255,0.1)',
         ];
     }
 
@@ -79,7 +96,7 @@ class FooterService
             $brand = Setting::query()->where('key', 'brand')->value('value');
             $brand = is_array($brand) ? $brand : [];
 
-            $companyName = $settings['company_name'] ?: ($brand['name'] ?? 'DK MEUBLE');
+            $companyName = $settings['company_name'] ?: ($brand['name'] ?? 'DK HOMETECH');
             $companyAddress = $settings['company_address'] ?: ($contact['address'] ?? '');
             $companyPhones = $settings['company_phones']
                 ?: (is_string($contact['phones'] ?? null) ? $contact['phones'] : '');
@@ -142,12 +159,12 @@ class FooterService
                 ->values()
                 ->all();
 
+            // Marques actives triées alphabétiquement ; filtre show_in_footer (ou featured)
             $brandsQuery = Brand::query()->active()->orderBy('name');
             if ($settings['brands_only_featured'] ?? false) {
                 $brandsQuery->where('is_featured', true);
-            } else {
-                $brandsQuery->where('show_in_footer', true);
             }
+            $brandsQuery->where('show_in_footer', true);
 
             $brands = ($settings['show_brands'] ?? true)
                 ? $brandsQuery->get(['id', 'name', 'slug'])->map(fn (Brand $b) => [
@@ -159,6 +176,13 @@ class FooterService
                 : [];
 
             $showApp = filled($settings['app_store_url'] ?? null) || filled($settings['google_play_url'] ?? null);
+            $theme = array_replace(self::defaultTheme(), is_array($settings['theme'] ?? null) ? $settings['theme'] : []);
+
+            // Accent partagé avec le thème global du site (--accent-primary)
+            $siteTheme = Setting::query()->where('key', 'theme')->value('value');
+            if (is_array($siteTheme) && filled($siteTheme['accent_primary'] ?? null)) {
+                $theme['accent'] = $siteTheme['accent_primary'];
+            }
 
             return [
                 'settings' => [
@@ -188,8 +212,9 @@ class FooterService
                     'brands_heading' => $settings['brands_heading'] ?? 'Nos marques',
                     'payments_empty_text' => $settings['payments_empty_text'] ?? 'Wave, Orange Money, cash…',
                     'columns_count' => max(3, min(5, (int) ($settings['columns_count'] ?? 4))),
-                    'brand_name' => $brand['name'] ?? 'DK MEUBLE',
+                    'brand_name' => $brand['name'] ?? 'DK HOMETECH',
                     'logo_url' => $brand['logo_url'] ?? null,
+                    'theme' => $theme,
                 ],
                 'columns' => $columns,
                 'socials' => $socials,
@@ -293,7 +318,7 @@ class FooterService
         }
 
         $this->updateSettings([
-            'company_name' => Setting::query()->where('key', 'brand')->value('value')['name'] ?? 'DK MEUBLE',
+            'company_name' => Setting::query()->where('key', 'brand')->value('value')['name'] ?? 'DK HOMETECH',
             'company_address' => $contact['address'] ?? 'Dakar, Sénégal',
             'company_phones' => is_string($contact['phones'] ?? null) ? $contact['phones'] : '',
         ]);

@@ -26,7 +26,7 @@ class TemplatedNotificationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            htmlString: nl2br(e($this->mailBody)).'<p style="margin-top:24px;font-size:12px;color:#888">DK MEUBLE — <a href="'.e(config('app.frontend_url', config('app.url'))).'/compte/notifications/preferences">Gérer mes alertes</a></p>',
+            htmlString: nl2br(e($this->mailBody)).'<p style="margin-top:24px;font-size:12px;color:#888">DK HOMETECH — <a href="'.e(config('app.frontend_url', config('app.url'))).'/compte/notifications/preferences">Gérer mes alertes</a></p>',
         );
     }
 }

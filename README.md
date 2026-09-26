@@ -1,4 +1,4 @@
-# DK MEUBLE — Monorepo
+# DK HOMETECH — Monorepo
 
 Site vitrine MVP : catalogue, devis, contact, WhatsApp, admin — sans paiement en ligne.
 
@@ -22,7 +22,7 @@ php artisan serve
 ```
 
 API : http://127.0.0.1:8000  
-Admin seed : email/mot de passe via `ADMIN_EMAIL` / `ADMIN_PASSWORD` (défaut local : `admin@dkmeuble.sn` / `password`).
+Admin seed : email/mot de passe via `ADMIN_EMAIL` / `ADMIN_PASSWORD` (défaut local : `admin@dkhometech.sn` / `password`).
 
 ## Checklist mise en ligne
 
@@ -62,8 +62,8 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-- Site : http://dkmeuble.sn (DNS → serveur)
-- API : http://api.dkmeuble.sn
+- Site : http://dkhometech.sn (DNS → serveur)
+- API : http://api.dkhometech.sn
 
 Premier seed démo (optionnel) :
 
@@ -82,7 +82,7 @@ Migrations : lancées automatiquement au démarrage du conteneur `backend`.
 
 ## HTTPS (Let's Encrypt)
 
-**Prérequis** : DNS `dkmeuble.sn`, `www.dkmeuble.sn`, `api.dkmeuble.sn` → IP du serveur ; ports **80** et **443** ouverts.
+**Prérequis** : DNS `dkhometech.sn`, `www.dkhometech.sn`, `api.dkhometech.sn` → IP du serveur ; ports **80** et **443** ouverts.
 
 ```bash
 # 1. Stack en HTTP

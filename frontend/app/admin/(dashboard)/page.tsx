@@ -62,7 +62,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="p-6 md:p-8">
       <h1 className="text-2xl font-extrabold text-brand-black">Tableau de bord</h1>
-      <p className="mt-1 text-sm text-brand-black/60">Vue d&apos;ensemble de l&apos;activité DK MEUBLE</p>
+      <p className="mt-1 text-sm text-brand-black/60">Vue d&apos;ensemble de l&apos;activité DK HOMETECH</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map((c) => (

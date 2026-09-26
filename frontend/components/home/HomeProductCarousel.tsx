@@ -88,9 +88,10 @@ export default function HomeProductCarousel({
           return (
             <article
               key={product.id}
-              className="w-[220px] shrink-0 snap-start overflow-hidden rounded-2xl bg-white shadow-sm sm:w-[240px]"
+              className="w-[220px] shrink-0 snap-start overflow-hidden rounded-xl bg-[var(--body-bg)] sm:w-[240px]"
+              style={{ border: "1px solid var(--border-light)" }}
             >
-              <div className="relative aspect-[4/3] bg-[#ddd]">
+              <div className="relative aspect-[4/3]" style={{ background: "var(--content-bg-alt)" }}>
                 <Link href={`/produits/${product.slug}`}>
                   {cover ? (
                     <Image
@@ -104,24 +105,34 @@ export default function HomeProductCarousel({
                   ) : null}
                 </Link>
                 {product.badge_label ? (
-                  <span className="absolute left-2 top-2 rounded-full bg-brand-orange px-2 py-0.5 text-[11px] font-bold text-white">
+                  <span
+                    className="absolute left-2 top-2 rounded-sm px-2 py-0.5 text-[11px] font-bold text-white"
+                    style={{ background: "var(--badge-bg)" }}
+                  >
                     {product.badge_label}
                   </span>
                 ) : null}
               </div>
               <div className="p-3">
-                <p className="text-[10px] font-medium uppercase tracking-wide text-brand-black/45">
+                <p
+                  className="text-[10px] font-medium uppercase tracking-wide"
+                  style={{ color: "var(--text-secondary)" }}
+                >
                   {product.category?.name}
                 </p>
-                <Link href={`/produits/${product.slug}`} className="mt-0.5 line-clamp-2 text-sm font-bold text-brand-black">
+                <Link
+                  href={`/produits/${product.slug}`}
+                  className="mt-0.5 line-clamp-2 text-sm font-bold"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   {product.name}
                 </Link>
                 <div className="mt-1 flex flex-wrap items-baseline gap-1.5">
-                  <p className="text-sm font-bold text-brand-orange">
+                  <p className="price-current text-sm">
                     {effective != null ? `${effective.toLocaleString("fr-FR")} FCFA` : "Sur devis"}
                   </p>
                   {compare ? (
-                    <p className="text-[11px] text-brand-black/40 line-through">
+                    <p className="price-compare text-[11px]">
                       {compare.toLocaleString("fr-FR")} FCFA
                     </p>
                   ) : null}
@@ -132,7 +143,7 @@ export default function HomeProductCarousel({
                       type="button"
                       disabled={busyId === product.id}
                       onClick={() => onAdd(product)}
-                      className="flex-1 rounded-full bg-brand-black px-2 py-1.5 text-[11px] font-semibold text-white disabled:opacity-60"
+                      className="btn-accent flex-1 rounded-full px-2 py-1.5 text-[11px] font-semibold disabled:opacity-60"
                     >
                       Panier
                     </button>

@@ -497,7 +497,7 @@ class CategoryService
                     'is_active' => true,
                     'is_popular' => (bool) $block['popular'],
                     'popular_order' => $i + 1,
-                    'description' => $block['name'].' professionnel à Dakar — large choix chez DK MEUBLE.',
+                    'description' => $block['name'].' professionnel à Dakar — large choix chez DK HOMETECH.',
                 ]
             );
             $parents[$parent->id] = $parent->name;
@@ -514,7 +514,7 @@ class CategoryService
                             'display_order' => ($j + 1) * 10,
                             'is_active' => true,
                             'is_popular' => false,
-                            'description' => $childDef['name'].' — DK MEUBLE Dakar.',
+                            'description' => $childDef['name'].' — DK HOMETECH Dakar.',
                         ]
                     );
                     $bump($group);

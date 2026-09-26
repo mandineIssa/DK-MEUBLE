@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return response()->json([
-        'name' => 'DK MEUBLE API',
+        'name' => 'DK HOMETECH API',
         'version' => '1.0',
         'docs' => [
             'settings' => url('/api/settings'),

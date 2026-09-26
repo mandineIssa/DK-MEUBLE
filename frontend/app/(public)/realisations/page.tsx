@@ -1,12 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { api, imageUrl } from "@/lib/api";
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Nos réalisations",
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Nos réalisations',
   description:
-    "Projets DK MEUBLE : entreprises, hôtels et résidences équipés à Dakar et au Sénégal.",
-};
+    'Réalisations et aménagements DK HOMETECH à Dakar.',
+  path: '/realisations',
+});
 
 export default async function RealisationsPage() {
   const [items, page] = await Promise.all([

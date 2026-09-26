@@ -3,8 +3,37 @@
 @tailwind utilities;
 
 :root {
-  --plp-accent: #ff7a00;
-  --plp-accent-text: #ff7a00;
+  /* Thème clair Jumia — header & corps (surchargeable via Admin → Thème) */
+  --header-bg: #ffffff;
+  --header-nav-bg: #ffffff;
+  --body-bg: #ffffff;
+  --content-bg-alt: #f5f5f5;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6e6e6e;
+  --border-light: #e0e0e0;
+  --accent-primary: #f68b1e;
+  --accent-primary-hover: #e07d16;
+  --price-color: #f68b1e;
+  --price-strikethrough: #9a9a9a;
+  --success-color: #2e7d32;
+  --danger-color: #d32f2f;
+  --badge-bg: #f68b1e;
+
+  /* Alias composants / PLP / Tailwind */
+  --plp-accent: var(--accent-primary);
+  --plp-accent-text: var(--accent-primary);
+  --brand-orange: var(--accent-primary);
+  --brand-orange-dark: var(--accent-primary-hover);
+
+  /* Footer sombre — accent = même variable globale */
+  --footer-bg-primary: #232323;
+  --footer-bg-secondary: #3d3d3d;
+  --footer-text-primary: #ffffff;
+  --footer-text-secondary: #c9c9c9;
+  --footer-text-muted: #9a9a9a;
+  --footer-accent: var(--accent-primary);
+  --footer-link-hover: #ffffff;
+  --footer-divider: rgba(255, 255, 255, 0.1);
 }
 
 html {
@@ -12,8 +41,8 @@ html {
 }
 
 body {
-  background: #f5f5f5;
-  color: #0b0b0b;
+  background: var(--content-bg-alt);
+  color: var(--text-primary);
 }
 
 /* Badge « +10 ans » façon coup de pinceau */
@@ -29,4 +58,36 @@ body {
     28% 96%,
     6% 72%
   );
+}
+
+/* Utilitaires thème */
+.bg-content-alt {
+  background-color: var(--content-bg-alt);
+}
+.bg-body {
+  background-color: var(--body-bg);
+}
+.text-theme-primary {
+  color: var(--text-primary);
+}
+.text-theme-secondary {
+  color: var(--text-secondary);
+}
+.border-theme {
+  border-color: var(--border-light);
+}
+.btn-accent {
+  background-color: var(--accent-primary);
+  color: #fff;
+}
+.btn-accent:hover {
+  background-color: var(--accent-primary-hover);
+}
+.price-current {
+  color: var(--price-color);
+  font-weight: 700;
+}
+.price-compare {
+  color: var(--price-strikethrough);
+  text-decoration: line-through;
 }

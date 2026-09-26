@@ -963,14 +963,29 @@ export const adminApi = {
     adminRequest(`/api/admin/footer/columns/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteFooterColumn: (id: number) =>
     adminRequest(`/api/admin/footer/columns/${id}`, { method: "DELETE" }),
+  reorderFooterColumns: (order: number[]) =>
+    adminRequest("/api/admin/footer/columns/reorder", {
+      method: "PATCH",
+      body: JSON.stringify({ order }),
+    }),
   createFooterLink: (data: Record<string, unknown>) =>
     adminRequest("/api/admin/footer/links", { method: "POST", body: JSON.stringify(data) }),
   updateFooterLink: (id: number, data: Record<string, unknown>) =>
     adminRequest(`/api/admin/footer/links/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteFooterLink: (id: number) =>
     adminRequest(`/api/admin/footer/links/${id}`, { method: "DELETE" }),
+  reorderFooterLinks: (order: number[]) =>
+    adminRequest("/api/admin/footer/links/reorder", {
+      method: "PATCH",
+      body: JSON.stringify({ order }),
+    }),
   upsertFooterSocial: (data: Record<string, unknown>) =>
     adminRequest("/api/admin/footer/socials", { method: "POST", body: JSON.stringify(data) }),
+  reorderFooterSocials: (order: number[]) =>
+    adminRequest("/api/admin/footer/socials/reorder", {
+      method: "PATCH",
+      body: JSON.stringify({ order }),
+    }),
   deleteFooterSocial: (id: number) =>
     adminRequest(`/api/admin/footer/socials/${id}`, { method: "DELETE" }),
   async uploadFooterPayment(name: string, file: File) {
@@ -993,6 +1008,16 @@ export const adminApi = {
     }
     return res.json();
   },
+  updateFooterPayment: (id: number, data: Record<string, unknown>) =>
+    adminRequest(`/api/admin/footer/payments/${id}`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  reorderFooterPayments: (order: number[]) =>
+    adminRequest("/api/admin/footer/payments/reorder", {
+      method: "PATCH",
+      body: JSON.stringify({ order }),
+    }),
   deleteFooterPayment: (id: number) =>
     adminRequest(`/api/admin/footer/payments/${id}`, { method: "DELETE" }),
 };

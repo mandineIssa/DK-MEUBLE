@@ -758,7 +758,7 @@ function SettingsPanel({
                 order: i,
               }))
             : [
-                { label: "Promotion", href: "/promo", enabled: true, order: 0 },
+                { label: "Promotion", href: "/promotions", enabled: true, order: 0 },
                 { label: "Destockage", href: "/destockage", enabled: true, order: 1 },
                 { label: "Reconditionné", href: "/reconditionne", enabled: true, order: 2 },
                 { label: "Services", href: "/services", enabled: true, order: 3 },
@@ -778,7 +778,7 @@ function SettingsPanel({
           {(nav.length
             ? nav
             : [
-                { label: "Promotion", href: "/promo", enabled: true },
+                { label: "Promotion", href: "/promotions", enabled: true },
                 { label: "Destockage", href: "/destockage", enabled: true },
                 { label: "Reconditionné", href: "/reconditionne", enabled: true },
                 { label: "Services", href: "/services", enabled: true },

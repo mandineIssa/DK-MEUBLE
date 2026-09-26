@@ -1,13 +1,17 @@
 import Link from "next/link";
 import { api, imageUrl } from "@/lib/api";
 import ProductCard from "@/components/ProductCard";
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Marques",
-  description: "Nos marques d’électroménager — DK MEUBLE",
-};
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Marques',
+  description:
+    'Marques électroménager et meubles disponibles chez DK HOMETECH à Dakar.',
+  path: '/marques',
+});
 
 export default async function MarquesPage() {
   const brands = await api.getBrands().catch(() => []);

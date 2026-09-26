@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Obtient les certificats Let's Encrypt puis active nginx SSL.
-# Prérequis : DNS dkmeuble.sn, www, api → IP du serveur ; ports 80/443 ouverts.
+# Prérequis : DNS dkhometech.sn, www, api → IP du serveur ; ports 80/443 ouverts.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -11,7 +11,7 @@ if [[ -z "$EMAIL" ]]; then
   exit 1
 fi
 
-DOMAINS=(-d dkmeuble.sn -d www.dkmeuble.sn -d api.dkmeuble.sn)
+DOMAINS=(-d dkhometech.sn -d www.dkhometech.sn -d api.dkhometech.sn)
 DATA_PATH="certbot-etc"
 
 echo "==> Démarrage stack (HTTP)…"
@@ -63,8 +63,8 @@ docker compose up -d certbot
 
 echo ""
 echo "HTTPS actif :"
-echo "  https://dkmeuble.sn"
-echo "  https://www.dkmeuble.sn"
-echo "  https://api.dkmeuble.sn"
+echo "  https://dkhometech.sn"
+echo "  https://www.dkhometech.sn"
+echo "  https://api.dkhometech.sn"
 echo ""
 echo "Vérifiez APP_URL / NEXT_PUBLIC_* en https dans .env puis rebuild frontend si besoin."

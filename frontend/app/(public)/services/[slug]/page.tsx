@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import ServiceRequestForm from "@/components/services/ServiceRequestForm";
 import ServiceCard from "@/components/services/ServiceCard";
+import JsonLd from "@/components/seo/JsonLd";
+import { buildBreadcrumbSchema, buildPageMetadata, truncateMeta } from "@/lib/seo";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -11,12 +13,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   try {
     const data = await api.getService(slug);
-    return {
-      title: `${data.service.meta_title || data.service.title} | DK MEUBLE`,
-      description: data.service.meta_description || data.service.short_description || undefined,
-    };
+    return buildPageMetadata({
+      title: data.service.meta_title || data.service.title,
+      description: truncateMeta(
+        data.service.meta_description ||
+          data.service.short_description ||
+          `${data.service.title} — services DK HOMETECH à Dakar.`
+      ),
+      path: `/services/${data.service.slug}`,
+    });
   } catch {
-    return { title: "Service | DK MEUBLE" };
+    return { title: "Service", robots: { index: false, follow: true } };
   }
 }
 
@@ -31,6 +38,13 @@ export default async function ServiceDetailPage({ params }: Props) {
 
   return (
     <div className="bg-[#f5f5f5] min-h-[60vh]">
+      <JsonLd
+        data={buildBreadcrumbSchema([
+          { name: "Accueil", path: "/" },
+          { name: "Services", path: "/services" },
+          { name: service.title, path: `/services/${service.slug}` },
+        ])}
+      />
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-6">
         <nav className="mb-6 text-sm text-brand-black/55">
           <Link href="/" className="hover:text-brand-orange">

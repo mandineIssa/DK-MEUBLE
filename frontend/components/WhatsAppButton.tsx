@@ -34,7 +34,7 @@ export default function WhatsAppButton() {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Contacter DK MEUBLE sur WhatsApp"
+      aria-label="Contacter DK HOMETECH sur WhatsApp"
       className="fixed bottom-6 right-6 z-50 hidden items-center gap-2 md:flex"
     >
       {agentImage ? (

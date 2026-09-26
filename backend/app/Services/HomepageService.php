@@ -133,7 +133,7 @@ class HomepageService
             'type' => 'product_carousel',
             'title' => 'Promotions',
             'selection_mode' => 'on_sale',
-            'banner_link' => '/promo',
+            'banner_link' => '/promotions',
             'products_limit' => 8,
             'display_order' => 50,
             'is_active' => true,
@@ -206,7 +206,7 @@ class HomepageService
                     'agent_image' => '',
                 ], is_array($homepage['whatsapp_widget'] ?? null) ? $homepage['whatsapp_widget'] : []),
                 'footer' => [
-                    'about' => $homepage['footer_about'] ?? 'DK MEUBLE — Meubles & électroménager à Dakar. Qualité, conseil et livraison partout au Sénégal.',
+                    'about' => $homepage['footer_about'] ?? 'DK HOMETECH — Meubles & électroménager à Dakar. Qualité, conseil et livraison partout au Sénégal.',
                     'info_links' => $homepage['footer_info_links'] ?? [
                         ['label' => 'À propos', 'href' => '/a-propos', 'enabled' => true],
                         ['label' => 'Contact', 'href' => '/contact', 'enabled' => true],
@@ -357,7 +357,7 @@ class HomepageService
     {
         $defaults = [
             ['label' => 'Nos produits', 'href' => '/produits', 'enabled' => true, 'order' => 0],
-            ['label' => 'Promotion', 'href' => '/promo', 'enabled' => true, 'order' => 1],
+            ['label' => 'Promotion', 'href' => '/promotions', 'enabled' => true, 'order' => 1],
             ['label' => 'Reconditionné', 'href' => '/reconditionne', 'enabled' => true, 'order' => 2],
             ['label' => 'Destockage', 'href' => '/destockage', 'enabled' => true, 'order' => 3],
             ['label' => 'Services', 'href' => '/services', 'enabled' => true, 'order' => 4],

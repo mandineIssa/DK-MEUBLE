@@ -61,7 +61,7 @@ export default function AuthRequiredModal({
     const full = `${dial}${d}`;
     setLoading(true);
     try {
-      const res = await customerApi.requestOtp(full);
+      const res = await customerApi.requestOtp({ phone: full });
       setPhone(full);
       setDebugCode(res.debug_code || "");
       if (res.debug_code) {
@@ -85,7 +85,7 @@ export default function AuthRequiredModal({
     setLoading(true);
     setError("");
     try {
-      await customerApi.verifyOtp(phone, code);
+      await customerApi.verifyOtp({ phone, code });
       await onSuccess();
       onClose();
     } catch (err) {

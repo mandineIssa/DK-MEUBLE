@@ -1,11 +1,14 @@
 import QuoteForm from "@/components/QuoteForm";
 import { api } from "@/lib/api";
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Demande de devis — DK MEUBLE",
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Demande de devis',
   description:
-    "Demandez un devis électroménager ou meubles à DK MEUBLE — Dakar, livraison Sénégal.",
-};
+    'Demandez un devis électroménager ou meubles à DK HOMETECH — Dakar, livraison Sénégal.',
+  path: '/devis',
+});
 
 export default async function QuotePage({
   searchParams,

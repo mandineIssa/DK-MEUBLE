@@ -1,7 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { customerApi } from "@/lib/customerApi";
 
@@ -13,27 +13,10 @@ const countries = [
 
 export default function LoginForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [dial, setDial] = useState("221");
   const [local, setLocal] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [providers, setProviders] = useState({ google: false, facebook: false });
-
-  useEffect(() => {
-    customerApi.getOAuthProviders().then(setProviders).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    const err = searchParams.get("error");
-    if (err === "oauth_config") {
-      setError(
-        "Connexion Google/Facebook non configurée. Utilisez le téléphone, ou demandez à l’admin d’ajouter les clés OAuth."
-      );
-    } else if (err === "oauth_failed" || err === "oauth") {
-      setError("La connexion sociale a échoué. Réessayez ou utilisez le téléphone.");
-    }
-  }, [searchParams]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -46,13 +29,12 @@ export default function LoginForm() {
     const phone = `${dial}${digits}`;
     setLoading(true);
     try {
-      const res = await customerApi.requestOtp(phone);
-      sessionStorage.setItem("dk_otp_phone", phone);
-      if (res.debug_code) {
-        sessionStorage.setItem("dk_otp_debug", res.debug_code);
-      } else {
-        sessionStorage.removeItem("dk_otp_debug");
-      }
+      const res = await customerApi.requestOtp({ phone });
+      sessionStorage.setItem("dk_otp_channel", "phone");
+      sessionStorage.setItem("dk_otp_phone", res.phone || phone);
+      sessionStorage.removeItem("dk_otp_email");
+      if (res.debug_code) sessionStorage.setItem("dk_otp_debug", res.debug_code);
+      else sessionStorage.removeItem("dk_otp_debug");
       router.push("/compte/verification");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Impossible d'envoyer le code.");
@@ -63,7 +45,6 @@ export default function LoginForm() {
 
   const inputClass =
     "w-full rounded-xl border border-brand-black/15 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-orange";
-  const showOAuth = providers.google || providers.facebook;
 
   return (
     <div className="mx-auto w-full max-w-md">
@@ -71,7 +52,7 @@ export default function LoginForm() {
         <div>
           <h1 className="text-xl font-extrabold text-brand-black">Se connecter / Créer un compte</h1>
           <p className="mt-1 text-sm text-brand-black/60">
-            Un seul numéro suffit — connexion ou inscription automatique.
+            Téléphone, Google ou Facebook — connexion et inscription automatiques.
           </p>
         </div>
 
@@ -94,7 +75,12 @@ export default function LoginForm() {
               onChange={(e) => setLocal(e.target.value.replace(/\D/g, "").slice(0, 15))}
               onKeyDown={(e) => {
                 if (e.ctrlKey || e.metaKey || e.altKey) return;
-                if (["Backspace", "Delete", "Tab", "Enter", "ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+                if (
+                  ["Backspace", "Delete", "Tab", "Enter", "ArrowLeft", "ArrowRight", "Home", "End"].includes(
+                    e.key
+                  )
+                )
+                  return;
                 if (!/^\d$/.test(e.key)) e.preventDefault();
               }}
               inputMode="numeric"
@@ -107,7 +93,7 @@ export default function LoginForm() {
           </div>
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
         <button
           type="submit"
@@ -117,31 +103,33 @@ export default function LoginForm() {
           {loading ? "Envoi du code…" : "Continuer"}
         </button>
 
-        {showOAuth && (
-          <>
-            <div className="relative py-2 text-center text-xs text-brand-black/40">
-              <span className="bg-white px-2 relative z-10">ou</span>
-              <span className="absolute left-0 right-0 top-1/2 h-px bg-brand-black/10" />
-            </div>
+        <div className="relative py-2 text-center text-xs text-brand-black/40">
+          <span className="relative z-10 bg-white px-2">ou continuer avec</span>
+          <span className="absolute left-0 right-0 top-1/2 h-px bg-brand-black/10" />
+        </div>
 
-            {providers.google && (
-              <a
-                href={customerApi.oauthUrl("google")}
-                className="flex w-full items-center justify-center gap-2 rounded-full border border-brand-black/15 py-2.5 text-sm font-semibold text-brand-black hover:bg-[#f7f7f7]"
-              >
-                Continuer avec Google
-              </a>
-            )}
-            {providers.facebook && (
-              <a
-                href={customerApi.oauthUrl("facebook")}
-                className="flex w-full items-center justify-center gap-2 rounded-full border border-brand-black/15 py-2.5 text-sm font-semibold text-brand-black hover:bg-[#f7f7f7]"
-              >
-                Continuer avec Facebook
-              </a>
-            )}
-          </>
-        )}
+        <a
+          href={customerApi.oauthUrl("facebook")}
+          className="flex w-full items-center justify-center gap-2 rounded-full border border-brand-black/15 py-2.5 text-sm font-semibold text-brand-black hover:bg-[#f7f7f7]"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5 fill-[#1877F2]" aria-hidden>
+            <path d="M14 9h3V6h-3c-1.7 0-3 1.3-3 3v2H8v3h3v7h3v-7h3l1-3h-4V9c0-.6.4-1 1-1Z" />
+          </svg>
+          Facebook
+        </a>
+
+        <a
+          href={customerApi.oauthUrl("google")}
+          className="flex w-full items-center justify-center gap-2 rounded-full border border-brand-black/15 py-2.5 text-sm font-semibold text-brand-black hover:bg-[#f7f7f7]"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
+            <path
+              fill="#EA4335"
+              d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C17.1 3.1 14.8 2 12 2 6.5 2 2 6.5 2 12s4.5 10 10 10c5.8 0 9.6-4.1 9.6-9.8 0-.7-.1-1.2-.2-1.7H12z"
+            />
+          </svg>
+          Google
+        </a>
       </form>
 
       <p className="mt-4 text-center text-sm text-brand-black/50">

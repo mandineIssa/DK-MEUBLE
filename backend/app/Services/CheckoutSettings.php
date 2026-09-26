@@ -19,7 +19,7 @@ class CheckoutSettings
                 ['key' => 'virement', 'label' => 'Virement', 'enabled' => true],
             ],
             'confirmation_enabled' => true,
-            'confirmation_sms' => 'DK MEUBLE : commande {reference} reçue. Total {total} FCFA. Merci !',
+            'confirmation_sms' => 'DK HOMETECH : commande {reference} reçue. Total {total} FCFA. Merci !',
             'notification_templates' => [
                 'confirmee' => 'Votre commande {reference} est confirmée.',
                 'en_preparation' => 'Commande {reference} en préparation.',

@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { api, imageUrl } from "@/lib/api";
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Catégories",
-  description: "Parcourez le catalogue électroménager par catégories — DK MEUBLE.",
-};
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Catégories — Meubles et électroménager',
+  description:
+    'Toutes les catégories meubles, mobilier de bureau et électroménager DK HOMETECH à Dakar.',
+  path: '/categories',
+});
 
 export default async function CategoriesPage() {
   const data = await api.getCategories().catch(() => ({

@@ -89,7 +89,7 @@ def footer(canvas, doc, title: str):
     canvas.line(1.6 * cm, 1.35 * cm, w - 1.6 * cm, 1.35 * cm)
     canvas.setFont("Helvetica", 7.5)
     canvas.setFillColor(GRAY)
-    canvas.drawString(1.6 * cm, 0.75 * cm, f"DK MEUBLE — {title}")
+    canvas.drawString(1.6 * cm, 0.75 * cm, f"DK HOMETECH — {title}")
     canvas.drawRightString(w - 1.6 * cm, 0.75 * cm, f"v{VERSION} · p. {doc.page}")
     canvas.restoreState()
 
@@ -139,7 +139,7 @@ def feature(sty, title, objectif, acces, etapes, shot, caption, resultat, erreur
 def cover(sty, title, subtitle):
     return [
         Spacer(1, 2.2 * cm),
-        Paragraph("DK MEUBLE", sty["cover_title"]),
+        Paragraph("DK HOMETECH", sty["cover_title"]),
         Paragraph(title, sty["cover_title"]),
         Paragraph(subtitle, sty["cover_sub"]),
         Spacer(1, 0.4 * cm),
@@ -147,7 +147,7 @@ def cover(sty, title, subtitle):
         Paragraph("Document confidentiel — usage interne / formation", sty["meta"]),
         Spacer(1, 0.6 * cm),
         Paragraph(
-            "Ce manuel décrit uniquement les fonctionnalités réellement présentes dans l’application DK MEUBLE "
+            "Ce manuel décrit uniquement les fonctionnalités réellement présentes dans l’application DK HOMETECH "
             "(site Next.js + API Laravel). Les captures ont été réalisées sur l’environnement local.",
             sty["body"],
         ),
@@ -182,7 +182,7 @@ def build_frontend():
     story.append(Paragraph("1. Présentation", sty["h1"]))
     story.append(
         Paragraph(
-            "DK MEUBLE est une boutique en ligne d’électroménager et de mobilier. Le frontend (site public) permet de "
+            "DK HOMETECH est une boutique en ligne d’électroménager et de mobilier. Le frontend (site public) permet de "
             "parcourir le catalogue, rechercher des produits, demander un devis, contacter l’équipe, gérer un panier, "
             "passer commande et se connecter via téléphone (OTP). Les moyens de paiement affichés côté site incluent "
             "notamment Wave, Orange Money et le paiement cash (selon configuration).",
@@ -198,7 +198,7 @@ def build_frontend():
             sty,
             "2. Accéder au site — Page d’accueil",
             "Découvrir l’enseigne, le menu et les sections dynamiques de la home.",
-            "Ouvrir l’URL du site (ex. http://localhost:3000 ou https://dkmeuble.sn).",
+            "Ouvrir l’URL du site (ex. http://localhost:3000 ou https://dkhometech.sn).",
             [
                 "Ouvrir le navigateur.",
                 "Saisir l’adresse du site.",
@@ -206,7 +206,7 @@ def build_frontend():
                 "Utiliser le menu : Catégories, Nos produits, Promotion, Reconditionné, Destockage, Services, Contact.",
             ],
             SHOT_F / "01_accueil.png",
-            "Fig. 1 — Accueil / en-tête et navigation DK MEUBLE",
+            "Fig. 1 — Accueil / en-tête et navigation DK HOMETECH",
             "La page d’accueil s’affiche avec le header noir/orange et les blocs contenus configurés en admin.",
             ["Page blanche / sections vides : vérifier que l’API Laravel tourne et que la home est configurée (Admin → Page d’accueil)."],
         )
@@ -353,7 +353,7 @@ def build_frontend():
 
     story.append(Paragraph("7. Devis, contact et services", sty["h1"]))
     for title, file, url, obj in [
-        ("Contact", "12_contact.png", "/contact", "Envoyer un message à l’équipe DK MEUBLE."),
+        ("Contact", "12_contact.png", "/contact", "Envoyer un message à l’équipe DK HOMETECH."),
         ("Devis", "13_devis.png", "/devis", "Demander un devis produit / projet."),
     ]:
         story.append(
@@ -443,7 +443,7 @@ def build_frontend():
         story.append(Paragraph(f"<b>{k}</b> — {v}", sty["bullet"]))
 
     story.append(Spacer(1, 12))
-    story.append(Paragraph(f"Fin du manuel Frontend — DK MEUBLE v{VERSION} ({TODAY})", sty["meta"]))
+    story.append(Paragraph(f"Fin du manuel Frontend — DK HOMETECH v{VERSION} ({TODAY})", sty["meta"]))
 
     doc = SimpleDocTemplate(
         str(OUT_F),
@@ -452,8 +452,8 @@ def build_frontend():
         rightMargin=1.6 * cm,
         topMargin=1.5 * cm,
         bottomMargin=1.9 * cm,
-        title="Manuel Utilisateur Frontend — DK MEUBLE",
-        author="DK MEUBLE",
+        title="Manuel Utilisateur Frontend — DK HOMETECH",
+        author="DK HOMETECH",
     )
     doc.build(story, onFirstPage=lambda c, d: footer(c, d, "Manuel Frontend"), onLaterPages=lambda c, d: footer(c, d, "Manuel Frontend"))
     return OUT_F
@@ -485,7 +485,7 @@ def build_backend():
     story.append(Paragraph("1. Présentation & rôles", sty["h1"]))
     story.append(
         Paragraph(
-            "L’espace d’administration DK MEUBLE (Next.js /admin) permet de gérer le catalogue, les contenus, "
+            "L’espace d’administration DK HOMETECH (Next.js /admin) permet de gérer le catalogue, les contenus, "
             "les commandes, les devis, les messages, les promotions, le footer, la newsletter et les paramètres du site. "
             "L’authentification admin utilise e-mail + mot de passe (Laravel Sanctum). "
             "Dans la version actuelle, le menu ne propose pas de gestion multi-rôles avancée : l’accès admin est réservé aux comptes administrateurs créés en base.",
@@ -779,7 +779,7 @@ def build_backend():
             sty["warn"],
         )
     )
-    story.append(Paragraph(f"Fin du manuel Backend — DK MEUBLE v{VERSION} ({TODAY})", sty["meta"]))
+    story.append(Paragraph(f"Fin du manuel Backend — DK HOMETECH v{VERSION} ({TODAY})", sty["meta"]))
 
     doc = SimpleDocTemplate(
         str(OUT_B),
@@ -788,8 +788,8 @@ def build_backend():
         rightMargin=1.6 * cm,
         topMargin=1.5 * cm,
         bottomMargin=1.9 * cm,
-        title="Manuel Utilisateur Backend — DK MEUBLE",
-        author="DK MEUBLE",
+        title="Manuel Utilisateur Backend — DK HOMETECH",
+        author="DK HOMETECH",
     )
     doc.build(story, onFirstPage=lambda c, d: footer(c, d, "Manuel Backend"), onLaterPages=lambda c, d: footer(c, d, "Manuel Backend"))
     return OUT_B

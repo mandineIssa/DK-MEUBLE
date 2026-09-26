@@ -18,6 +18,6 @@ return [
     'max_age' => 0,
 
     // Obligatoire : le cookie de session Sanctum doit pouvoir circuler
-    // entre le frontend (dkmeuble.sn) et l'API (api.dkmeuble.sn).
+    // entre le frontend (dkhometech.sn) et l'API (api.dkhometech.sn).
     'supports_credentials' => true,
 ];

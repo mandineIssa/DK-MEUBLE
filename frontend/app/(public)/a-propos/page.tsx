@@ -2,12 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { getSite, waLink } from "@/lib/site";
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "À propos — DK MEUBLE",
+export const metadata: Metadata = buildPageMetadata({
+  title: 'À propos de DK HOMETECH',
   description:
-    "Depuis plus de 10 ans, DK MEUBLE équipe maisons, bureaux et institutions à Dakar et partout au Sénégal.",
-};
+    'DK HOMETECH à Dakar : meubles, électroménager, conseil et livraison au Sénégal.',
+  path: '/a-propos',
+});
 
 type Blocks = Record<string, any>;
 
@@ -34,10 +37,10 @@ export default async function AboutPage() {
       <section className="bg-brand-black text-white">
         <div className="mx-auto max-w-7xl px-4 py-10 md:px-6 md:py-14">
           <p className="text-sm font-medium uppercase tracking-wider text-brand-orange">
-            {hero.eyebrow || "À propos de DK MEUBLE"}
+            {hero.eyebrow || "À propos de DK HOMETECH"}
           </p>
           <h1 className="mt-2 text-3xl font-extrabold md:text-4xl">
-            {hero.title || "Bienvenue chez DK MEUBLE"}
+            {hero.title || "Bienvenue chez DK HOMETECH"}
           </h1>
           {hero.subtitle && (
             <p className="mt-3 max-w-2xl text-lg text-white/80">{hero.subtitle}</p>
@@ -53,7 +56,7 @@ export default async function AboutPage() {
                 intro.image_url ||
                 "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=80"
               }
-              alt="Showroom DK MEUBLE"
+              alt="Showroom DK HOMETECH"
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -201,7 +204,7 @@ export default async function AboutPage() {
             </Link>
           </div>
           <p className="mt-8 text-sm text-brand-black/50">
-            {cta.tagline || "DK MEUBLE — Qualité · Choix · Confiance"}
+            {cta.tagline || "DK HOMETECH — Qualité · Choix · Confiance"}
             <br />
             {cta.partner_line || "Votre partenaire pour la maison et le bureau."}
             {site.address ? ` ${site.address}` : ""}

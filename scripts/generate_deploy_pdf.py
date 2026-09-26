@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Génère le guide PDF de déploiement VPS OVH — DK MEUBLE."""
+"""Génère le guide PDF de déploiement VPS OVH — DK HOMETECH."""
 from pathlib import Path
 
 from reportlab.lib import colors
@@ -20,7 +20,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-OUT = Path(__file__).resolve().parents[1] / "DEPLOIEMENT_VPS_OVH_DK_MEUBLE.pdf"
+OUT = Path(__file__).resolve().parents[1] / "DEPLOIEMENT_VPS_OVH_DK_HOMETECH.pdf"
 
 ORANGE = colors.HexColor("#E85D04")
 BLACK = colors.HexColor("#1A1A1A")
@@ -152,7 +152,7 @@ def footer(canvas, doc):
     canvas.line(1.8 * cm, 1.4 * cm, A4[0] - 1.8 * cm, 1.4 * cm)
     canvas.setFont("Helvetica", 8)
     canvas.setFillColor(GRAY)
-    canvas.drawString(1.8 * cm, 0.8 * cm, "DK MEUBLE — Guide déploiement VPS OVH")
+    canvas.drawString(1.8 * cm, 0.8 * cm, "DK HOMETECH — Guide déploiement VPS OVH")
     canvas.drawRightString(A4[0] - 1.8 * cm, 0.8 * cm, f"Page {doc.page}")
     canvas.restoreState()
 
@@ -182,7 +182,7 @@ def build():
     sty = styles()
     story = []
 
-    story.append(Paragraph("DK MEUBLE", sty["title"]))
+    story.append(Paragraph("DK HOMETECH", sty["title"]))
     story.append(
         Paragraph(
             "Guide de déploiement production — VPS OVHcloud<br/>"
@@ -206,7 +206,7 @@ def build():
             "Le chemin demandé <font face='Courier'>/var/www/ecommerce/public</font> correspond au "
             "<b>public</b> Laravel (API + storage). Le site vitrine tourne sur Node (port 3000) derrière Nginx. "
             "Le dépôt contient déjà <font face='Courier'>docker-compose.yml</font>, <font face='Courier'>nginx/</font> "
-            "et <font face='Courier'>.env.example</font> orientés production (dkmeuble.sn / api.dkmeuble.sn).",
+            "et <font face='Courier'>.env.example</font> orientés production (dkhometech.sn / api.dkhometech.sn).",
             sty["body"],
         )
     )
@@ -241,7 +241,7 @@ def build():
     story.append(
         code_block(
             """
-dk-meuble/
+dk-hometech/
 ├── backend/          # Laravel API (public/ = racine PHP)
 ├── frontend/         # Next.js (site + /admin)
 ├── nginx/            # default.conf + default.ssl.conf
@@ -249,7 +249,7 @@ dk-meuble/
 ├── docker-compose.yml
 ├── .env.example      # variables prod monorepo
 ├── MISE_EN_LIGNE.md
-└── DEPLOIEMENT_VPS_OVH_DK_MEUBLE.pdf  (ce document)
+└── DEPLOIEMENT_VPS_OVH_DK_HOMETECH.pdf  (ce document)
 """,
             sty,
         )
@@ -258,7 +258,7 @@ dk-meuble/
     story.append(Paragraph("1.3 Problèmes / points de vigilance production", sty["h2"]))
     for item in [
         "Ne pas pointer Nginx uniquement sur /var/www/ecommerce/public pour le site public : le front Next.js serait inaccessible.",
-        "Deux noms d’hôte recommandés : dkmeuble.sn (Next) + api.dkmeuble.sn (Laravel).",
+        "Deux noms d’hôte recommandés : dkhometech.sn (Next) + api.dkhometech.sn (Laravel).",
         "NEXT_PUBLIC_* est injecté au build Next — rebuild frontend après changement d’URL HTTPS.",
         "FILESYSTEM_DISK=public + php artisan storage:link obligatoires pour images produits.",
         "Queues database : lancer un worker Supervisor (sinon jobs notifications/promos restent en attente).",
@@ -299,7 +299,7 @@ dk-meuble/
     story.append(
         Paragraph(
             "<b>Option B (VPS nu Ubuntu)</b> — Nginx + PHP 8.3-FPM + MySQL + Node + Supervisor + Certbot, "
-            "avec chemins /var/www/dkmeuble/{backend,frontend}. "
+            "avec chemins /var/www/dkhometech/{backend,frontend}. "
             "Ci-dessous : procédures pour Option B alignées sur votre brief, adaptées au monorepo.",
             sty["body"],
         )
@@ -426,11 +426,11 @@ FLUSH PRIVILEGES;"
     story.append(
         code_block(
             """
-sudo mkdir -p /var/www/dkmeuble
-sudo chown -R deploy:deploy /var/www/dkmeuble
-cd /var/www/dkmeuble
-git clone https://github.com/VOTRE_ORG/dk-meuble.git .
-# Structure : /var/www/dkmeuble/backend et /var/www/dkmeuble/frontend
+sudo mkdir -p /var/www/dkhometech
+sudo chown -R deploy:deploy /var/www/dkhometech
+cd /var/www/dkhometech
+git clone https://github.com/VOTRE_ORG/dk-hometech.git .
+# Structure : /var/www/dkhometech/backend et /var/www/dkhometech/frontend
 """,
             sty,
         )
@@ -440,7 +440,7 @@ git clone https://github.com/VOTRE_ORG/dk-meuble.git .
     story.append(
         code_block(
             """
-cd /var/www/dkmeuble/backend
+cd /var/www/dkhometech/backend
 cp .env.example .env   # puis éditer (voir §7)
 composer install --no-dev --optimize-autoloader
 php artisan key:generate --force
@@ -459,9 +459,9 @@ php artisan view:cache
     story.append(
         code_block(
             """
-sudo chown -R deploy:www-data /var/www/dkmeuble/backend
-sudo find /var/www/dkmeuble/backend/storage /var/www/dkmeuble/backend/bootstrap/cache -type d -exec chmod 775 {} \\;
-sudo find /var/www/dkmeuble/backend/storage /var/www/dkmeuble/backend/bootstrap/cache -type f -exec chmod 664 {} \\;
+sudo chown -R deploy:www-data /var/www/dkhometech/backend
+sudo find /var/www/dkhometech/backend/storage /var/www/dkhometech/backend/bootstrap/cache -type d -exec chmod 775 {} \\;
+sudo find /var/www/dkhometech/backend/storage /var/www/dkhometech/backend/bootstrap/cache -type f -exec chmod 664 {} \\;
 # Éviter chmod -R 777
 """,
             sty,
@@ -472,7 +472,7 @@ sudo find /var/www/dkmeuble/backend/storage /var/www/dkmeuble/backend/bootstrap/
     story.append(
         code_block(
             """
-cd /var/www/dkmeuble/frontend
+cd /var/www/dkhometech/frontend
 # Créer .env.production ou exporter :
 # NEXT_PUBLIC_API_URL=https://api.MON-DOMAINE.COM
 # NEXT_PUBLIC_SITE_URL=https://MON-DOMAINE.COM
@@ -480,7 +480,7 @@ npm ci
 npm run build
 # Process manager (PM2) :
 sudo npm i -g pm2
-pm2 start npm --name dkmeuble-front -- start
+pm2 start npm --name dkhometech-front -- start
 pm2 save && pm2 startup
 """,
             sty,
@@ -493,7 +493,7 @@ pm2 save && pm2 startup
     story.append(
         code_block(
             """
-APP_NAME="DK MEUBLE"
+APP_NAME="DK HOMETECH"
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://api.MON-DOMAINE.COM
@@ -521,7 +521,7 @@ MAIL_PORT=587
 MAIL_USERNAME=...
 MAIL_PASSWORD=...
 MAIL_FROM_ADDRESS=noreply@MON-DOMAINE.COM
-MAIL_FROM_NAME="DK MEUBLE"
+MAIL_FROM_NAME="DK HOMETECH"
 
 SMS_DRIVER=log
 # SMS_DRIVER=twilio
@@ -554,7 +554,7 @@ SMS_DRIVER=log
             sty["body"],
         )
     )
-    story.append(Paragraph("Fichier : /etc/nginx/sites-available/dkmeuble", sty["label"]))
+    story.append(Paragraph("Fichier : /etc/nginx/sites-available/dkhometech", sty["label"]))
     story.append(
         code_block(
             """
@@ -587,12 +587,12 @@ server {
 server {
     listen 443 ssl http2;
     server_name api.MON-DOMAINE.COM;
-    root /var/www/dkmeuble/backend/public;
+    root /var/www/dkhometech/backend/public;
     index index.php;
     client_max_body_size 20M;
 
     location ^~ /storage/ {
-        alias /var/www/dkmeuble/backend/storage/app/public/;
+        alias /var/www/dkhometech/backend/storage/app/public/;
         access_log off;
         expires 30d;
     }
@@ -618,7 +618,7 @@ server {
     story.append(
         code_block(
             """
-sudo ln -sf /etc/nginx/sites-available/dkmeuble /etc/nginx/sites-enabled/
+sudo ln -sf /etc/nginx/sites-available/dkhometech /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 """,
             sty,
@@ -648,13 +648,13 @@ sudo certbot renew --dry-run
             sty["body"],
         )
     )
-    story.append(Paragraph("Fichier : /etc/supervisor/conf.d/dkmeuble-worker.conf", sty["label"]))
+    story.append(Paragraph("Fichier : /etc/supervisor/conf.d/dkhometech-worker.conf", sty["label"]))
     story.append(
         code_block(
             """
-[program:dkmeuble-worker]
+[program:dkhometech-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/dkmeuble/backend/artisan queue:work database --sleep=3 --tries=3 --max-time=3600
+command=php /var/www/dkhometech/backend/artisan queue:work database --sleep=3 --tries=3 --max-time=3600
 autostart=true
 autorestart=true
 stopasgroup=true
@@ -662,7 +662,7 @@ killasgroup=true
 user=deploy
 numprocs=1
 redirect_stderr=true
-stdout_logfile=/var/www/dkmeuble/backend/storage/logs/worker.log
+stdout_logfile=/var/www/dkhometech/backend/storage/logs/worker.log
 """,
             sty,
         )
@@ -674,7 +674,7 @@ sudo apt install -y supervisor
 sudo supervisorctl reread && sudo supervisorctl update
 sudo supervisorctl status
 # Cron scheduler :
-(crontab -u deploy -l 2>/dev/null; echo "* * * * * cd /var/www/dkmeuble/backend && php artisan schedule:run >> /dev/null 2>&1") | crontab -u deploy -
+(crontab -u deploy -l 2>/dev/null; echo "* * * * * cd /var/www/dkhometech/backend && php artisan schedule:run >> /dev/null 2>&1") | crontab -u deploy -
 """,
             sty,
         )
@@ -692,7 +692,7 @@ sudo supervisorctl status
     story.append(
         code_block(
             """
-cd /var/www/dkmeuble
+cd /var/www/dkhometech
 cp .env.example .env
 # Éditer APP_KEY, mots de passe MySQL, URLs https, CORS, ADMIN_PASSWORD
 docker compose up -d --build
@@ -708,18 +708,18 @@ docker compose up -d --build
     story.append(
         code_block(
             """
-# /usr/local/bin/backup-dkmeuble.sh
+# /usr/local/bin/backup-dkhometech.sh
 #!/bin/bash
 set -euo pipefail
 STAMP=$(date +%F)
-DEST=/var/backups/dkmeuble/$STAMP
+DEST=/var/backups/dkhometech/$STAMP
 mkdir -p "$DEST"
 mysqldump -u ecommerce_user -p'PASSWORD_SECURISE' ecommerce | gzip > "$DEST/db.sql.gz"
-tar -czf "$DEST/storage.tar.gz" -C /var/www/dkmeuble/backend storage/app/public
+tar -czf "$DEST/storage.tar.gz" -C /var/www/dkhometech/backend storage/app/public
 # Copier .env hors dépôt (permissions 600) vers un stockage chiffré
-find /var/backups/dkmeuble -mtime +14 -type d -exec rm -rf {} +
+find /var/backups/dkhometech -mtime +14 -type d -exec rm -rf {} +
 
-# cron : 0 3 * * * /usr/local/bin/backup-dkmeuble.sh
+# cron : 0 3 * * * /usr/local/bin/backup-dkhometech.sh
 # Restauration DB : gunzip < db.sql.gz | mysql -u ... ecommerce
 """,
             sty,
@@ -731,11 +731,11 @@ find /var/backups/dkmeuble -mtime +14 -type d -exec rm -rf {} +
     story.append(
         code_block(
             """
-tail -f /var/www/dkmeuble/backend/storage/logs/laravel.log
+tail -f /var/www/dkhometech/backend/storage/logs/laravel.log
 tail -f /var/log/nginx/error.log
 tail -f /var/log/php8.3-fpm.log
-sudo supervisorctl tail -f dkmeuble-worker:dkmeuble-worker_00
-pm2 logs dkmeuble-front
+sudo supervisorctl tail -f dkhometech-worker:dkhometech-worker_00
+pm2 logs dkhometech-front
 """,
             sty,
         )
@@ -746,13 +746,13 @@ pm2 logs dkmeuble-front
     story.append(
         code_block(
             """
-cd /var/www/dkmeuble
+cd /var/www/dkhometech
 git pull
 cd backend && composer install --no-dev --optimize-autoloader
 php artisan migrate --force
 php artisan config:cache && php artisan route:cache
-sudo supervisorctl restart dkmeuble-worker:*
-cd ../frontend && npm ci && npm run build && pm2 restart dkmeuble-front
+sudo supervisorctl restart dkhometech-worker:*
+cd ../frontend && npm ci && npm run build && pm2 restart dkhometech-front
 """,
             sty,
         )
@@ -808,8 +808,8 @@ cd ../frontend && npm ci && npm run build && pm2 restart dkmeuble-front
         rightMargin=1.8 * cm,
         topMargin=1.6 * cm,
         bottomMargin=2 * cm,
-        title="DK MEUBLE — Déploiement VPS OVH",
-        author="Analyse projet dk-meuble",
+        title="DK HOMETECH — Déploiement VPS OVH",
+        author="Analyse projet dk-hometech",
     )
     doc.build(story, onFirstPage=footer, onLaterPages=footer)
     print(OUT)

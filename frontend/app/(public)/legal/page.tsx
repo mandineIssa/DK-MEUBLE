@@ -1,9 +1,16 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Mentions légales & CGV" };
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Mentions légales & CGV',
+  description:
+    'Mentions légales et conditions générales de vente — DK HOMETECH.',
+  path: '/legal',
+});
 
 export default async function LegalPage() {
   const settings = await api.getSettings().catch(() => null);

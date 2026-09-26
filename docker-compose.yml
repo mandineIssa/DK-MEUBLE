@@ -27,11 +27,11 @@ services:
       context: ./frontend
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://dkmeuble.sn}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://dkhometech.sn}
         NEXT_PUBLIC_WHATSAPP: ${NEXT_PUBLIC_WHATSAPP:-221770000000}
         NEXT_PUBLIC_PHONE_DISPLAY: ${NEXT_PUBLIC_PHONE_DISPLAY:-+221 77 000 00 00}
         NEXT_PUBLIC_PHONE_TEL: ${NEXT_PUBLIC_PHONE_TEL:-+221770000000}
-        NEXT_PUBLIC_EMAIL: ${NEXT_PUBLIC_EMAIL:-contact@dkmeuble.sn}
+        NEXT_PUBLIC_EMAIL: ${NEXT_PUBLIC_EMAIL:-contact@dkhometech.sn}
     environment:
       - NODE_ENV=production
     expose:
@@ -41,7 +41,7 @@ services:
   backend:
     build: ./backend
     environment:
-      - APP_NAME=DKMEUBLE
+      - APP_NAME=DKHOMETECH
       - APP_ENV=${APP_ENV:-production}
       - APP_DEBUG=${APP_DEBUG:-false}
       - APP_KEY=${APP_KEY}
@@ -60,7 +60,7 @@ services:
       - CORS_ALLOWED_ORIGIN=${CORS_ALLOWED_ORIGIN}
       - RUN_MIGRATIONS=${RUN_MIGRATIONS:-true}
       - RUN_SEED=${RUN_SEED:-false}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@dkmeuble.sn}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@dkhometech.sn}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-password}
       - FILESYSTEM_DISK=public
     expose:

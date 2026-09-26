@@ -69,7 +69,7 @@ class CampaignSender
 
     private function truncateSms(string $body): string
     {
-        $prefix = 'DK MEUBLE: ';
+        $prefix = 'DK HOMETECH: ';
         $max = 160 - strlen($prefix);
         $text = trim($body);
         if (mb_strlen($text) > $max) {

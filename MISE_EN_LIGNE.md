@@ -1,4 +1,4 @@
-# Checklist mise en ligne — DK MEUBLE MVP
+# Checklist mise en ligne — DK HOMETECH MVP
 
 Coche chaque case avant d’annoncer le site au client.
 
@@ -8,13 +8,13 @@ Coche chaque case avant d’annoncer le site au client.
 - [ ] Admin → **Paramètres** : liens Facebook, Instagram, TikTok, YouTube
 - [ ] Admin → **Contenu** : textes Accueil / À propos / Contact / Devis
 - [ ] Photos produits réelles uploadées (Admin → Produits → Photo)
-- [ ] Prix et descriptions validés par DK MEUBLE
+- [ ] Prix et descriptions validés par DK HOMETECH
 - [ ] Admin → **Réalisations** : remplacer les exemples Unsplash par de vrais projets
 - [ ] Carte Google Maps (embed) dans Paramètres
 
 ## 2. Technique serveur
 
-- [ ] DNS : `dkmeuble.sn`, `www.dkmeuble.sn`, `api.dkmeuble.sn` → IP serveur
+- [ ] DNS : `dkhometech.sn`, `www.dkhometech.sn`, `api.dkhometech.sn` → IP serveur
 - [ ] Fichier `.env` (racine) rempli : `APP_KEY`, mots de passe MySQL, CORS https
 - [ ] `APP_DEBUG=false` et `APP_ENV=production`
 - [ ] `ADMIN_PASSWORD` fort (pas `password`)
@@ -51,7 +51,7 @@ Coche chaque case avant d’annoncer le site au client.
 
 | Élément | Valeur |
 |--------|--------|
-| Admin URL | https://dkmeuble.sn/admin/login |
+| Admin URL | https://dkhometech.sn/admin/login |
 | Email admin | |
 | Mot de passe admin | |
 | WhatsApp Business | |

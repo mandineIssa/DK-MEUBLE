@@ -251,9 +251,11 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::delete('/footer/links/{link}', [AdminFooterController::class, 'destroyLink']);
     Route::patch('/footer/links/reorder', [AdminFooterController::class, 'reorderLinks']);
     Route::post('/footer/socials', [AdminFooterController::class, 'upsertSocial']);
+    Route::patch('/footer/socials/reorder', [AdminFooterController::class, 'reorderSocials']);
     Route::delete('/footer/socials/{social}', [AdminFooterController::class, 'destroySocial']);
     Route::post('/footer/payments', [AdminFooterController::class, 'storePayment']);
     Route::post('/footer/payments/{payment}', [AdminFooterController::class, 'updatePayment']);
+    Route::patch('/footer/payments/reorder', [AdminFooterController::class, 'reorderPayments']);
     Route::delete('/footer/payments/{payment}', [AdminFooterController::class, 'destroyPayment']);
     Route::get('/settings/plp', [AdminPlpSettingController::class, 'show']);
     Route::put('/settings/plp', [AdminPlpSettingController::class, 'update']);

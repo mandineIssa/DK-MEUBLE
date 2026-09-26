@@ -1,16 +1,27 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { api } from "@/lib/api";
 import ProductCard from "@/components/ProductCard";
 import VisualSearchResults from "@/components/VisualSearchResults";
 import HomeSearchBar from "@/components/HomeSearchBar";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Nos produits",
-  description:
-    "Catalogue électroménager, meubles, armoires, bureaux et TV à Dakar — DK MEUBLE.",
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: { category?: string; search?: string; visual?: string };
+}): Promise<Metadata> {
+  const isSearch = Boolean(searchParams.search || searchParams.visual === "1");
+  return buildPageMetadata({
+    title: "Nos produits — Meubles & électroménager à Dakar",
+    description:
+      "Catalogue électroménager, meubles, armoires, bureaux et TV à Dakar — DK HOMETECH, livraison Sénégal.",
+    path: "/produits",
+    noIndex: isSearch,
+  });
+}
 
 const fallbackFilters = [
   { slug: "", name: "Tous les produits" },

@@ -70,6 +70,16 @@ const links = [
     ),
   },
   {
+    href: "/admin/theme",
+    label: "Thème",
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/marques",
     label: "Marques",
     icon: (
@@ -313,7 +323,7 @@ export default function AdminSidebar() {
         </span>
         <div>
           <p className="text-sm font-bold">
-            DK <span className="text-brand-orange">MEUBLE</span>
+            DK <span className="text-brand-orange">HOMETECH</span>
           </p>
           <p className="text-[10px] uppercase tracking-wider text-white/50">Admin</p>
         </div>

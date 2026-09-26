@@ -117,7 +117,7 @@ class NotificationAdminController extends Controller
             'product_name' => 'Réfrigérateur 350L',
             'old_price' => '200 000',
             'new_price' => '175 000',
-            'link' => 'https://dkmeuble.sn/produits/exemple',
+            'link' => 'https://dkhometech.sn/produits/exemple',
         ], $data['sample'] ?? []);
 
         return response()->json([

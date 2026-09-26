@@ -39,52 +39,119 @@ export default function ContactForm() {
 
   if (status === "sent") {
     return (
-      <div className="rounded-xl bg-brand-orange/10 p-5 text-brand-black">
-        Votre message a bien été envoyé. Nous vous répondrons rapidement.
+      <div
+        className="rounded-2xl border px-5 py-6"
+        style={{
+          borderColor: "color-mix(in srgb, var(--accent-primary) 35%, transparent)",
+          background: "color-mix(in srgb, var(--accent-primary) 10%, var(--body-bg))",
+          color: "var(--text-primary)",
+        }}
+        role="status"
+      >
+        <p className="text-base font-extrabold">Message envoyé</p>
+        <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+          Merci ! Nous vous répondrons rapidement par téléphone ou email.
+        </p>
       </div>
     );
   }
 
   const inputClass =
-    "w-full rounded-xl border border-brand-black/15 px-3 py-2.5 text-sm outline-none focus:border-brand-orange";
+    "w-full rounded-xl border bg-[var(--body-bg)] px-3.5 py-2.5 text-sm outline-none transition focus:border-[var(--accent-primary)]";
+  const inputStyle = { borderColor: "var(--border-light)", color: "var(--text-primary)" };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm font-medium text-brand-black/70" htmlFor="name">
+          <label
+            className="mb-1.5 block text-sm font-semibold"
+            style={{ color: "var(--text-secondary)" }}
+            htmlFor="contact-name"
+          >
             Nom complet *
           </label>
-          <input id="name" name="name" required className={inputClass} />
+          <input
+            id="contact-name"
+            name="name"
+            autoComplete="name"
+            required
+            className={inputClass}
+            style={inputStyle}
+            placeholder="Votre nom"
+          />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-brand-black/70" htmlFor="phone">
+          <label
+            className="mb-1.5 block text-sm font-semibold"
+            style={{ color: "var(--text-secondary)" }}
+            htmlFor="contact-phone"
+          >
             Téléphone *
           </label>
-          <input id="phone" name="phone" required className={inputClass} />
+          <input
+            id="contact-phone"
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            required
+            className={inputClass}
+            style={inputStyle}
+            placeholder="77 XXX XX XX"
+          />
         </div>
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-brand-black/70" htmlFor="email">
-          Email
+        <label
+          className="mb-1.5 block text-sm font-semibold"
+          style={{ color: "var(--text-secondary)" }}
+          htmlFor="contact-email"
+        >
+          Email <span className="font-normal">(optionnel)</span>
         </label>
-        <input id="email" name="email" type="email" className={inputClass} />
+        <input
+          id="contact-email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          className={inputClass}
+          style={inputStyle}
+          placeholder="vous@email.com"
+        />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-brand-black/70" htmlFor="message">
+        <label
+          className="mb-1.5 block text-sm font-semibold"
+          style={{ color: "var(--text-secondary)" }}
+          htmlFor="contact-message"
+        >
           Message *
         </label>
-        <textarea id="message" name="message" required rows={4} className={inputClass} />
+        <textarea
+          id="contact-message"
+          name="message"
+          required
+          rows={5}
+          className={`${inputClass} resize-y min-h-[120px]`}
+          style={inputStyle}
+          placeholder="Décrivez votre besoin, un produit ou votre n° de commande…"
+        />
       </div>
 
-      {status === "error" && <p className="text-sm text-red-600">{errorMsg}</p>}
+      {status === "error" ? (
+        <p className="text-sm font-medium text-red-600" role="alert">
+          {errorMsg}
+        </p>
+      ) : null}
 
       <button
         type="submit"
         disabled={status === "sending"}
-        className="rounded-full bg-brand-orange px-5 py-3 text-sm font-bold text-white hover:bg-brand-orange-dark disabled:opacity-60"
+        className="inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
+        style={{ background: "var(--accent-primary)" }}
       >
-        {status === "sending" ? "Envoi en cours..." : "Envoyer le message"}
+        {status === "sending" ? "Envoi en cours…" : "Envoyer le message"}
       </button>
     </form>
   );

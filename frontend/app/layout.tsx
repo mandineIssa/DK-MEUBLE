@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
+import { siteBaseUrl, SITE_NAME } from "@/lib/seo";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -8,46 +9,57 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const siteUrl = siteBaseUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "DK MEUBLE — Électroménager et meubles à Dakar",
-    template: "%s | DK MEUBLE",
+    default: `${SITE_NAME} — Meubles, mobilier de bureau et électroménager à Dakar`,
+    template: `%s | ${SITE_NAME}`,
   },
   description:
-    "Électroménager, meubles et armoires à Dakar depuis +10 ans. Devis gratuit, WhatsApp, livraison partout au Sénégal.",
+    "DK HOMETECH : meubles, armoires, mobilier de bureau et électroménager à Dakar. Conseil, devis et livraison partout au Sénégal.",
   keywords: [
+    "meubles Dakar",
     "électroménager Dakar",
-    "meubles Sénégal",
+    "mobilier de bureau Sénégal",
     "armoires Dakar",
-    "DK MEUBLE",
-    "mobilier bureau Dakar",
-    "devis électroménager",
+    "DK HOMETECH",
+    "livraison Sénégal",
   ],
-  authors: [{ name: "DK MEUBLE" }],
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  applicationName: SITE_NAME,
   openGraph: {
     type: "website",
     locale: "fr_SN",
     url: siteUrl,
-    siteName: "DK MEUBLE",
-    title: "DK MEUBLE — Électroménager et meubles à Dakar",
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — Meubles et électroménager à Dakar`,
     description:
-      "Électroménager, meubles et armoires à Dakar. +10 ans d'expérience. Livraison partout au Sénégal.",
+      "Meubles, mobilier de bureau et électroménager à Dakar. Livraison partout au Sénégal.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "DK MEUBLE — Électroménager et meubles à Dakar",
+    title: `${SITE_NAME} — Meubles et électroménager à Dakar`,
     description: "Catalogue, devis WhatsApp, livraison Sénégal.",
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
-  alternates: {
-    canonical: siteUrl,
-  },
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
+  // Pas de canonical global : chaque page définit le sien (évite l’héritage vers l’accueil).
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

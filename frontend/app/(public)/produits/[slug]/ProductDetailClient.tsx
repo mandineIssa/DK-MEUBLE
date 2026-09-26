@@ -96,7 +96,13 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                     }`}
                     title={img.label || img.role || `Photo ${i + 1}`}
                   >
-                    <Image src={imageUrl(img.path)} alt="" fill className="object-cover" sizes="64px" />
+                    <Image
+                      src={imageUrl(img.path)}
+                      alt={`${product.name} — photo ${i + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="64px"
+                    />
                   </button>
                 ))}
               </div>

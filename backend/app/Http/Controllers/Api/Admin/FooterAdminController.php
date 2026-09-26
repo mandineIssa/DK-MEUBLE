@@ -55,6 +55,15 @@ class FooterAdminController extends Controller
             'brands_only_featured' => ['sometimes', 'boolean'],
             'show_brands' => ['sometimes', 'boolean'],
             'columns_count' => ['sometimes', 'integer', 'min:3', 'max:5'],
+            'theme' => ['sometimes', 'array'],
+            'theme.bg_primary' => ['sometimes', 'nullable', 'string', 'max:40'],
+            'theme.bg_secondary' => ['sometimes', 'nullable', 'string', 'max:40'],
+            'theme.text_primary' => ['sometimes', 'nullable', 'string', 'max:40'],
+            'theme.text_secondary' => ['sometimes', 'nullable', 'string', 'max:40'],
+            'theme.text_muted' => ['sometimes', 'nullable', 'string', 'max:40'],
+            'theme.accent' => ['sometimes', 'nullable', 'string', 'max:40'],
+            'theme.link_hover' => ['sometimes', 'nullable', 'string', 'max:40'],
+            'theme.divider' => ['sometimes', 'nullable', 'string', 'max:60'],
         ]);
 
         return response()->json($footer->updateSettings($data));
@@ -261,5 +270,33 @@ class FooterAdminController extends Controller
         $footer->forgetCache();
 
         return response()->json(['message' => 'Logo paiement supprimé']);
+    }
+
+    public function reorderPayments(Request $request, FooterService $footer): JsonResponse
+    {
+        $data = $request->validate([
+            'order' => ['required', 'array'],
+            'order.*' => ['integer'],
+        ]);
+        foreach ($data['order'] as $i => $id) {
+            PaymentMethodLogo::query()->where('id', $id)->update(['display_order' => ($i + 1) * 10]);
+        }
+        $footer->forgetCache();
+
+        return response()->json(['message' => 'Ordre paiements mis à jour']);
+    }
+
+    public function reorderSocials(Request $request, FooterService $footer): JsonResponse
+    {
+        $data = $request->validate([
+            'order' => ['required', 'array'],
+            'order.*' => ['integer'],
+        ]);
+        foreach ($data['order'] as $i => $id) {
+            FooterSocialLink::query()->where('id', $id)->update(['display_order' => ($i + 1) * 10]);
+        }
+        $footer->forgetCache();
+
+        return response()->json(['message' => 'Ordre réseaux mis à jour']);
     }
 }

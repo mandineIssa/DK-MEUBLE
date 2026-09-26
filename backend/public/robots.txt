@@ -1,2 +1,5 @@
+# API Laravel — non destinée à l’indexation Google.
+# Le robots.txt public du site vitrine est servi par Next.js : https://dkhometech.sn/robots.txt
+
 User-agent: *
-Disallow:
+Disallow: /

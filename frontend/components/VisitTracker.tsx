@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -52,19 +52,25 @@ function detectDevice(): "desktop" | "mobile" | "tablet" {
   return "desktop";
 }
 
+/** Anti-spam pageview même si le composant est remonté (Suspense / HMR). */
+let lastTrackedPath = "";
+let lastTrackedAt = 0;
+
 export default function VisitTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const lastPath = useRef<string>("");
+  const qs = searchParams?.toString() || "";
 
   useEffect(() => {
     if (!pathname || pathname.startsWith("/admin")) return;
-    const qs = searchParams?.toString();
     const full = qs ? `${pathname}?${qs}` : pathname;
-    if (lastPath.current === full) return;
-    lastPath.current = full;
+    const now = Date.now();
+    // Ignore doublons / remounts dans les 2 s
+    if (lastTrackedPath === full && now - lastTrackedAt < 2000) return;
+    lastTrackedPath = full;
+    lastTrackedAt = now;
 
-    const params = new URLSearchParams(qs || "");
+    const params = new URLSearchParams(qs);
     const payload = {
       path: pathname,
       title: typeof document !== "undefined" ? document.title : "",
@@ -94,7 +100,7 @@ export default function VisitTracker() {
       window.clearTimeout(t);
       ctrl.abort();
     };
-  }, [pathname, searchParams]);
+  }, [pathname, qs]);
 
   return null;
 }

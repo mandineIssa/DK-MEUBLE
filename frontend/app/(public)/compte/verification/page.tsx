@@ -2,7 +2,7 @@ import OtpForm from "@/components/compte/OtpForm";
 
 export const metadata = {
   title: "Vérification",
-  description: "Saisie du code OTP DK MEUBLE.",
+  description: "Saisie du code OTP DK HOMETECH.",
 };
 
 export default function CompteVerificationPage() {

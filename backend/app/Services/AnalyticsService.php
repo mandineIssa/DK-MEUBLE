@@ -331,7 +331,7 @@ class AnalyticsService
         }
 
         $host = Str::lower((string) parse_url($referrer, PHP_URL_HOST));
-        if ($host === '' || str_contains($host, 'localhost') || str_contains($host, 'dk-meuble') || str_contains($host, '127.0.0.1')) {
+        if ($host === '' || str_contains($host, 'localhost') || str_contains($host, 'dk-hometech') || str_contains($host, '127.0.0.1')) {
             return 'direct';
         }
         if (str_contains($host, 'google.') || str_contains($host, 'bing.') || str_contains($host, 'yahoo.')) {

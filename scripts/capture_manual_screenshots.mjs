@@ -1,5 +1,5 @@
 /**
- * Capture réelle des écrans DK MEUBLE pour les manuels PDF.
+ * Capture réelle des écrans DK HOMETECH pour les manuels PDF.
  * Usage: node scripts/capture_manual_screenshots.mjs
  */
 import { chromium } from "playwright";
@@ -12,7 +12,7 @@ const ROOT = path.resolve(__dirname, "..");
 const FRONT = path.join(ROOT, "docs", "manuals", "screenshots", "front");
 const ADMIN = path.join(ROOT, "docs", "manuals", "screenshots", "admin");
 const BASE = process.env.SITE_URL || "http://localhost:3000";
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@dkmeuble.sn";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@dkhometech.sn";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "password";
 
 fs.mkdirSync(FRONT, { recursive: true });

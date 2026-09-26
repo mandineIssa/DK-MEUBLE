@@ -46,9 +46,10 @@ export default function CategoryMegaMenu({
         onClick={() => setOpen((v) => !v)}
         className={
           variant === "nav"
-            ? "flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-white hover:text-brand-orange xl:text-xs"
-            : "flex items-center gap-1.5 rounded-full bg-brand-orange px-3 py-1.5 text-xs font-bold text-white"
+            ? "flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-[var(--text-primary)] hover:text-[var(--accent-primary)] xl:text-xs"
+            : "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white"
         }
+        style={variant !== "nav" ? { background: "var(--accent-primary)" } : undefined}
         aria-expanded={open}
       >
         {variant === "nav" ? (

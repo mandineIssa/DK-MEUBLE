@@ -5,9 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { customerApi } from "@/lib/customerApi";
 
+type Channel = "phone" | "email";
+
 export default function OtpForm() {
   const router = useRouter();
+  const [channel, setChannel] = useState<Channel>("phone");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [debugCode, setDebugCode] = useState("");
   const [error, setError] = useState("");
@@ -16,12 +20,22 @@ export default function OtpForm() {
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
+    const ch = (sessionStorage.getItem("dk_otp_channel") || "phone") as Channel;
     const p = sessionStorage.getItem("dk_otp_phone") || "";
-    if (!p) {
+    const e = sessionStorage.getItem("dk_otp_email") || "";
+
+    if (ch === "email" && !e) {
       router.replace("/compte/connexion");
       return;
     }
+    if (ch !== "email" && !p) {
+      router.replace("/compte/connexion");
+      return;
+    }
+
+    setChannel(ch === "email" ? "email" : "phone");
     setPhone(p);
+    setEmail(e);
     const dbg = sessionStorage.getItem("dk_otp_debug") || "";
     if (dbg) {
       setDebugCode(dbg);
@@ -49,6 +63,13 @@ export default function OtpForm() {
     }
   }
 
+  function clearSession() {
+    sessionStorage.removeItem("dk_otp_phone");
+    sessionStorage.removeItem("dk_otp_email");
+    sessionStorage.removeItem("dk_otp_channel");
+    sessionStorage.removeItem("dk_otp_debug");
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const code = digits.join("");
@@ -59,9 +80,12 @@ export default function OtpForm() {
     setLoading(true);
     setError("");
     try {
-      const res = await customerApi.verifyOtp(phone, code);
-      sessionStorage.removeItem("dk_otp_phone");
-      sessionStorage.removeItem("dk_otp_debug");
+      if (channel === "email") {
+        await customerApi.verifyOtp({ email, code });
+      } else {
+        await customerApi.verifyOtp({ phone, code });
+      }
+      clearSession();
       router.push("/compte");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Code invalide.");
@@ -71,10 +95,13 @@ export default function OtpForm() {
   }
 
   async function resend() {
-    if (cooldown > 0 || !phone) return;
+    if (cooldown > 0) return;
     setError("");
     try {
-      const res = await customerApi.requestOtp(phone);
+      const res =
+        channel === "email"
+          ? await customerApi.requestOtp({ email })
+          : await customerApi.requestOtp({ phone });
       setCooldown(60);
       if (res.debug_code) {
         sessionStorage.setItem("dk_otp_debug", res.debug_code);
@@ -91,19 +118,27 @@ export default function OtpForm() {
     }
   }
 
+  const targetLabel =
+    channel === "email" ? (
+      <span className="font-semibold text-brand-black">{email}</span>
+    ) : (
+      <span className="font-semibold text-brand-black">+{phone}</span>
+    );
+
   return (
     <div className="mx-auto w-full max-w-md">
       <form onSubmit={onSubmit} className="space-y-5 rounded-2xl bg-white p-6 shadow-sm">
         <div>
           <h1 className="text-xl font-extrabold text-brand-black">Code de vérification</h1>
           <p className="mt-1 text-sm text-brand-black/60">
-            Entrez le code à 6 chiffres envoyé au{" "}
-            <span className="font-semibold text-brand-black">+{phone}</span>
+            Entrez le code à 6 chiffres envoyé {channel === "email" ? "à" : "au"} {targetLabel}
           </p>
           {debugCode ? (
             <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              <span className="font-bold">Mode test</span> — aucun SMS réel.
-              Code : <span className="font-mono text-base font-extrabold tracking-widest">{debugCode}</span>
+              <span className="font-bold">Mode test</span> —{" "}
+              {channel === "email" ? "e-mail non réellement envoyé" : "aucun SMS réel"}.
+              Code :{" "}
+              <span className="font-mono text-base font-extrabold tracking-widest">{debugCode}</span>
             </p>
           ) : null}
         </div>
@@ -125,7 +160,7 @@ export default function OtpForm() {
           ))}
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
         <button
           type="submit"
@@ -147,7 +182,7 @@ export default function OtpForm() {
 
       <p className="mt-4 text-center text-sm">
         <Link href="/compte/connexion" className="font-semibold text-brand-black/60">
-          ← Changer de numéro
+          ← Changer de méthode
         </Link>
       </p>
     </div>

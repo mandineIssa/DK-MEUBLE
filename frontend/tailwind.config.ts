@@ -6,22 +6,25 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          black: "#0B0B0B",
+          black: "var(--text-primary, #1a1a1a)",
           dark: "#141414",
-          orange: "#FF7A00",
-          "orange-dark": "#E66A00",
+          orange: "var(--accent-primary, #f68b1e)",
+          "orange-dark": "var(--accent-primary-hover, #e07d16)",
         },
         ink: "#1C1C1A",
         graphite: "#5F5E5A",
         mist: "#F1EFE8",
         accent: {
-          DEFAULT: "#FF7A00",
-          dark: "#E66A00",
+          DEFAULT: "var(--accent-primary, #f68b1e)",
+          dark: "var(--accent-primary-hover, #e07d16)",
         },
         whatsapp: "#25D366",
       },
       fontFamily: {
         sans: ["var(--font-montserrat)", "system-ui", "sans-serif"],
+      },
+      boxShadow: {
+        header: "0 1px 3px rgba(0,0,0,0.1)",
       },
     },
   },
