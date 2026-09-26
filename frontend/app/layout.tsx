@@ -20,11 +20,14 @@ export const metadata: Metadata = {
   description:
     "DK HOMETECH : meubles, armoires, mobilier de bureau et électroménager à Dakar. Conseil, devis et livraison partout au Sénégal.",
   keywords: [
+    "DK HOMETECH",
+    "dkhometech",
+    "DKHOMETECH",
+    "dkhometech.sn",
     "meubles Dakar",
     "électroménager Dakar",
     "mobilier de bureau Sénégal",
     "armoires Dakar",
-    "DK HOMETECH",
     "livraison Sénégal",
   ],
   authors: [{ name: SITE_NAME }],

@@ -106,6 +106,8 @@ export function buildOrganizationSchema(site: SiteInfo) {
     "@context": "https://schema.org",
     "@type": ["Organization", "FurnitureStore", "LocalBusiness"],
     name: site.name || SITE_NAME,
+    alternateName: ["DKHOMETECH", "DK HomeTech", "dkhometech", "DK Home Tech"],
+    legalName: site.name || SITE_NAME,
     url: absoluteUrl("/"),
     logo: logo || undefined,
     email: site.email || undefined,
@@ -128,6 +130,11 @@ export function buildOrganizationSchema(site: SiteInfo) {
       { "@type": "Country", name: "Sénégal" },
     ],
     sameAs: sameAs.length ? sameAs : undefined,
+    brand: {
+      "@type": "Brand",
+      name: SITE_NAME,
+      alternateName: ["DKHOMETECH", "dkhometech"],
+    },
   };
 }
 
@@ -136,8 +143,10 @@ export function buildWebSiteSchema() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE_NAME,
+    alternateName: ["DKHOMETECH", "dkhometech.sn"],
     url: absoluteUrl("/"),
     inLanguage: "fr-SN",
+    publisher: { "@type": "Organization", name: SITE_NAME },
     potentialAction: {
       "@type": "SearchAction",
       target: {
