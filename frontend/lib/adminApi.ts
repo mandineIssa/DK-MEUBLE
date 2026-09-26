@@ -103,13 +103,36 @@ function getCookie(name: string): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+const ADMIN_TOKEN_KEY = "dk_admin_token";
+
+function getAdminToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return sessionStorage.getItem(ADMIN_TOKEN_KEY);
+}
+
+function setAdminToken(token: string | null) {
+  if (typeof window === "undefined") return;
+  if (token) sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
+  else sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+}
+
+function authHeaders(extra?: Record<string, string>): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    ...extra,
+  };
+  const xsrf = getCookie("XSRF-TOKEN");
+  if (xsrf) headers["X-XSRF-TOKEN"] = xsrf;
+  const token = getAdminToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+
 async function ensureCsrf(): Promise<void> {
   await fetch(`${API_URL}/sanctum/csrf-cookie`, {
     credentials: "include",
   });
-  // Le cookie XSRF-TOKEN doit être lisible sur le domaine front (SESSION_DOMAIN=.dkhometech.sn).
   if (!getCookie("XSRF-TOKEN")) {
-    // Petit délai pour certains navigateurs qui appliquent Set-Cookie après la promesse.
     await new Promise((r) => setTimeout(r, 50));
   }
   if (!getCookie("XSRF-TOKEN")) {
@@ -120,14 +143,10 @@ async function ensureCsrf(): Promise<void> {
 }
 
 async function adminRequest<T>(path: string, options?: RequestInit): Promise<T> {
-  const headers: Record<string, string> = {
+  const headers = authHeaders({
     "Content-Type": "application/json",
-    Accept: "application/json",
     ...(options?.headers as Record<string, string> | undefined),
-  };
-
-  const xsrf = getCookie("XSRF-TOKEN");
-  if (xsrf) headers["X-XSRF-TOKEN"] = xsrf;
+  });
 
   const res = await fetch(`${API_URL}${path}`, {
     credentials: "include",
@@ -136,6 +155,7 @@ async function adminRequest<T>(path: string, options?: RequestInit): Promise<T> 
   });
 
   if (res.status === 401) {
+    setAdminToken(null);
     if (typeof window !== "undefined") window.location.href = "/admin/login";
     throw new Error("Session expirée, veuillez vous reconnecter.");
   }
@@ -162,14 +182,21 @@ async function adminRequest<T>(path: string, options?: RequestInit): Promise<T> 
 export const adminApi = {
   async login(email: string, password: string) {
     await ensureCsrf();
-    return adminRequest<{ message: string }>("/api/admin/login", {
+    const res = await adminRequest<{ message: string; token?: string }>("/api/admin/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
+    if (res.token) setAdminToken(res.token);
+    return res;
   },
 
-  logout: () => adminRequest("/api/admin/logout", { method: "POST" }),
-
+  async logout() {
+    try {
+      await adminRequest("/api/admin/logout", { method: "POST" });
+    } finally {
+      setAdminToken(null);
+    }
+  },
   getProducts: async (params?: { light?: boolean; all?: boolean; per_page?: number; q?: string; page?: number }) => {
     const qs = new URLSearchParams();
     if (params?.light) qs.set("light", "1");
@@ -218,9 +245,7 @@ export const adminApi = {
     }
     if (meta?.role) body.append("role", meta.role);
     if (meta?.label) body.append("label", meta.label);
-    const headers: Record<string, string> = { Accept: "application/json" };
-    const xsrf = getCookie("XSRF-TOKEN");
-    if (xsrf) headers["X-XSRF-TOKEN"] = xsrf;
+    const headers = authHeaders();
 
     const res = await fetch(`${API_URL}/api/admin/products/${id}/images`, {
       method: "POST",
@@ -230,6 +255,7 @@ export const adminApi = {
     });
 
     if (res.status === 401) {
+      setAdminToken(null);
       if (typeof window !== "undefined") window.location.href = "/admin/login";
       throw new Error("Session expirée, veuillez vous reconnecter.");
     }
@@ -271,9 +297,7 @@ export const adminApi = {
     else files.forEach((f) => body.append("images[]", f));
     if (meta?.role) body.append("role", meta.role);
     if (meta?.label) body.append("label", meta.label);
-    const headers: Record<string, string> = { Accept: "application/json" };
-    const xsrf = getCookie("XSRF-TOKEN");
-    if (xsrf) headers["X-XSRF-TOKEN"] = xsrf;
+    const headers = authHeaders();
     const res = await fetch(`${API_URL}/api/admin/${type}/${id}/media`, {
       method: "POST",
       credentials: "include",
@@ -281,6 +305,7 @@ export const adminApi = {
       body,
     });
     if (res.status === 401) {
+      setAdminToken(null);
       if (typeof window !== "undefined") window.location.href = "/admin/login";
       throw new Error("Session expirée, veuillez vous reconnecter.");
     }
@@ -380,9 +405,7 @@ export const adminApi = {
     await ensureCsrf();
     const body = new FormData();
     body.append("logo", file);
-    const headers: Record<string, string> = { Accept: "application/json" };
-    const xsrf = getCookie("XSRF-TOKEN");
-    if (xsrf) headers["X-XSRF-TOKEN"] = xsrf;
+    const headers = authHeaders();
 
     const res = await fetch(`${API_URL}/api/admin/settings/logo`, {
       method: "POST",
@@ -392,6 +415,7 @@ export const adminApi = {
     });
 
     if (res.status === 401) {
+      setAdminToken(null);
       if (typeof window !== "undefined") window.location.href = "/admin/login";
       throw new Error("Session expirée, veuillez vous reconnecter.");
     }
@@ -579,14 +603,13 @@ export const adminApi = {
     }),
   async downloadOrderReceipt(id: number, reference: string) {
     await ensureCsrf();
-    const headers: Record<string, string> = { Accept: "application/pdf" };
-    const xsrf = getCookie("XSRF-TOKEN");
-    if (xsrf) headers["X-XSRF-TOKEN"] = xsrf;
+    const headers = authHeaders({ Accept: "application/pdf" });
     const res = await fetch(`${API_URL}/api/admin/orders/${id}/receipt`, {
       credentials: "include",
       headers,
     });
     if (res.status === 401) {
+      setAdminToken(null);
       if (typeof window !== "undefined") window.location.href = "/admin/login";
       throw new Error("Session expirée, veuillez vous reconnecter.");
     }
@@ -722,16 +745,18 @@ export const adminApi = {
     const body = new FormData();
     body.append("image", file);
     body.append("kind", kind);
-    const headers: Record<string, string> = { Accept: "application/json" };
-    const xsrf = getCookie("XSRF-TOKEN");
-    if (xsrf) headers["X-XSRF-TOKEN"] = xsrf;
+    const headers = authHeaders();
     const res = await fetch(`${API_URL}/api/admin/homepage/upload`, {
       method: "POST",
       credentials: "include",
       headers,
       body,
     });
-    if (!res.ok) {
+    if (res.status === 401) {
+      setAdminToken(null);
+      if (typeof window !== "undefined") window.location.href = "/admin/login";
+      throw new Error("Session expirée, veuillez vous reconnecter.");
+    }    if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.message || "Échec de l'upload.");
     }
@@ -812,14 +837,13 @@ export const adminApi = {
       kind === "template"
         ? "/api/admin/products/import-template"
         : "/api/admin/products/export";
-    const headers: Record<string, string> = { Accept: "text/csv" };
-    const xsrf = getCookie("XSRF-TOKEN");
-    if (xsrf) headers["X-XSRF-TOKEN"] = xsrf;
+    const headers = authHeaders({ Accept: "text/csv" });
     const res = await fetch(`${API_URL}${path}`, {
       credentials: "include",
       headers,
     });
     if (res.status === 401) {
+      setAdminToken(null);
       if (typeof window !== "undefined") window.location.href = "/admin/login";
       throw new Error("Session expirée, veuillez vous reconnecter.");
     }
@@ -842,9 +866,7 @@ export const adminApi = {
     await ensureCsrf();
     const body = new FormData();
     body.append("file", file);
-    const headers: Record<string, string> = { Accept: "application/json" };
-    const xsrf = getCookie("XSRF-TOKEN");
-    if (xsrf) headers["X-XSRF-TOKEN"] = xsrf;
+    const headers = authHeaders();
     const res = await fetch(`${API_URL}/api/admin/products/import`, {
       method: "POST",
       credentials: "include",
@@ -852,6 +874,7 @@ export const adminApi = {
       body,
     });
     if (res.status === 401) {
+      setAdminToken(null);
       if (typeof window !== "undefined") window.location.href = "/admin/login";
       throw new Error("Session expirée, veuillez vous reconnecter.");
     }
@@ -1009,16 +1032,18 @@ export const adminApi = {
     const body = new FormData();
     body.append("name", name);
     body.append("logo", file);
-    const headers: Record<string, string> = { Accept: "application/json" };
-    const xsrf = getCookie("XSRF-TOKEN");
-    if (xsrf) headers["X-XSRF-TOKEN"] = xsrf;
+    const headers = authHeaders();
     const res = await fetch(`${API_URL}/api/admin/footer/payments`, {
       method: "POST",
       credentials: "include",
       headers,
       body,
     });
-    if (!res.ok) {
+    if (res.status === 401) {
+      setAdminToken(null);
+      if (typeof window !== "undefined") window.location.href = "/admin/login";
+      throw new Error("Session expirée, veuillez vous reconnecter.");
+    }    if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.message || "Upload paiement échoué");
     }
