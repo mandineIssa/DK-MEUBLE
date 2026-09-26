@@ -129,16 +129,11 @@ function authHeaders(extra?: Record<string, string>): Record<string, string> {
 }
 
 async function ensureCsrf(): Promise<void> {
-  await fetch(`${API_URL}/sanctum/csrf-cookie`, {
-    credentials: "include",
-  });
-  if (!getCookie("XSRF-TOKEN")) {
-    await new Promise((r) => setTimeout(r, 50));
-  }
-  if (!getCookie("XSRF-TOKEN")) {
-    throw new Error(
-      "Connexion impossible (CSRF). Vérifiez SESSION_DOMAIN=.dkhometech.sn sur l’API, puis rechargez la page."
-    );
+  // Admin utilise Bearer : CSRF optionnel (SPA cross-subdomain).
+  try {
+    await fetch(`${API_URL}/sanctum/csrf-cookie`, { credentials: "include" });
+  } catch {
+    // ignore
   }
 }
 
@@ -181,12 +176,15 @@ async function adminRequest<T>(path: string, options?: RequestInit): Promise<T> 
 
 export const adminApi = {
   async login(email: string, password: string) {
-    await ensureCsrf();
+    // Login exempté CSRF (SPA cross-subdomain) → token Bearer ensuite
     const res = await adminRequest<{ message: string; token?: string }>("/api/admin/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
-    if (res.token) setAdminToken(res.token);
+    if (!res.token) {
+      throw new Error("Connexion refusée : jeton manquant. Redéployez le backend.");
+    }
+    setAdminToken(res.token);
     return res;
   },
 
@@ -196,8 +194,7 @@ export const adminApi = {
     } finally {
       setAdminToken(null);
     }
-  },
-  getProducts: async (params?: { light?: boolean; all?: boolean; per_page?: number; q?: string; page?: number }) => {
+  },  getProducts: async (params?: { light?: boolean; all?: boolean; per_page?: number; q?: string; page?: number }) => {
     const qs = new URLSearchParams();
     if (params?.light) qs.set("light", "1");
     if (params?.all) qs.set("all", "1");

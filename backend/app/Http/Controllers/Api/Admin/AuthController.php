@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -18,16 +20,16 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials)) {
+        /** @var User|null $user */
+        $user = User::query()->where('email', $credentials['email'])->first();
+
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['Identifiants incorrects.'],
             ]);
         }
 
-        $request->session()->regenerate();
-
-        $user = $request->user();
-        // Un seul jeton admin actif par utilisateur (évite l'accumulation)
+        // Auth par jeton Bearer (fiable entre dkhometech.sn et api.dkhometech.sn)
         $user->tokens()->where('name', 'admin-spa')->delete();
         $token = $user->createToken('admin-spa')->plainTextToken;
 

@@ -25,8 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
             return '/compte/connexion';
         });
 
-        // Formulaires publics : pas de cookie CSRF côté navigateur (SPA cross-origin)
+        // Admin : auth Bearer (pas de cookie CSRF cross-subdomain)
         $middleware->validateCsrfTokens(except: [
+            'api/admin',
+            'api/admin/*',
             'api/contact',
             'api/quotes',
             'api/newsletter',
