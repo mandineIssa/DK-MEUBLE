@@ -28,7 +28,6 @@ export default function AuthRequiredModal({
   const [local, setLocal] = useState("");
   const [phone, setPhone] = useState("");
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
-  const [debugCode, setDebugCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
@@ -37,7 +36,6 @@ export default function AuthRequiredModal({
     if (!open) {
       setStep("phone");
       setError("");
-      setDebugCode("");
       setDigits(["", "", "", "", "", ""]);
       return;
     }
@@ -62,11 +60,8 @@ export default function AuthRequiredModal({
     setLoading(true);
     try {
       const res = await customerApi.requestOtp({ phone: full });
-      setPhone(full);
-      setDebugCode(res.debug_code || "");
-      if (res.debug_code) {
-        setDigits(res.debug_code.split("").slice(0, 6));
-      }
+      setPhone(res.phone || full);
+      setDigits(["", "", "", "", "", ""]);
       setStep("otp");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Impossible d'envoyer le code.");
@@ -182,12 +177,6 @@ export default function AuthRequiredModal({
             <p className="text-sm text-brand-black/60">
               Code envoyé au <span className="font-semibold">+{phone}</span>
             </p>
-            {debugCode ? (
-              <p className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                <span className="font-bold">Mode test</span> — aucun SMS réel.
-                Code : <span className="font-mono text-base font-extrabold tracking-widest">{debugCode}</span>
-              </p>
-            ) : null}
             <div className="flex justify-between gap-2">
               {digits.map((d, i) => (
                 <input

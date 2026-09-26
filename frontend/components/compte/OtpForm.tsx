@@ -13,7 +13,6 @@ export default function OtpForm() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
-  const [debugCode, setDebugCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(60);
@@ -23,6 +22,7 @@ export default function OtpForm() {
     const ch = (sessionStorage.getItem("dk_otp_channel") || "phone") as Channel;
     const p = sessionStorage.getItem("dk_otp_phone") || "";
     const e = sessionStorage.getItem("dk_otp_email") || "";
+    sessionStorage.removeItem("dk_otp_debug");
 
     if (ch === "email" && !e) {
       router.replace("/compte/connexion");
@@ -36,11 +36,6 @@ export default function OtpForm() {
     setChannel(ch === "email" ? "email" : "phone");
     setPhone(p);
     setEmail(e);
-    const dbg = sessionStorage.getItem("dk_otp_debug") || "";
-    if (dbg) {
-      setDebugCode(dbg);
-      setDigits(dbg.split("").slice(0, 6));
-    }
   }, [router]);
 
   useEffect(() => {
@@ -98,21 +93,14 @@ export default function OtpForm() {
     if (cooldown > 0) return;
     setError("");
     try {
-      const res =
-        channel === "email"
-          ? await customerApi.requestOtp({ email })
-          : await customerApi.requestOtp({ phone });
-      setCooldown(60);
-      if (res.debug_code) {
-        sessionStorage.setItem("dk_otp_debug", res.debug_code);
-        setDebugCode(res.debug_code);
-        setDigits(res.debug_code.split("").slice(0, 6));
+      if (channel === "email") {
+        await customerApi.requestOtp({ email });
       } else {
-        sessionStorage.removeItem("dk_otp_debug");
-        setDebugCode("");
-        setDigits(["", "", "", "", "", ""]);
-        inputs.current[0]?.focus();
+        await customerApi.requestOtp({ phone });
       }
+      setCooldown(60);
+      setDigits(["", "", "", "", "", ""]);
+      inputs.current[0]?.focus();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec du renvoi.");
     }
@@ -133,14 +121,6 @@ export default function OtpForm() {
           <p className="mt-1 text-sm text-brand-black/60">
             Entrez le code à 6 chiffres envoyé {channel === "email" ? "à" : "au"} {targetLabel}
           </p>
-          {debugCode ? (
-            <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              <span className="font-bold">Mode test</span> —{" "}
-              {channel === "email" ? "e-mail non réellement envoyé" : "aucun SMS réel"}.
-              Code :{" "}
-              <span className="font-mono text-base font-extrabold tracking-widest">{debugCode}</span>
-            </p>
-          ) : null}
         </div>
 
         <div className="flex justify-between gap-2">

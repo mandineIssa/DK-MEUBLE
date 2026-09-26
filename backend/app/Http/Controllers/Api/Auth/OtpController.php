@@ -34,10 +34,9 @@ class OtpController extends Controller
                 'email' => $email,
             ];
 
-            $mailer = config('mail.default');
-            if (app()->environment('local') || in_array($mailer, ['log', 'array'], true)) {
+            // Jamais en production : le code ne doit jamais apparaître dans l’API.
+            if (app()->environment('local') && config('app.debug')) {
                 $payload['debug_code'] = $plain;
-                $payload['message'] = 'Mode test : e-mail non réellement envoyé (MAIL_MAILER=log). Utilisez le code affiché.';
             }
 
             return response()->json($payload);
@@ -52,10 +51,8 @@ class OtpController extends Controller
             'phone' => $phone,
         ];
 
-        $smsDriver = config('services.sms.driver', env('SMS_DRIVER', 'log'));
-        if (app()->environment('local') || $smsDriver === 'log') {
+        if (app()->environment('local') && config('app.debug')) {
             $payload['debug_code'] = $plain;
-            $payload['message'] = 'Mode test : aucun SMS réel (SMS_DRIVER=log). Utilisez le code affiché.';
         }
 
         return response()->json($payload);

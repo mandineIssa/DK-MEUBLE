@@ -33,8 +33,7 @@ export default function LoginForm() {
       sessionStorage.setItem("dk_otp_channel", "phone");
       sessionStorage.setItem("dk_otp_phone", res.phone || phone);
       sessionStorage.removeItem("dk_otp_email");
-      if (res.debug_code) sessionStorage.setItem("dk_otp_debug", res.debug_code);
-      else sessionStorage.removeItem("dk_otp_debug");
+      sessionStorage.removeItem("dk_otp_debug");
       router.push("/compte/verification");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Impossible d'envoyer le code.");
