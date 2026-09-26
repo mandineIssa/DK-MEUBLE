@@ -855,9 +855,21 @@ class SiteContentService
 
     public function allSettings(): array
     {
-        return Cache::remember('site:settings:v2', 600, function () {
+        try {
+            return Cache::remember('site:settings:v2', 600, function () {
+                return $this->buildAllSettings();
+            });
+        } catch (\Throwable $e) {
+            // Cache fichier corrompu / JSON invalide → reconstruit sans cache
+            report($e);
+            try {
+                Cache::forget('site:settings:v2');
+            } catch (\Throwable) {
+                // ignore
+            }
+
             return $this->buildAllSettings();
-        });
+        }
     }
 
     public function forgetSettingsCache(): void
@@ -869,14 +881,29 @@ class SiteContentService
     protected function buildAllSettings(): array
     {
         $defaults = self::defaultSettings();
-        $stored = Setting::query()->pluck('value', 'key')->all();
+        $stored = [];
+
+        // Lecture défensive : une ligne JSON invalide ne doit pas faire planter toute l'API
+        foreach (Setting::query()->select(['key', 'value'])->cursor() as $row) {
+            try {
+                $stored[$row->key] = $row->value;
+            } catch (\Throwable) {
+                $raw = $row->getAttributes()['value'] ?? null;
+                if (is_string($raw)) {
+                    $decoded = json_decode($raw, true);
+                    $stored[$row->key] = json_last_error() === JSON_ERROR_NONE ? $decoded : null;
+                } else {
+                    $stored[$row->key] = null;
+                }
+            }
+        }
 
         $out = [];
         foreach ($defaults as $key => $default) {
             $value = $stored[$key] ?? $default;
             $out[$key] = is_array($default) && is_array($value)
                 ? array_replace_recursive($default, $value)
-                : $value;
+                : (is_array($default) ? $default : $value);
         }
 
         foreach ($stored as $key => $value) {

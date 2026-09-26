@@ -12,7 +12,11 @@ final class PublicCache
     public static function json(mixed $data, int $maxAge = 60, int $swr = 300): JsonResponse
     {
         return response()
-            ->json($data)
-            ->header('Cache-Control', "public, max-age={$maxAge}, stale-while-revalidate={$swr}");
+            ->json(
+                $data,
+                200,
+                ['Cache-Control' => "public, max-age={$maxAge}, stale-while-revalidate={$swr}"],
+                JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE
+            );
     }
 }

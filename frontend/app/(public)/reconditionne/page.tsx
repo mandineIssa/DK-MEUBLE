@@ -122,8 +122,8 @@ export default async function ReconditionnePage() {
               className="text-sm font-bold hover:underline"
               style={{ color: "var(--accent-primary)" }}
             >
-              Voir aussi le déstockage →
-            </Link>
+            Voir aussi le déstockage →
+          </Link>
             <Link
               href="/promotions"
               className="text-sm font-semibold hover:underline"
@@ -175,9 +175,9 @@ export default async function ReconditionnePage() {
               </Link>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {products.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
+        {products.map((p) => (
+          <ProductCard key={p.id} product={p} />
+        ))}
             </div>
           </section>
         ) : (

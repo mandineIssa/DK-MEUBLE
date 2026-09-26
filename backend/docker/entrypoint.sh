@@ -5,7 +5,9 @@ cd /var/www
 
 # Droits storage / cache
 mkdir -p storage/framework/{cache,sessions,views} storage/logs storage/app/public bootstrap/cache
+touch storage/logs/laravel.log || true
 chown -R www-data:www-data storage bootstrap/cache || true
+chmod -R ug+rwx storage bootstrap/cache || true
 
 # Lien public pour les uploads
 php artisan storage:link --force 2>/dev/null || true
@@ -25,13 +27,8 @@ php artisan route:cache || true
 php artisan view:cache || true
 php artisan event:cache || true
 
-# Préchauffe des caches publics (évite le 1er visiteur lent)
-php artisan tinker --execute="
-try { app(\\App\\Services\\SiteContentService::class)->allSettings(); } catch (Throwable \$e) {}
-try { app(\\App\\Services\\NavigationService::class)->assemble(); } catch (Throwable \$e) {}
-try { app(\\App\\Services\\HomepageService::class)->assemble(); } catch (Throwable \$e) {}
-try { app(\\App\\Services\\FooterService::class)->assemble(); } catch (Throwable \$e) {}
-" 2>/dev/null || true
+# Nettoie un éventuel cache fichier corrompu après changement de driver
+php artisan cache:clear || true
 
 php-fpm -D
 exec nginx -g "daemon off;"

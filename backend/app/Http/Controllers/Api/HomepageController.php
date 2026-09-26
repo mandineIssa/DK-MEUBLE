@@ -33,10 +33,24 @@ class HomepageController extends Controller
             'email' => ['required', 'email', 'max:190'],
         ]);
 
-        NewsletterSubscriber::query()->updateOrCreate(
-            ['email' => strtolower(trim($data['email']))],
-            ['source' => 'homepage', 'subscribed_at' => now()]
-        );
+        try {
+            if (! \Illuminate\Support\Facades\Schema::hasTable('newsletter_subscribers')) {
+                return response()->json([
+                    'message' => 'Service newsletter indisponible. Lancez les migrations sur le serveur.',
+                ], 503);
+            }
+
+            NewsletterSubscriber::query()->updateOrCreate(
+                ['email' => strtolower(trim($data['email']))],
+                ['source' => 'homepage', 'subscribed_at' => now()]
+            );
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'message' => 'Impossible d’enregistrer l’inscription pour le moment. Réessayez plus tard.',
+            ], 500);
+        }
 
         return response()->json(['message' => 'Inscription enregistrée. Merci !']);
     }
