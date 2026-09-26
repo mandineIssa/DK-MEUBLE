@@ -25,9 +25,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const homepage = await api.getHomepage().catch(() => null);
+  const [homepage, settings] = await Promise.all([
+    api.getHomepage().catch(() => null),
+    api.getSettings().catch(() => null),
+  ]);
   const sections = homepage?.sections || [];
-  const settings = await api.getSettings().catch(() => null);
   const useAlt = settings?.theme?.use_alt_bg_sections !== false;
 
   let altIndex = 0;

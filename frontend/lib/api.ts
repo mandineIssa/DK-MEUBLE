@@ -441,7 +441,7 @@ async function request<T>(
   };
 
   if (!isBrowser && init.cache !== "no-store") {
-    Object.assign(init, { next: { revalidate: 30 } });
+    Object.assign(init, { next: { revalidate: 60 } });
   }
 
   const res = await fetch(url, init);
@@ -454,8 +454,136 @@ async function request<T>(
   return res.json();
 }
 
+const NAV_STORAGE_KEY = "dk_nav_menu_v1";
+let navigationMemory: NavigationPayload | null = null;
+let navigationInflight: Promise<NavigationPayload> | null = null;
+
+/** Un seul fetch partagé (desktop + mobile) + cache mémoire / session. */
+async function fetchNavigation(): Promise<NavigationPayload> {
+  if (navigationMemory?.sections?.length) {
+    return navigationMemory;
+  }
+
+  if (typeof window !== "undefined") {
+    try {
+      const raw = sessionStorage.getItem(NAV_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as NavigationPayload;
+        if (parsed?.sections?.length) {
+          navigationMemory = parsed;
+          return parsed;
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  if (!navigationInflight) {
+    navigationInflight = request<NavigationPayload>("/api/navigation")
+      .then((data) => {
+        navigationMemory = data;
+        if (typeof window !== "undefined" && data?.sections?.length) {
+          try {
+            sessionStorage.setItem(NAV_STORAGE_KEY, JSON.stringify(data));
+          } catch {
+            /* ignore */
+          }
+        }
+        return data;
+      })
+      .finally(() => {
+        navigationInflight = null;
+      });
+  }
+
+  return navigationInflight;
+}
+
+const HOME_STORAGE_KEY = "dk_homepage_v1";
+let homepageMemory: HomepagePayload | null = null;
+let homepageInflight: Promise<HomepagePayload> | null = null;
+
+async function fetchHomepage(): Promise<HomepagePayload> {
+  if (homepageMemory?.sections) {
+    return homepageMemory;
+  }
+  if (typeof window !== "undefined") {
+    try {
+      const raw = sessionStorage.getItem(HOME_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as HomepagePayload & { _at?: number };
+        if (parsed?.sections && parsed._at && Date.now() - parsed._at < 120_000) {
+          homepageMemory = parsed;
+          return parsed;
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  if (!homepageInflight) {
+    homepageInflight = request<HomepagePayload>("/api/homepage")
+      .then((data) => {
+        homepageMemory = data;
+        if (typeof window !== "undefined") {
+          try {
+            sessionStorage.setItem(HOME_STORAGE_KEY, JSON.stringify({ ...data, _at: Date.now() }));
+          } catch {
+            /* ignore */
+          }
+        }
+        return data;
+      })
+      .finally(() => {
+        homepageInflight = null;
+      });
+  }
+  return homepageInflight;
+}
+
+const SETTINGS_STORAGE_KEY = "dk_settings_v1";
+let settingsMemory: SiteSettings | null = null;
+let settingsInflight: Promise<SiteSettings> | null = null;
+
+async function fetchSettings(): Promise<SiteSettings> {
+  if (settingsMemory) return settingsMemory;
+  if (typeof window !== "undefined") {
+    try {
+      const raw = sessionStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as SiteSettings & { _at?: number };
+        if (parsed?._at && Date.now() - parsed._at < 120_000) {
+          settingsMemory = parsed;
+          return parsed;
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  if (!settingsInflight) {
+    settingsInflight = request<SiteSettings>("/api/settings")
+      .then((data) => {
+        settingsMemory = data;
+        if (typeof window !== "undefined") {
+          try {
+            sessionStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify({ ...data, _at: Date.now() }));
+          } catch {
+            /* ignore */
+          }
+        }
+        return data;
+      })
+      .finally(() => {
+        settingsInflight = null;
+      });
+  }
+  return settingsInflight;
+}
+
 export const api = {
-  getCategories: () => request<CategoryTreeResponse>("/api/categories", { cache: "no-store" }),
+  getCategories: () => request<CategoryTreeResponse>("/api/categories"),
 
   getCategory: (slug: string, params?: Record<string, string>) => {
     const qs = new URLSearchParams(
@@ -511,7 +639,7 @@ export const api = {
     }>(`/api/products/${slug}/reviews`, { cache: "no-store" }),
 
   getBrands: (featured?: boolean) =>
-    request<Brand[]>(`/api/brands${featured ? "?featured=1" : ""}`, { cache: "no-store" }),
+    request<Brand[]>(`/api/brands${featured ? "?featured=1" : ""}`),
 
   getBrand: (slug: string) =>
     request<{ brand: Brand; products: Product[]; meta: { total: number; current_page: number; last_page: number } }>(
@@ -519,7 +647,7 @@ export const api = {
       { cache: "no-store" }
     ),
 
-  getShowrooms: () => request<Showroom[]>("/api/showrooms", { cache: "no-store" }),
+  getShowrooms: () => request<Showroom[]>("/api/showrooms"),
 
   getDeliveryZones: () =>
     request<
@@ -544,14 +672,13 @@ export const api = {
     return request(`/api/orders/${reference}${qs}`, { cache: "no-store" });
   },
 
-  getSettings: () => request<SiteSettings>("/api/settings", { cache: "no-store" }),
+  getSettings: () => fetchSettings(),
 
-  getPage: (pageKey: string) =>
-    request<PagePayload>(`/api/pages/${pageKey}`, { cache: "no-store" }),
+  getPage: (pageKey: string) => request<PagePayload>(`/api/pages/${pageKey}`),
 
-  getHomepage: () => request<HomepagePayload>("/api/homepage", { cache: "no-store" }),
+  getHomepage: () => fetchHomepage(),
 
-  getNavigation: () => request<NavigationPayload>("/api/navigation", { cache: "no-store" }),
+  getNavigation: () => fetchNavigation(),
 
   getFooter: () =>
     request<{
@@ -603,13 +730,13 @@ export const api = {
       socials: Array<{ id: number; platform: string; url: string }>;
       payments: Array<{ id: number; name: string; logo_url: string | null }>;
       brands: Array<{ id: number; name: string; slug: string; href: string }>;
-    }>("/api/footer", { cache: "no-store" }),
+    }>("/api/footer"),
 
   getServices: () =>
     request<{
       services: ServiceItem[];
       settings: ServiceSettings;
-    }>("/api/services", { cache: "no-store" }),
+    }>("/api/services"),
 
   getService: (slug: string) =>
     request<{

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\HomepageSection;
 use App\Models\NewsletterSubscriber;
 use App\Services\HomepageService;
+use App\Support\PublicCache;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -13,17 +14,17 @@ class HomepageController extends Controller
 {
     public function show(HomepageService $homepage): JsonResponse
     {
-        return response()->json($homepage->assemble());
+        return PublicCache::json($homepage->assemble(), 60, 300);
     }
 
     public function sectionProducts(int $id, HomepageService $homepage): JsonResponse
     {
         $section = HomepageSection::query()->findOrFail($id);
 
-        return response()->json([
+        return PublicCache::json([
             'section_id' => $section->id,
             'products' => $homepage->productsForSection($section),
-        ]);
+        ], 30, 120);
     }
 
     public function subscribeNewsletter(Request $request): JsonResponse

@@ -855,7 +855,7 @@ class SiteContentService
 
     public function allSettings(): array
     {
-        return Cache::remember('site:settings:v2', 120, function () {
+        return Cache::remember('site:settings:v2', 600, function () {
             return $this->buildAllSettings();
         });
     }

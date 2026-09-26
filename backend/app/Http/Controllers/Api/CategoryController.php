@@ -13,7 +13,7 @@ class CategoryController extends Controller
 {
     public function index(CategoryService $service): JsonResponse
     {
-        return response()->json([
+        return \App\Support\PublicCache::json([
             'tree' => $service->tree(true),
             'popular' => $service->popular(),
             'settings' => [
@@ -21,7 +21,7 @@ class CategoryController extends Controller
                 'default_sort' => $service->settings()['default_sort'],
                 'hide_empty' => (bool) $service->settings()['hide_empty'],
             ],
-        ]);
+        ], 120, 600);
     }
 
     public function show(string $slug, Request $request, CategoryService $service, PlpService $plp): JsonResponse

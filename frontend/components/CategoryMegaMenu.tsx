@@ -11,17 +11,29 @@ export default function CategoryMegaMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<NavigationPayload | null>(null);
+  const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<number | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
     api
       .getNavigation()
       .then((res) => {
+        if (cancelled) return;
         setData(res);
         const firstWithPanel = res.sections.find((s) => s.has_panel);
         setActiveId(firstWithPanel?.id ?? res.sections[0]?.id ?? null);
       })
-      .catch(() => setData(null));
+      .catch(() => {
+        if (!cancelled) setData(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const sections = data?.sections || [];
@@ -65,11 +77,17 @@ export default function CategoryMegaMenu({
 
       {open ? (
         <div className="absolute left-0 top-full z-50 mt-0 w-[min(96vw,920px)] overflow-hidden rounded-b-xl border border-black/5 bg-white text-left shadow-2xl">
-          {sections.length === 0 ? (
-            <p className="p-6 text-sm text-brand-black/50">Aucune entrée de menu configurée.</p>
+          {loading ? (
+            <p className="p-6 text-sm text-brand-black/50">Chargement des catégories…</p>
+          ) : sections.length === 0 ? (
+            <div className="space-y-2 p-6">
+              <p className="text-sm text-brand-black/50">Aucune entrée de menu configurée.</p>
+              <p className="text-xs text-brand-black/40">
+                Admin → Catégories → « Importer suggestion », puis vérifier Navigation.
+              </p>
+            </div>
           ) : (
             <div className="flex min-h-[280px] max-h-[70vh]">
-              {/* Sidebar sections */}
               <aside className="w-[240px] shrink-0 overflow-y-auto border-r border-black/5 bg-[#fafafa]">
                 <ul>
                   {sections.map((section) => (
@@ -84,7 +102,6 @@ export default function CategoryMegaMenu({
                 </ul>
               </aside>
 
-              {/* Items grid */}
               <div className="min-w-0 flex-1 overflow-y-auto p-5">
                 {active?.has_panel ? (
                   <>

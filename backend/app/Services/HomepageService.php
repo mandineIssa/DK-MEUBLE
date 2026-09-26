@@ -167,9 +167,9 @@ class HomepageService
 
     public function assemble(): array
     {
-        $this->ensureDefaults();
+        return Cache::remember(self::CACHE_KEY, 1800, function () {
+            $this->ensureDefaults();
 
-        return Cache::remember(self::CACHE_KEY, 300, function () {
             $settings = SiteContentService::allSettingsStatic();
             $homepage = is_array($settings['homepage'] ?? null) ? $settings['homepage'] : [];
 

@@ -11,8 +11,8 @@ import { getSite } from "@/lib/site";
 import { buildOrganizationSchema, buildWebSiteSchema } from "@/lib/seo";
 import { Suspense } from "react";
 
-/** ISR court : plus de LiveRefresh 15s qui rejouait tout le RSC. */
-export const revalidate = 60;
+/** ISR : pages publiques rafraîchies toutes les 2 min (plus rapide en prod). */
+export const revalidate = 120;
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const site = await getSite();

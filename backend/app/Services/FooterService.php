@@ -89,7 +89,7 @@ class FooterService
 
     public function assemble(): array
     {
-        return Cache::remember(self::CACHE_KEY, 600, function () {
+        return Cache::remember(self::CACHE_KEY, 1800, function () {
             $settings = $this->settings();
             $contact = Setting::query()->where('key', 'contact')->value('value');
             $contact = is_array($contact) ? $contact : [];

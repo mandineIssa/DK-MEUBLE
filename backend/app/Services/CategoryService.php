@@ -182,7 +182,7 @@ class CategoryService
     {
         $key = $publicOnly ? 'categories:tree:public:v1' : 'categories:tree:admin:v1';
 
-        return collect(Cache::remember($key, 120, function () use ($publicOnly) {
+        return collect(Cache::remember($key, 600, function () use ($publicOnly) {
             return $this->buildTree($publicOnly);
         }));
     }

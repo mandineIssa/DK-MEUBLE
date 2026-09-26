@@ -147,9 +147,10 @@ class NavigationService
 
     public function assemble(): array
     {
-        $this->ensureDefaults();
+        return Cache::remember(self::CACHE_KEY, 3600, function () {
+            // Génération coûteuse uniquement en cas de miss cache
+            $this->ensureDefaults();
 
-        return Cache::remember(self::CACHE_KEY, 600, function () {
             $settings = $this->settings();
 
             $sections = MenuSection::query()

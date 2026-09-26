@@ -22,6 +22,16 @@ fi
 
 php artisan config:cache || true
 php artisan route:cache || true
+php artisan view:cache || true
+php artisan event:cache || true
+
+# Préchauffe des caches publics (évite le 1er visiteur lent)
+php artisan tinker --execute="
+try { app(\\App\\Services\\SiteContentService::class)->allSettings(); } catch (Throwable \$e) {}
+try { app(\\App\\Services\\NavigationService::class)->assemble(); } catch (Throwable \$e) {}
+try { app(\\App\\Services\\HomepageService::class)->assemble(); } catch (Throwable \$e) {}
+try { app(\\App\\Services\\FooterService::class)->assemble(); } catch (Throwable \$e) {}
+" 2>/dev/null || true
 
 php-fpm -D
 exec nginx -g "daemon off;"
