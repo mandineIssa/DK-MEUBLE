@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Models\Customer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class CustomerController extends Controller
 {
@@ -45,6 +49,7 @@ class CustomerController extends Controller
             'is_b2b' => (bool) $customer->is_b2b,
             'sms_opt_in' => (bool) $customer->sms_opt_in,
             'email_opt_in' => (bool) $customer->email_opt_in,
+            'has_password' => filled($customer->password),
             'company' => $customer->company,
             'quotes' => $customer->quotes,
             'b2b_quotes' => $companyQuotes ?: $customer->b2bQuotes,
@@ -59,16 +64,70 @@ class CustomerController extends Controller
 
         $data = $request->validate([
             'name' => ['nullable', 'string', 'max:120'],
-            'email' => ['nullable', 'email', 'max:150'],
+            'email' => [
+                'nullable',
+                'email',
+                'max:150',
+                Rule::unique('customers', 'email')->ignore($customer->id),
+            ],
             'sms_opt_in' => ['nullable', 'boolean'],
             'email_opt_in' => ['nullable', 'boolean'],
+        ], [
+            'email.unique' => 'Cet e-mail est déjà utilisé par un autre compte.',
+            'email.email' => 'Cet e-mail n’est pas valide.',
         ]);
+
+        if (array_key_exists('email', $data) && is_string($data['email'])) {
+            $data['email'] = strtolower(trim($data['email']));
+            if ($data['email'] === '') {
+                $data['email'] = null;
+            }
+        }
 
         $customer->fill($data)->save();
 
         return response()->json($customer->only([
             'id', 'phone', 'name', 'email', 'is_b2b', 'sms_opt_in', 'email_opt_in',
         ]));
+    }
+
+    public function updatePassword(Request $request): JsonResponse
+    {
+        /** @var Customer $customer */
+        $customer = $request->user();
+
+        if (! filled($customer->email)) {
+            throw ValidationException::withMessages([
+                'email' => ['Ajoutez d’abord un e-mail à votre compte, puis enregistrez-le.'],
+            ]);
+        }
+
+        $rules = [
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ];
+        if (filled($customer->password)) {
+            $rules['current_password'] = ['required', 'string'];
+        }
+
+        $data = $request->validate($rules, [
+            'current_password.required' => 'Indiquez le mot de passe actuel.',
+            'password.required' => 'Choisissez un mot de passe.',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+            'password.confirmed' => 'Les deux mots de passe ne correspondent pas.',
+        ]);
+
+        if (filled($customer->password) && ! Hash::check($data['current_password'], (string) $customer->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['Le mot de passe actuel est incorrect.'],
+            ]);
+        }
+
+        $customer->forceFill(['password' => $data['password']])->save();
+
+        return response()->json([
+            'message' => 'Mot de passe enregistré.',
+            'has_password' => true,
+        ]);
     }
 
     public function registerCompany(Request $request): JsonResponse

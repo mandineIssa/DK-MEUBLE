@@ -66,14 +66,14 @@ export default async function ProductsPage({
 
   return (
     <div className="bg-[#ececec]">
-      <section className="bg-brand-black text-white">
+      <section className="bg-white text-brand-black">
         <div className="mx-auto max-w-7xl px-4 py-10 md:px-6 md:py-12">
           <p className="text-sm font-medium uppercase tracking-wider text-brand-orange">Catalogue</p>
           <h1 className="mt-2 text-3xl font-extrabold md:text-4xl">
             {isVisual ? "Résultats recherche image" : "Nos produits"}
           </h1>
           {searchParams.search && !isVisual && (
-            <p className="mt-2 text-white/70">Recherche : « {searchParams.search} »</p>
+            <p className="mt-2 text-brand-black/70">Recherche : « {searchParams.search} »</p>
           )}
         </div>
       </section>

@@ -24,33 +24,31 @@ const items = [
     ),
   },
   {
-    href: "/produits",
-    label: "Produits",
+    href: "/recherche",
+    label: "Recherche",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <rect x="3" y="3" width="7" height="7" rx="1" />
-        <rect x="14" y="3" width="7" height="7" rx="1" />
-        <rect x="3" y="14" width="7" height="7" rx="1" />
-        <rect x="14" y="14" width="7" height="7" rx="1" />
+        <circle cx="11" cy="11" r="6.5" />
+        <path d="m16 16 4 4" />
       </svg>
     ),
   },
   {
-    href: "/promotions",
-    label: "Promo",
+    href: "/compte#favoris",
+    label: "Favoris",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M12 3v18M8 7h5a3 3 0 0 1 0 6H8m0 0h6a3 3 0 0 1 0 6H8" />
+        <path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 4.6-7 9-7 9Z" />
       </svg>
     ),
   },
   {
-    href: "/contact",
-    label: "Contact",
+    href: "/compte",
+    label: "Compte",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <rect x="3" y="5" width="18" height="14" rx="2" />
-        <path d="m3 7 9 7 9-7" />
+        <circle cx="12" cy="8" r="3.2" />
+        <path d="M5 19c1.2-3 3.6-4.5 7-4.5S17.8 16 19 19" />
       </svg>
     ),
   },
@@ -64,7 +62,12 @@ export default function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-black/10 bg-brand-black pb-[env(safe-area-inset-bottom)] text-white md:hidden">
       <ul className="mx-auto flex max-w-lg items-stretch justify-between px-1">
         {items.map((item) => {
-          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          const path = item.href.split("#")[0];
+          const active = item.href.includes("#")
+            ? false
+            : path === "/"
+              ? pathname === "/"
+              : pathname === path || pathname.startsWith(`${path}/`);
           return (
             <li key={item.href} className="flex-1">
               <Link

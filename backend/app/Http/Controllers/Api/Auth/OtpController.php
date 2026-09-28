@@ -24,25 +24,40 @@ class OtpController extends Controller
         $channel = $data['channel']
             ?? (! empty($data['email']) ? 'email' : 'phone');
 
-        if ($channel === 'email') {
-            $email = $this->otp->normalizeEmail($data['email']);
-            $plain = $this->otp->requestEmail($email);
+        try {
+            return $channel === 'email'
+                ? $this->sendEmailCode($data['email'])
+                : $this->sendPhoneCode($data['phone']);
+        } catch (\Throwable $e) {
+            report($e);
 
-            $payload = [
-                'message' => 'Code envoyé par e-mail.',
-                'channel' => 'email',
-                'email' => $email,
-            ];
+            return response()->json([
+                'message' => "Impossible d'envoyer le code pour le moment. Réessayez dans un instant.",
+            ], 503);
+        }
+    }
 
-            // Jamais en production : le code ne doit jamais apparaître dans l’API.
-            if (app()->environment('local') && config('app.debug')) {
-                $payload['debug_code'] = $plain;
-            }
+    private function sendEmailCode(string $email): JsonResponse
+    {
+        $email = $this->otp->normalizeEmail($email);
+        $plain = $this->otp->requestEmail($email);
 
-            return response()->json($payload);
+        $payload = [
+            'message' => 'Code envoyé par e-mail.',
+            'channel' => 'email',
+            'email' => $email,
+        ];
+
+        if (app()->environment('local') && config('app.debug')) {
+            $payload['debug_code'] = $plain;
         }
 
-        $phone = $this->otp->normalizePhone($data['phone']);
+        return response()->json($payload);
+    }
+
+    private function sendPhoneCode(string $phone): JsonResponse
+    {
+        $phone = $this->otp->normalizePhone($phone);
         $plain = $this->otp->requestPhone($phone);
 
         $payload = [

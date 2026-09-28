@@ -35,16 +35,16 @@ export default function PanierPage() {
 
   return (
     <div className="bg-[#ececec]">
-      <section className="bg-brand-black text-white">
+      <section className="bg-white text-brand-black">
         <div className="mx-auto max-w-4xl px-4 py-10 md:px-6">
           <h1 className="text-3xl font-extrabold">Panier</h1>
-          <p className="mt-2 text-white/70">{cart.items_count} article(s)</p>
+          <p className="mt-2 text-brand-black/70">{cart.items_count} article(s)</p>
         </div>
       </section>
 
-      <div className="mx-auto max-w-4xl space-y-4 px-4 py-8 md:px-6">
+      <div className="mx-auto grid max-w-6xl gap-4 px-4 py-8 md:px-6 lg:grid-cols-[1fr_320px]">
         {cart.items.length === 0 ? (
-          <p className="rounded-2xl bg-white p-8 text-center shadow-sm">
+          <p className="rounded-2xl bg-white p-8 text-center shadow-sm lg:col-span-2">
             Panier vide.{" "}
             <Link href="/produits" className="font-semibold text-brand-orange">
               Voir les produits
@@ -52,6 +52,7 @@ export default function PanierPage() {
           </p>
         ) : (
           <>
+            <div className="space-y-4">
             {cart.items.map((item) => (
               <article key={item.product_id} className="flex gap-4 rounded-2xl bg-white p-4 shadow-sm">
                 <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-brand-black/5">
@@ -94,7 +95,8 @@ export default function PanierPage() {
                 <p className="font-bold">{item.subtotal.toLocaleString("fr-FR")} FCFA</p>
               </article>
             ))}
-            <div className="rounded-2xl bg-white p-5 shadow-sm">
+            </div>
+            <div className="h-fit rounded-2xl bg-white p-5 shadow-sm lg:sticky lg:top-28">
               <div className="flex justify-between text-lg font-extrabold">
                 <span>Sous-total</span>
                 <span>{cart.subtotal.toLocaleString("fr-FR")} FCFA</span>
@@ -104,6 +106,12 @@ export default function PanierPage() {
                 className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-brand-orange px-5 py-3 text-sm font-semibold text-white"
               >
                 Passer la commande
+              </Link>
+              <Link
+                href="/produits"
+                className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-brand-black/15 px-5 py-3 text-sm font-semibold"
+              >
+                Continuer mes achats
               </Link>
             </div>
           </>

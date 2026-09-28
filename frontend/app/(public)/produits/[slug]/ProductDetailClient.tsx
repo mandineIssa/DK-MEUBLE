@@ -3,23 +3,51 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Product, imageUrl } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { Product, imageUrl, type SiteSettings } from "@/lib/api";
 import { useCart } from "@/components/CartProvider";
+import { useCompare } from "@/components/CompareProvider";
 import { useWaLink } from "@/components/SiteProvider";
 import ProductContactActions from "@/components/ProductContactActions";
 import ProductReviews from "@/components/ProductReviews";
 import FavoriteButton from "@/components/FavoriteButton";
 import ReportContentModal from "@/components/ReportContentModal";
 import ProductChatButton from "@/components/ProductChatButton";
+import ProductCard from "@/components/ProductCard";
 
-export default function ProductDetailClient({ product }: { product: Product }) {
+export default function ProductDetailClient({
+  product,
+  similarProducts = [],
+  reviewAverage = 4.8,
+  reviewCount = 124,
+  reviewsAreExample = true,
+  productPage,
+}: {
+  product: Product;
+  similarProducts?: Product[];
+  reviewAverage?: number;
+  reviewCount?: number;
+  reviewsAreExample?: boolean;
+  productPage?: SiteSettings["product_page"];
+}) {
   const images = product.images?.length ? product.images : [];
   const [qty, setQty] = useState(1);
   const [cartMsg, setCartMsg] = useState("");
   const [activeIdx, setActiveIdx] = useState(0);
   const [reportOpen, setReportOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const { addToCart } = useCart();
-  const waHref = useWaLink(`Bonjour, je suis intéressé(e) par ${product.name} (x${qty}).`);
+  const compareList = useCompare();
+  const router = useRouter();
+  const similar = similarProducts;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+  const waHref = useWaLink(
+    `Bonjour DK HOMETECH, je suis intéressé par ${product.name}${product.sku ? ` (réf. ${product.sku})` : ""}${
+      (product.effective_price ?? product.price) != null
+        ? `, ${(product.effective_price ?? product.price)!.toLocaleString("fr-FR")} FCFA`
+        : ""
+    }. ${siteUrl}/produits/${product.slug}`
+  );
   const cover = images[activeIdx] || images[0];
   const effective = product.effective_price ?? product.price;
   const compare = product.compare_at_price;
@@ -33,11 +61,43 @@ export default function ProductDetailClient({ product }: { product: Product }) {
     return list;
   }, [product.is_customizable, product.condition, product.is_clearance]);
 
-  async function onAdd() {
+  const specEntries = useMemo(() => {
+    if (!product.specs || typeof product.specs !== "object") return [];
+    return Object.entries(product.specs).filter(([, value]) => value != null && String(value).trim() !== "");
+  }, [product.specs]);
+  const specsAreExample = specEntries.length === 0;
+  const exampleSpecs = String(
+    productPage?.example_specs ??
+      "Capacité: 320 L\nNombre de portes: 2\nClasse énergétique: A+"
+  )
+    .split(/\n/)
+    .map((line) => {
+      const cut = line.indexOf(":");
+      if (cut < 1) return null;
+      const key = line.slice(0, cut).trim();
+      const value = line.slice(cut + 1).trim();
+      return key && value ? ([key, value] as [string, string]) : null;
+    })
+    .filter((row): row is [string, string] => Boolean(row));
+  const shownSpecs: Array<[string, string]> = specsAreExample
+    ? exampleSpecs
+    : specEntries.map(([key, value]) => [key, String(value)]);
+  const descriptionIsExample = !product.description?.trim();
+  const discount =
+    compare && effective && compare > effective ? Math.round((1 - effective / compare) * 100) : null;
+  const stockKnown = product.stock_quantity != null;
+  const inStock = stockKnown ? (product.stock_quantity as number) > 0 : Boolean(productPage?.example_stock);
+  const exampleStock = productPage?.example_stock || "";
+  const exampleDiscount = productPage?.example_discount || "";
+  const chipLabels = ["capacité", "porte", "classe", "énergie"];
+  const chips = shownSpecs.filter(([key]) => chipLabels.some((word) => key.toLowerCase().includes(word)));
+
+  async function onAdd(goCheckout = false) {
     if (effective == null) return;
     try {
       await addToCart(product.id, qty);
       setCartMsg("");
+      if (goCheckout) router.push("/commande");
     } catch (err) {
       setCartMsg(err instanceof Error ? err.message : "Erreur");
     }
@@ -58,7 +118,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           <span>{product.name}</span>
         </nav>
 
-        <div className="mt-6 grid gap-8 lg:grid-cols-2">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.15fr)_280px]">
           <div>
             <div className="relative min-h-[280px] aspect-square overflow-hidden rounded-2xl bg-white">
               {cover ? (
@@ -115,14 +175,43 @@ export default function ProductDetailClient({ product }: { product: Product }) {
               {product.category?.name}
             </p>
             <h1 className="mt-1 text-3xl font-extrabold text-brand-black">{product.name}</h1>
-            <div className="mt-3 flex flex-wrap items-baseline gap-3">
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-extrabold text-brand-black">{reviewAverage.toLocaleString("fr-FR")}</span>
+              <span className="text-brand-orange">{"★".repeat(Math.min(5, Math.max(0, Math.round(reviewAverage))))}{"☆".repeat(5 - Math.min(5, Math.max(0, Math.round(reviewAverage))))}</span>
+              <span className="text-brand-black/55">({reviewCount} avis)</span>
+              {reviewsAreExample ? (
+                <span className="rounded-full bg-brand-orange/15 px-2 py-0.5 text-[11px] font-bold text-brand-orange">Exemple</span>
+              ) : null}
+              {stockKnown || exampleStock ? (
+                <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${inStock ? "bg-green-100 text-green-800" : "bg-red-100 text-red-700"}`}>
+                  {stockKnown ? (inStock ? "En stock" : "Rupture") : exampleStock}
+                  {!stockKnown ? " · Exemple" : ""}
+                </span>
+              ) : null}
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
               <p className="text-2xl font-extrabold text-brand-orange">{priceLabel}</p>
               {compare ? (
                 <p className="text-lg text-brand-black/45 line-through">
                   {compare.toLocaleString("fr-FR")} FCFA
                 </p>
               ) : null}
+              {discount != null || exampleDiscount ? (
+                <span className="rounded-md bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
+                  {discount != null ? `−${discount} %` : `${exampleDiscount} · Exemple`}
+                </span>
+              ) : null}
             </div>
+            {chips.length > 0 ? (
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {chips.map(([key, value]) => (
+                  <li key={key} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-brand-black shadow-sm">
+                    {value}
+                    {specsAreExample ? " · Exemple" : ""}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
 
             <ul className="mt-6 space-y-2">
               {features.map((f) => (
@@ -145,13 +234,22 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                 </button>
               </div>
               {effective != null ? (
-                <button
-                  type="button"
-                  onClick={onAdd}
-                  className="rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white"
-                >
-                  Ajouter au panier
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => onAdd(false)}
+                    className="rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white"
+                  >
+                    Ajouter au panier
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onAdd(true)}
+                    className="rounded-full border border-brand-black/15 px-5 py-2.5 text-sm font-semibold"
+                  >
+                    Acheter maintenant
+                  </button>
+                </>
               ) : (
                 <Link
                   href="/devis"
@@ -164,6 +262,13 @@ export default function ProductDetailClient({ product }: { product: Product }) {
             </div>
             <div className="mt-3 flex flex-wrap gap-3">
               <FavoriteButton productId={product.id} />
+              <button
+                type="button"
+                onClick={() => compareList.toggle({ id: product.id, slug: product.slug, name: product.name })}
+                className="text-sm font-semibold text-brand-black/60"
+              >
+                {compareList.has(product.id) ? "Retirer de la comparaison" : "Comparer"}
+              </button>
               <button
                 type="button"
                 onClick={() => setReportOpen(true)}
@@ -185,9 +290,9 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                 href={waHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-block text-sm font-semibold text-whatsapp"
+                className="mt-3 inline-flex rounded-full bg-whatsapp px-5 py-2.5 text-sm font-semibold text-white"
               >
-                WhatsApp
+                Commander sur WhatsApp
               </a>
             )}
 
@@ -207,17 +312,190 @@ export default function ProductDetailClient({ product }: { product: Product }) {
               </div>
             )}
 
-            {product.description && (
-              <div className="mt-8">
-                <h2 className="font-bold">Description</h2>
-                <p className="mt-2 whitespace-pre-line text-sm text-brand-black/75">{product.description}</p>
-              </div>
-            )}
+            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:hidden">
+              <Link href="/livraison" className="rounded-2xl bg-white p-4 text-sm font-bold shadow-sm">
+                Livraison
+              </Link>
+              <Link href="/services" className="rounded-2xl bg-white p-4 text-sm font-bold shadow-sm">
+                Installation et services
+              </Link>
+              <Link href="/paiement" className="rounded-2xl bg-white p-4 text-sm font-bold shadow-sm">
+                Moyens de paiement
+              </Link>
+              <Link href="/retours" className="rounded-2xl bg-white p-4 text-sm font-bold shadow-sm">
+                Retours
+              </Link>
+            </div>
           </div>
+
+          <aside className="space-y-3">
+            {productPage?.show_delivery !== false && (productPage?.delivery_line_1 || productPage?.delivery_line_2 || productPage?.delivery_title) ? (
+              <div className="rounded-2xl bg-white p-4 shadow-sm">
+                <p className="font-bold text-brand-black">{productPage?.delivery_title || "Livraison estimée"}</p>
+                {productPage?.delivery_is_example !== false ? (
+                  <p className="mt-1 text-[11px] font-bold text-brand-orange">Exemple</p>
+                ) : null}
+                {productPage?.delivery_line_1 ? <p className="mt-2 text-sm text-brand-black/75">{productPage.delivery_line_1}</p> : null}
+                {productPage?.delivery_line_2 ? <p className="text-sm text-brand-black/75">{productPage.delivery_line_2}</p> : null}
+                {productPage?.delivery_link_label ? (
+                  <Link href="/livraison" className="mt-2 inline-block text-sm font-bold text-brand-orange">
+                    {productPage.delivery_link_label}
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
+            {productPage?.show_installation !== false && productPage?.installation_text ? (
+              <div className="rounded-2xl bg-white p-4 shadow-sm">
+                <p className="font-bold text-brand-black">{productPage.installation_title || "Installation disponible"}</p>
+                <p className="mt-2 text-sm text-brand-black/75">{productPage.installation_text}</p>
+                {productPage.installation_link_label ? (
+                  <Link href="/services" className="mt-2 inline-block text-sm font-bold text-brand-orange">
+                    {productPage.installation_link_label}
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
+            {productPage?.show_installment !== false && productPage?.installment_text ? (
+              <div className="rounded-2xl bg-white p-4 shadow-sm">
+                <p className="font-bold text-brand-black">{productPage.installment_title || "Paiement échelonné"}</p>
+                {productPage.installment_is_example !== false ? (
+                  <p className="mt-1 text-[11px] font-bold text-brand-orange">Exemple</p>
+                ) : null}
+                <p className="mt-2 text-sm text-brand-black/75">{productPage.installment_text}</p>
+                {productPage.installment_link_label ? (
+                  <Link href="/paiement" className="mt-2 inline-block text-sm font-bold text-brand-orange">
+                    {productPage.installment_link_label}
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
+            {productPage?.show_share !== false ? (
+            <div className="rounded-2xl bg-white p-4 shadow-sm">
+              <p className="font-bold text-brand-black">{productPage?.share_title || "Partager"}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = window.location.href;
+                    navigator.clipboard.writeText(url).then(() => {
+                      setCopied(true);
+                      window.setTimeout(() => setCopied(false), 2000);
+                    }).catch(() => {});
+                  }}
+                  className="rounded-full border border-brand-black/15 px-3 py-1.5 text-xs font-bold"
+                >
+                  {copied ? "Lien copié" : "Copier le lien"}
+                </button>
+                {waHref ? (
+                  <a href={waHref} target="_blank" rel="noopener noreferrer" className="rounded-full bg-whatsapp px-3 py-1.5 text-xs font-bold text-white">
+                    WhatsApp
+                  </a>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, "_blank", "noopener,noreferrer")}
+                  className="rounded-full bg-[#1877F2] px-3 py-1.5 text-xs font-bold text-white"
+                >
+                  Facebook
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(product.name)}`, "_blank", "noopener,noreferrer")}
+                  className="rounded-full bg-brand-black px-3 py-1.5 text-xs font-bold text-white"
+                >
+                  X
+                </button>
+              </div>
+            </div>
+            ) : null}
+          </aside>
         </div>
 
-        <ProductReviews slug={product.slug} />
+        <section className="mt-10 rounded-2xl bg-white p-4 shadow-sm md:p-6">
+          <div className="flex gap-4 overflow-x-auto border-b border-black/10 text-sm font-semibold">
+            {[
+              ["description", "Description"],
+              ["caracteristiques", "Caractéristiques techniques"],
+              ["avis", "Avis clients"],
+              ["similaires", "Produits similaires"],
+            ].map(([id, label]) => (
+              <a key={id} href={`#${id}`} className="shrink-0 border-b-2 border-transparent px-1 pb-3 text-brand-black/70 hover:border-brand-orange hover:text-brand-black">
+                {label}
+              </a>
+            ))}
+          </div>
+
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <div id="description">
+              <div className="mb-2 flex items-center gap-2">
+                <h2 className="font-bold text-brand-black">Description</h2>
+                {descriptionIsExample ? (
+                  <span className="rounded-full bg-brand-orange/15 px-2 py-0.5 text-[11px] font-bold text-brand-orange">Exemple</span>
+                ) : null}
+              </div>
+              {descriptionIsExample ? (
+                <>
+                  <p className="text-sm leading-relaxed text-brand-black/75">
+                    {product.name} allie performance, économie d’énergie et design moderne. Idéal pour les familles, il offre un grand espace de rangement.
+                  </p>
+                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-brand-black/75">
+                    <li>Système de refroidissement rapide</li>
+                    <li>Économie d’énergie</li>
+                    <li>Éclairage LED</li>
+                    <li>Design moderne et élégant</li>
+                  </ul>
+                </>
+              ) : (
+                <p className="whitespace-pre-line text-sm leading-relaxed text-brand-black/75">{product.description}</p>
+              )}
+            </div>
+
+            <div id="caracteristiques" className="rounded-2xl border border-black/5 p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <h2 className="font-bold text-brand-black">Caractéristiques techniques</h2>
+                {specsAreExample ? (
+                  <span className="rounded-full bg-brand-orange/15 px-2 py-0.5 text-[11px] font-bold text-brand-orange">Exemple</span>
+                ) : null}
+              </div>
+              <dl className="divide-y divide-black/5 text-sm">
+                {shownSpecs.map(([key, value]) => (
+                  <div key={key} className="grid grid-cols-[1fr_auto] gap-3 py-2">
+                    <dt className="text-brand-black/70">{key}</dt>
+                    <dd className="font-semibold text-brand-black">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        <div id="avis">
+          <ProductReviews slug={product.slug} samples={productPage?.reviews} />
+        </div>
+
+        <section id="similaires" className="mx-auto mt-10 max-w-7xl">
+          <h2 className="text-xl font-extrabold">Vous pourriez également aimer</h2>
+          {similar.length > 0 ? (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {similar.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-brand-black/60">Aucun autre produit à proposer pour le moment.</p>
+          )}
+        </section>
       </div>
+      {effective != null ? (
+        <div className="fixed inset-x-0 bottom-16 z-30 flex gap-2 border-t bg-white p-3 md:hidden">
+          <button type="button" onClick={() => onAdd(false)} className="flex-1 rounded-full bg-brand-orange py-3 text-sm font-bold text-white">
+            Ajouter au panier
+          </button>
+          <button type="button" onClick={() => onAdd(true)} className="rounded-full border border-brand-black/15 px-4 py-3 text-sm font-bold">
+            Acheter
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

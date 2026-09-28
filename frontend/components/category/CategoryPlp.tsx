@@ -6,6 +6,8 @@ import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { imageUrl, type CategoryShowResponse, type Product } from "@/lib/api";
 import { useCart } from "@/components/CartProvider";
+import { useCompare } from "@/components/CompareProvider";
+import FavoriteButton from "@/components/FavoriteButton";
 import ProductQuickView from "@/components/home/ProductQuickView";
 import CategoryFilterSidebar from "@/components/category/CategoryFilterSidebar";
 import ViewSortBar, { type ViewMode } from "@/components/category/ViewSortBar";
@@ -563,14 +565,17 @@ function PlpProductCard({
   const effective = product.effective_price ?? product.price;
   const compare = product.compare_at_price;
   const { addToCart } = useCart();
+  const compareList = useCompare();
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [quick, setQuick] = useState(false);
 
-  async function onAdd() {
+  async function onAdd(goCheckout = false) {
     if (effective == null) return;
     setBusy(true);
     try {
       await addToCart(product.id, 1);
+      if (goCheckout) router.push("/commande");
     } finally {
       setBusy(false);
     }
@@ -615,14 +620,26 @@ function PlpProductCard({
             </p>
           </div>
           {effective != null ? (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={onAdd}
-              className="mt-2 bg-brand-black px-4 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
-            >
-              Ajouter au panier
-            </button>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => onAdd(false)}
+                className="bg-brand-black px-4 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+              >
+                Ajouter au panier
+              </button>
+              <button type="button" disabled={busy} onClick={() => onAdd(true)} className="text-xs font-semibold">
+                Acheter
+              </button>
+              <button
+                type="button"
+                onClick={() => compareList.toggle({ id: product.id, slug: product.slug, name: product.name })}
+                className="text-xs font-semibold"
+              >
+                {compareList.has(product.id) ? "Retiré" : "Comparer"}
+              </button>
+            </div>
           ) : null}
         </div>
       </article>
@@ -681,6 +698,33 @@ function PlpProductCard({
             <p className="text-sm font-bold" style={{ color: accent }}>
               {effective != null ? `${effective.toLocaleString("fr-FR")} FCFA` : "Sur devis"}
             </p>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="inline-flex">
+              <FavoriteButton productId={product.id} />
+            </span>
+            {effective != null ? (
+              <>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => onAdd(false)}
+                  className="bg-brand-black px-3 py-1 text-[11px] font-semibold text-white disabled:opacity-60"
+                >
+                  Panier
+                </button>
+                <button type="button" disabled={busy} onClick={() => onAdd(true)} className="text-[11px] font-semibold">
+                  Acheter
+                </button>
+              </>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => compareList.toggle({ id: product.id, slug: product.slug, name: product.name })}
+              className="text-[11px] font-semibold"
+            >
+              {compareList.has(product.id) ? "Retiré" : "Comparer"}
+            </button>
           </div>
         </div>
       </article>

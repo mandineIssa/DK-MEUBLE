@@ -39,6 +39,19 @@ export default async function ServicesPage() {
           ) : null}
         </header>
 
+        <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { href: "/livraison", title: "Livraison" },
+            { href: "/services", title: "Installation et SAV" },
+            { href: "/paiement", title: "Paiement" },
+            { href: "/contact", title: "Assistance" },
+          ].map((item) => (
+            <Link key={item.title} href={item.href} className="rounded-2xl bg-white px-4 py-4 text-sm font-bold text-brand-black shadow-sm hover:text-brand-orange">
+              {item.title}
+            </Link>
+          ))}
+        </div>
+
         {services.length ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
             {services.map((service) => (

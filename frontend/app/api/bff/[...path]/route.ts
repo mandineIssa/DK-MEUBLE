@@ -13,6 +13,14 @@ async function proxy(req: NextRequest, ctx: Ctx) {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
 
+  if (!token && path === "customer/notifications/unread-count") {
+    return NextResponse.json({ unread_count: 0 });
+  }
+
+  if (!token && path === "customer/logout") {
+    return new NextResponse(null, { status: 204 });
+  }
+
   const headers = new Headers();
   headers.set("Accept", "application/json");
 
@@ -36,12 +44,20 @@ async function proxy(req: NextRequest, ctx: Ctx) {
   const upstream = await fetch(url, init);
   const text = await upstream.text();
 
-  const res = new NextResponse(text || null, {
-    status: upstream.status,
-    headers: {
-      "Content-Type": upstream.headers.get("Content-Type") || "application/json",
-    },
-  });
+  const expiredSession =
+    upstream.status === 401 &&
+    (path === "customer/logout" || path === "customer/notifications/unread-count");
+
+  const res = expiredSession
+    ? path === "customer/logout"
+      ? new NextResponse(null, { status: 204 })
+      : NextResponse.json({ unread_count: 0 })
+    : new NextResponse(text || null, {
+        status: upstream.status,
+        headers: {
+          "Content-Type": upstream.headers.get("Content-Type") || "application/json",
+        },
+      });
 
   if (upstream.status === 401) {
     res.cookies.set(COOKIE, "", {

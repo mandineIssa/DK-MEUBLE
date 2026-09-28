@@ -178,6 +178,43 @@ export type SiteSettings = {
     address: string;
     hours: string;
     maps_embed: string;
+    /** Lien YouTube, Facebook ou fichier .mp4 de la visite du magasin */
+    video_url?: string;
+    /** Image affichée avant la lecture de la vidéo */
+    video_poster?: string;
+  };
+  product_page?: {
+    show_delivery?: boolean;
+    delivery_title?: string;
+    delivery_line_1?: string;
+    delivery_line_2?: string;
+    delivery_link_label?: string;
+    delivery_is_example?: boolean;
+    show_installation?: boolean;
+    installation_title?: string;
+    installation_text?: string;
+    installation_link_label?: string;
+    show_installment?: boolean;
+    installment_title?: string;
+    installment_text?: string;
+    installment_link_label?: string;
+    installment_is_example?: boolean;
+    show_share?: boolean;
+    share_title?: string;
+    example_discount?: string;
+    example_stock?: string;
+    /** Une caractéristique par ligne : Libellé: valeur */
+    example_specs?: string;
+    reviews?: Array<{ name?: string; city?: string; rating?: number; body?: string }>;
+  };
+  topbar?: {
+    enabled?: boolean;
+    text_1?: string;
+    text_2?: string;
+    phone_label?: string;
+    show_phone?: boolean;
+    /** Vide = numéro principal des paramètres contact */
+    phone?: string;
   };
   socials: {
     facebook: string;
@@ -238,6 +275,7 @@ export type SiteSettings = {
     footer_about?: string;
     footer_info_links?: Array<{ label: string; href: string; enabled?: boolean }>;
     agency_credit?: string;
+    blocks?: Record<string, string>;
   };
 };
 
@@ -397,6 +435,15 @@ export type PromotionsResponse = {
   };
   categories: Array<{ id: number; name: string; slug: string; count: number }>;
   legal_text: string;
+  banner?: {
+    enabled?: boolean;
+    title?: string;
+    subtitle?: string;
+    button_label?: string;
+    button_href?: string;
+    image?: string;
+    show_countdown?: boolean;
+  };
 };
 
 export type Realization = {
@@ -500,7 +547,7 @@ async function fetchNavigation(): Promise<NavigationPayload> {
   return navigationInflight;
 }
 
-const HOME_STORAGE_KEY = "dk_homepage_v1";
+const HOME_STORAGE_KEY = "dk_homepage_v2";
 let homepageMemory: HomepagePayload | null = null;
 let homepageInflight: Promise<HomepagePayload> | null = null;
 
@@ -542,7 +589,7 @@ async function fetchHomepage(): Promise<HomepagePayload> {
   return homepageInflight;
 }
 
-const SETTINGS_STORAGE_KEY = "dk_settings_v1";
+const SETTINGS_STORAGE_KEY = "dk_settings_v3";
 let settingsMemory: SiteSettings | null = null;
 let settingsInflight: Promise<SiteSettings> | null = null;
 

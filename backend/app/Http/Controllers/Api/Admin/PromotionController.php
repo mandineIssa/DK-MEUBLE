@@ -108,6 +108,13 @@ class PromotionController extends Controller
             'newsletter_frequency' => ['sometimes', 'in:weekly,biweekly,monthly'],
             'expiry_alert_days' => ['sometimes', 'integer', 'min:0', 'max:30'],
             'default_vendor_name' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'banner_enabled' => ['sometimes', 'boolean'],
+            'banner_title' => ['sometimes', 'nullable', 'string', 'max:160'],
+            'banner_subtitle' => ['sometimes', 'nullable', 'string', 'max:240'],
+            'banner_button_label' => ['sometimes', 'nullable', 'string', 'max:80'],
+            'banner_button_href' => ['sometimes', 'nullable', 'string', 'max:200'],
+            'banner_image' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'show_countdown' => ['sometimes', 'boolean'],
         ]);
 
         return response()->json($service->updateSettings($data));

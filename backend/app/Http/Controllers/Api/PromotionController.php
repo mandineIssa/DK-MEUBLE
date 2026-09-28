@@ -72,6 +72,15 @@ class PromotionController extends Controller
             ],
             'categories' => $categories,
             'legal_text' => $settings['legal_text'] ?? '',
+            'banner' => [
+                'enabled' => (bool) ($settings['banner_enabled'] ?? true),
+                'title' => $settings['banner_title'] ?? '',
+                'subtitle' => $settings['banner_subtitle'] ?? '',
+                'button_label' => $settings['banner_button_label'] ?? '',
+                'button_href' => $settings['banner_button_href'] ?? '#offres',
+                'image' => $settings['banner_image'] ?? '',
+                'show_countdown' => (bool) ($settings['show_countdown'] ?? true),
+            ],
         ]);
     }
 

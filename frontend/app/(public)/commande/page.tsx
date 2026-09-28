@@ -84,14 +84,14 @@ export default function CommandePage() {
 
   return (
     <div className="bg-[#ececec]">
-      <section className="bg-brand-black text-white">
+      <section className="bg-white text-brand-black">
         <div className="mx-auto max-w-3xl px-4 py-10">
           <h1 className="text-3xl font-extrabold">Commande</h1>
         </div>
       </section>
       <form onSubmit={onSubmit} className="mx-auto max-w-3xl space-y-4 px-4 py-8">
         <div className="space-y-3 rounded-2xl bg-white p-5 shadow-sm">
-          <h2 className="font-bold">Informations</h2>
+          <h2 className="font-bold">1. Informations client</h2>
           <input
             required
             placeholder="Nom complet *"
@@ -116,7 +116,7 @@ export default function CommandePage() {
         </div>
 
         <div className="space-y-3 rounded-2xl bg-white p-5 shadow-sm">
-          <h2 className="font-bold">Livraison</h2>
+          <h2 className="font-bold">2. Adresse et mode de livraison</h2>
           <div className="flex gap-3">
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -188,7 +188,7 @@ export default function CommandePage() {
         </div>
 
         <div className="space-y-3 rounded-2xl bg-white p-5 shadow-sm">
-          <h2 className="font-bold">Paiement</h2>
+          <h2 className="font-bold">3. Paiement</h2>
           {payments.map((p) => (
             <label key={p.key} className="flex items-center gap-2 text-sm">
               <input
@@ -209,6 +209,7 @@ export default function CommandePage() {
         </div>
 
         <div className="rounded-2xl bg-white p-5 shadow-sm">
+          <h2 className="mb-3 font-bold">4. Confirmation</h2>
           <p className="flex justify-between text-sm">
             <span>Sous-total</span>
             <span>{cart.subtotal.toLocaleString("fr-FR")} FCFA</span>

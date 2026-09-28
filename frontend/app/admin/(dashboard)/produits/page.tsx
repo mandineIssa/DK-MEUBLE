@@ -6,6 +6,26 @@ import { adminApi, AdminProduct } from "@/lib/adminApi";
 import { api, Category, imageUrl } from "@/lib/api";
 import AdminMultiImageGallery, { type GalleryImage } from "@/components/admin/AdminMultiImageGallery";
 
+function specsToLines(specs?: Record<string, unknown> | null) {
+  if (!specs) return "";
+  return Object.entries(specs)
+    .filter(([, value]) => value != null && String(value).trim() !== "")
+    .map(([key, value]) => `${key}: ${value}`)
+    .join("\n");
+}
+
+function linesToSpecs(text: string) {
+  const specs: Record<string, string> = {};
+  for (const line of text.split(/\n/)) {
+    const cut = line.indexOf(":");
+    if (cut < 1) continue;
+    const key = line.slice(0, cut).trim();
+    const value = line.slice(cut + 1).trim();
+    if (key && value) specs[key] = value;
+  }
+  return specs;
+}
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -121,6 +141,7 @@ export default function AdminProductsPage() {
       is_clearance: form.get("is_clearance") === "on",
       is_customizable: form.get("is_customizable") === "on",
       status: (form.get("status") as "draft" | "published" | "archived") || "published",
+      specs: linesToSpecs(String(form.get("specs_text") || "")),
     };
 
     setSaving(true);
@@ -339,6 +360,18 @@ export default function AdminProductsPage() {
               name="short_description"
               defaultValue={editing?.short_description || ""}
               className="w-full rounded-xl border border-brand-black/15 px-3 py-2.5 text-sm"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-brand-black/70">
+              Caractéristiques (une par ligne : Libellé: valeur)
+            </label>
+            <textarea
+              name="specs_text"
+              rows={5}
+              defaultValue={specsToLines(editing?.specs)}
+              placeholder={"Capacité: 320 L\nNombre de portes: 2"}
+              className="w-full rounded-xl border border-brand-black/15 px-3 py-2.5 font-mono text-sm"
             />
           </div>
           <div>

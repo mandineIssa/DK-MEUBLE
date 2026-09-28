@@ -4,6 +4,35 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { imageUrl, type SiteSettings } from "@/lib/api";
 
+const defaultProductPage: NonNullable<SiteSettings["product_page"]> = {
+  show_delivery: true,
+  delivery_title: "Livraison estimée",
+  delivery_line_1: "Dakar : 24–48 h · 5 000 FCFA",
+  delivery_line_2: "Autres régions : 3–7 jours · 8 000 FCFA",
+  delivery_link_label: "Voir la livraison",
+  delivery_is_example: true,
+  show_installation: true,
+  installation_title: "Installation disponible",
+  installation_text: "Pose et mise en service sur demande.",
+  installation_link_label: "Voir les services",
+  show_installment: true,
+  installment_title: "Paiement échelonné",
+  installment_text: "À partir de 20 000 FCFA / mois",
+  installment_link_label: "Voir les conditions",
+  installment_is_example: true,
+  show_share: true,
+  share_title: "Partager",
+  example_discount: "−20 %",
+  example_stock: "En stock",
+  example_specs:
+    "Marque: Hisense\nCapacité: 320 L\nNombre de portes: 2\nClasse énergétique: A+\nDimensions (L × P × H): 60 × 65 × 170 cm\nPoids: 65 kg\nGarantie: 12 mois",
+  reviews: [
+    { name: "Awa D.", city: "Dakar", rating: 5, body: "Très bon réfrigérateur, livraison rapide. Je recommande." },
+    { name: "Boubacar S.", city: "Thiès", rating: 5, body: "Produit conforme à la description. Service impeccable." },
+    { name: "Fatou K.", city: "Mbour", rating: 4, body: "Excellent rapport qualité-prix." },
+  ],
+};
+
 const empty: SiteSettings = {
   brand: { name: "DK HOMETECH", logo_url: "" },
   contact: {
@@ -15,10 +44,21 @@ const empty: SiteSettings = {
     address: "",
     hours: "",
     maps_embed: "",
+    video_url: "",
+    video_poster: "",
   },
   socials: { facebook: "", instagram: "", tiktok: "", youtube: "" },
   footer: { trust: ["", "", ""] },
   seo: { title: "", description: "" },
+  topbar: {
+    enabled: true,
+    text_1: "Livraison partout au Sénégal",
+    text_2: "Paiement Wave, Orange Money, espèces",
+    phone_label: "Appelez-nous",
+    show_phone: true,
+    phone: "",
+  },
+  product_page: defaultProductPage,
 };
 
 function normalizeForm(data: Partial<SiteSettings> | SiteSettings): SiteSettings {
@@ -37,6 +77,24 @@ function normalizeForm(data: Partial<SiteSettings> | SiteSettings): SiteSettings
       ],
     },
     seo: { ...empty.seo, ...data.seo },
+    topbar: {
+      enabled: data.topbar?.enabled !== false,
+      text_1: String(data.topbar?.text_1 ?? empty.topbar?.text_1 ?? ""),
+      text_2: String(data.topbar?.text_2 ?? empty.topbar?.text_2 ?? ""),
+      phone_label: String(data.topbar?.phone_label ?? empty.topbar?.phone_label ?? ""),
+      show_phone: data.topbar?.show_phone !== false,
+      phone: String(data.topbar?.phone ?? ""),
+    },
+    product_page: {
+      ...defaultProductPage,
+      ...data.product_page,
+      reviews: [0, 1, 2].map((i) => ({
+        name: String(data.product_page?.reviews?.[i]?.name ?? defaultProductPage.reviews?.[i]?.name ?? ""),
+        city: String(data.product_page?.reviews?.[i]?.city ?? defaultProductPage.reviews?.[i]?.city ?? ""),
+        rating: Number(data.product_page?.reviews?.[i]?.rating ?? defaultProductPage.reviews?.[i]?.rating ?? 5),
+        body: String(data.product_page?.reviews?.[i]?.body ?? defaultProductPage.reviews?.[i]?.body ?? ""),
+      })),
+    },
   };
 }
 
@@ -211,6 +269,219 @@ export default function AdminParametresPage() {
         </section>
 
         <section className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="font-bold text-brand-black">Bandeau supérieur</h2>
+          <p className="mt-1 text-xs text-brand-black/50">
+            La barre noire tout en haut du site. Le numéro, s’il est vide, reprend le téléphone principal.
+          </p>
+          <label className="mt-4 flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.topbar?.enabled !== false}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  topbar: { ...f.topbar, enabled: e.target.checked },
+                }))
+              }
+            />
+            Afficher le bandeau
+          </label>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <label className="block text-sm">
+              <span className="text-brand-black/60">Texte 1</span>
+              <input
+                className="mt-1 w-full rounded-xl border border-brand-black/10 px-3 py-2"
+                value={form.topbar?.text_1 || ""}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, topbar: { ...f.topbar, text_1: e.target.value } }))
+                }
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-brand-black/60">Texte 2</span>
+              <input
+                className="mt-1 w-full rounded-xl border border-brand-black/10 px-3 py-2"
+                value={form.topbar?.text_2 || ""}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, topbar: { ...f.topbar, text_2: e.target.value } }))
+                }
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-brand-black/60">Libellé du téléphone</span>
+              <input
+                className="mt-1 w-full rounded-xl border border-brand-black/10 px-3 py-2"
+                value={form.topbar?.phone_label || ""}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, topbar: { ...f.topbar, phone_label: e.target.value } }))
+                }
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-brand-black/60">Téléphone du bandeau</span>
+              <input
+                className="mt-1 w-full rounded-xl border border-brand-black/10 px-3 py-2"
+                placeholder="783133828"
+                value={form.topbar?.phone || ""}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, topbar: { ...f.topbar, phone: e.target.value } }))
+                }
+              />
+            </label>
+          </div>
+          <label className="mt-3 flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.topbar?.show_phone !== false}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  topbar: { ...f.topbar, show_phone: e.target.checked },
+                }))
+              }
+            />
+            Afficher le téléphone
+          </label>
+        </section>
+
+        <section className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="font-bold text-brand-black">Fiche produit</h2>
+          <p className="mt-1 text-xs text-brand-black/50">
+            Colonne de droite, réduction et avis affichés quand le produit n’a pas encore ses propres données. Laissez un texte vide pour le masquer.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                ["delivery_title", "Titre livraison"],
+                ["delivery_line_1", "Livraison, ligne 1"],
+                ["delivery_line_2", "Livraison, ligne 2"],
+                ["delivery_link_label", "Lien livraison"],
+                ["installation_title", "Titre installation"],
+                ["installation_text", "Texte installation"],
+                ["installation_link_label", "Lien installation"],
+                ["installment_title", "Titre paiement échelonné"],
+                ["installment_text", "Texte paiement échelonné"],
+                ["installment_link_label", "Lien paiement"],
+                ["share_title", "Titre partage"],
+                ["example_discount", "Badge réduction d’exemple"],
+                ["example_stock", "Badge stock d’exemple"],
+              ] as const
+            ).map(([key, label]) => (
+              <label key={key} className="block text-sm">
+                <span className="text-brand-black/60">{label}</span>
+                <input
+                  className="mt-1 w-full rounded-xl border border-brand-black/10 px-3 py-2"
+                  value={String(form.product_page?.[key] ?? "")}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      product_page: { ...f.product_page, [key]: e.target.value },
+                    }))
+                  }
+                />
+              </label>
+            ))}
+          </div>
+          <label className="mt-3 block text-sm">
+            <span className="text-brand-black/60">Caractéristiques d’exemple (une par ligne : Libellé: valeur)</span>
+            <textarea
+              rows={6}
+              className="mt-1 w-full rounded-xl border border-brand-black/10 px-3 py-2 font-mono text-sm"
+              value={form.product_page?.example_specs || ""}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  product_page: { ...f.product_page, example_specs: e.target.value },
+                }))
+              }
+            />
+          </label>
+          <div className="mt-3 flex flex-wrap gap-4 text-sm">
+            {(
+              [
+                ["show_delivery", "Afficher la livraison"],
+                ["delivery_is_example", "Marquer la livraison comme exemple"],
+                ["show_installation", "Afficher l’installation"],
+                ["show_installment", "Afficher le paiement échelonné"],
+                ["installment_is_example", "Marquer le paiement comme exemple"],
+                ["show_share", "Afficher le partage"],
+              ] as const
+            ).map(([key, label]) => (
+              <label key={key} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={form.product_page?.[key] !== false}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      product_page: { ...f.product_page, [key]: e.target.checked },
+                    }))
+                  }
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+          <div className="mt-5 space-y-3">
+            <p className="text-sm font-semibold text-brand-black">Avis d’exemple</p>
+            {(form.product_page?.reviews || []).map((review, index) => (
+              <div key={index} className="grid gap-2 rounded-xl border border-black/5 p-3 sm:grid-cols-4">
+                <input
+                  className="rounded-xl border border-brand-black/10 px-3 py-2 text-sm"
+                  placeholder="Prénom"
+                  value={review.name || ""}
+                  onChange={(e) =>
+                    setForm((f) => {
+                      const reviews = [...(f.product_page?.reviews || [])];
+                      reviews[index] = { ...reviews[index], name: e.target.value };
+                      return { ...f, product_page: { ...f.product_page, reviews } };
+                    })
+                  }
+                />
+                <input
+                  className="rounded-xl border border-brand-black/10 px-3 py-2 text-sm"
+                  placeholder="Ville"
+                  value={review.city || ""}
+                  onChange={(e) =>
+                    setForm((f) => {
+                      const reviews = [...(f.product_page?.reviews || [])];
+                      reviews[index] = { ...reviews[index], city: e.target.value };
+                      return { ...f, product_page: { ...f.product_page, reviews } };
+                    })
+                  }
+                />
+                <input
+                  type="number"
+                  min={1}
+                  max={5}
+                  className="rounded-xl border border-brand-black/10 px-3 py-2 text-sm"
+                  value={review.rating ?? 5}
+                  onChange={(e) =>
+                    setForm((f) => {
+                      const reviews = [...(f.product_page?.reviews || [])];
+                      reviews[index] = { ...reviews[index], rating: Number(e.target.value) };
+                      return { ...f, product_page: { ...f.product_page, reviews } };
+                    })
+                  }
+                />
+                <input
+                  className="rounded-xl border border-brand-black/10 px-3 py-2 text-sm sm:col-span-4"
+                  placeholder="Commentaire"
+                  value={review.body || ""}
+                  onChange={(e) =>
+                    setForm((f) => {
+                      const reviews = [...(f.product_page?.reviews || [])];
+                      reviews[index] = { ...reviews[index], body: e.target.value };
+                      return { ...f, product_page: { ...f.product_page, reviews } };
+                    })
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="font-bold text-brand-black">Contact</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {(
@@ -272,6 +543,37 @@ export default function AdminParametresPage() {
                 <code className="rounded bg-black/5 px-1">src</code> (ou tout le code iframe).
                 Ne collez pas simplement www.google.com — Google bloque l’affichage dans une iframe.
               </p>
+            </label>
+            <label className="block text-sm sm:col-span-2">
+              <span className="text-brand-black/60">Lien de la vidéo du magasin</span>
+              <input
+                className="mt-1 w-full rounded-xl border border-brand-black/10 px-3 py-2"
+                placeholder="https://www.youtube.com/watch?v=... ou https://.../visite.mp4"
+                value={form.contact.video_url || ""}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    contact: { ...f.contact, video_url: e.target.value },
+                  }))
+                }
+              />
+              <p className="mt-1 text-xs text-brand-black/45">
+                YouTube, Facebook ou fichier .mp4. Si ce champ est vide, la vidéo du magasin déjà sur le site est affichée.
+              </p>
+            </label>
+            <label className="block text-sm sm:col-span-2">
+              <span className="text-brand-black/60">Image d’attente de la vidéo</span>
+              <input
+                className="mt-1 w-full rounded-xl border border-brand-black/10 px-3 py-2"
+                placeholder="/contact-visite-dk-hometech.png"
+                value={form.contact.video_poster || ""}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    contact: { ...f.contact, video_poster: e.target.value },
+                  }))
+                }
+              />
             </label>
           </div>
         </section>

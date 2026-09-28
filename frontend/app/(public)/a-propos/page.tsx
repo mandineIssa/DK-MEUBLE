@@ -34,7 +34,7 @@ export default async function AboutPage() {
 
   return (
     <div className="bg-[#ececec]">
-      <section className="bg-brand-black text-white">
+      <section className="bg-white text-brand-black">
         <div className="mx-auto max-w-7xl px-4 py-10 md:px-6 md:py-14">
           <p className="text-sm font-medium uppercase tracking-wider text-brand-orange">
             {hero.eyebrow || "À propos de DK HOMETECH"}
@@ -43,7 +43,7 @@ export default async function AboutPage() {
             {hero.title || "Bienvenue chez DK HOMETECH"}
           </h1>
           {hero.subtitle && (
-            <p className="mt-3 max-w-2xl text-lg text-white/80">{hero.subtitle}</p>
+            <p className="mt-3 max-w-2xl text-lg text-brand-black/70">{hero.subtitle}</p>
           )}
         </div>
       </section>

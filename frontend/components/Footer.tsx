@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { CSSProperties, FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { formatSnPhone } from "@/lib/phone";
 import SiteBrand from "@/components/SiteBrand";
 
 type FooterPayload = Awaited<ReturnType<typeof api.getFooter>>;
@@ -371,17 +372,20 @@ export default function Footer() {
                 {phones.length > 0 ? (
                   <li>
                     <span style={{ color: "var(--footer-text-muted)" }}>Téléphone : </span>
-                    {phones.map((p, i) => (
-                      <span key={p}>
-                        {i > 0 ? ", " : ""}
-                        <a
-                          href={`tel:${p.replace(/\D/g, "")}`}
-                          className="hover:text-[var(--footer-link-hover)]"
-                        >
-                          {p}
-                        </a>
-                      </span>
-                    ))}
+                    {phones.map((p, i) => {
+                      const formatted = formatSnPhone(p);
+                      return (
+                        <span key={p}>
+                          {i > 0 ? ", " : ""}
+                          <a
+                            href={`tel:${formatted.tel}`}
+                            className="hover:text-[var(--footer-link-hover)]"
+                          >
+                            {formatted.display}
+                          </a>
+                        </span>
+                      );
+                    })}
                   </li>
                 ) : null}
               </ul>

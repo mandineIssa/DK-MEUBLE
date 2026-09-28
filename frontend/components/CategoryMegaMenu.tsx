@@ -87,6 +87,7 @@ export default function CategoryMegaMenu({
               </p>
             </div>
           ) : (
+            <>
             <div className="flex min-h-[280px] max-h-[70vh]">
               <aside className="w-[240px] shrink-0 overflow-y-auto border-r border-black/5 bg-[#fafafa]">
                 <ul>
@@ -194,6 +195,12 @@ export default function CategoryMegaMenu({
                 )}
               </div>
             </div>
+            <div className="flex flex-wrap gap-4 border-t border-black/5 px-5 py-3 text-xs font-bold uppercase">
+              <Link href="/promotions" onClick={close} className="hover:text-brand-orange">Promotions</Link>
+              <Link href="/destockage" onClick={close} className="hover:text-brand-orange">Déstockage</Link>
+              <Link href="/reconditionne" onClick={close} className="hover:text-brand-orange">Reconditionné</Link>
+            </div>
+            </>
           )}
         </div>
       ) : null}

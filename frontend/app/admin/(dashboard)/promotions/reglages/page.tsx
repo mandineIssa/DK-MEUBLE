@@ -154,6 +154,47 @@ export default function AdminPromoSettingsPage() {
             />
           </label>
 
+          <div className="border-t border-black/5 pt-4">
+            <p className="font-bold text-brand-black">Bandeau de la page promotions</p>
+            <p className="mt-1 text-xs text-brand-black/50">
+              Dans le sous-titre, {"{max}"} est remplacé par la plus forte réduction réelle. Le compte à rebours utilise la date de fin de chaque offre.
+            </p>
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.banner_enabled !== false}
+              onChange={(e) => setForm((f) => f && { ...f, banner_enabled: e.target.checked })}
+            />
+            Afficher le bandeau
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.show_countdown !== false}
+              onChange={(e) => setForm((f) => f && { ...f, show_countdown: e.target.checked })}
+            />
+            Afficher le compte à rebours (jours, heures, minutes)
+          </label>
+          {(
+            [
+              ["banner_title", "Titre"],
+              ["banner_subtitle", "Sous-titre"],
+              ["banner_button_label", "Texte du bouton"],
+              ["banner_button_href", "Lien du bouton"],
+              ["banner_image", "Image produit du bandeau (URL ou chemin storage)"],
+            ] as const
+          ).map(([key, label]) => (
+            <label key={key} className="block text-sm">
+              <span className="text-brand-black/60">{label}</span>
+              <input
+                className="mt-1 w-full rounded-xl border border-brand-black/10 px-3 py-2"
+                value={form[key] || ""}
+                onChange={(e) => setForm((f) => f && { ...f, [key]: e.target.value })}
+              />
+            </label>
+          ))}
+
           <label className="block text-sm">
             <span className="text-brand-black/60">Texte légal (bas de page publique)</span>
             <textarea

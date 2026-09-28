@@ -39,7 +39,18 @@ export default async function ProductDetailPage({ params }: Props) {
   const product = await api.getProduct(params.slug).catch(() => null);
   if (!product) notFound();
 
-  const reviews = await api.getProductReviews(product.slug).catch(() => null);
+  const [reviews, categoryProducts, latestProducts, settings] = await Promise.all([
+    api.getProductReviews(product.slug).catch(() => null),
+    product.category?.slug
+      ? api.getProducts({ category: product.category.slug, per_page: "8" }).catch(() => [])
+      : Promise.resolve([]),
+    api.getProducts({ per_page: "8" }).catch(() => []),
+    api.getSettings().catch(() => null),
+  ]);
+  const settingsProductPage = settings?.product_page;
+  const similarProducts = [...categoryProducts, ...latestProducts]
+    .filter((item, index, list) => item.id !== product.id && list.findIndex((row) => row.id === item.id) === index)
+    .slice(0, 4);
   const average = reviews?.average || 0;
   const count = reviews?.count || 0;
 
@@ -62,7 +73,14 @@ export default async function ProductDetailPage({ params }: Props) {
           }),
         ]}
       />
-      <ProductDetailClient product={product} />
+      <ProductDetailClient
+        product={product}
+        similarProducts={similarProducts}
+        reviewAverage={count > 0 ? average : 4.8}
+        reviewCount={count > 0 ? count : (settingsProductPage?.reviews?.filter((r) => r.body).length || 0)}
+        reviewsAreExample={count === 0}
+        productPage={settingsProductPage}
+      />
     </>
   );
 }

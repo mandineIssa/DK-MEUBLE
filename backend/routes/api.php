@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\Admin\AnalyticsController as AdminAnalyticsControll
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\Auth\OAuthController;
 use App\Http\Controllers\Api\Auth\OtpController;
+use App\Http\Controllers\Api\Auth\PasswordAuthController;
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
@@ -115,6 +116,17 @@ Route::prefix('auth')->group(function () {
     Route::post('/request-otp', [OtpController::class, 'requestOtp'])
         ->middleware(app()->environment('local') ? 'throttle:15,10' : 'throttle:3,10');
     Route::post('/verify-otp', [OtpController::class, 'verifyOtp'])
+        ->middleware('throttle:10,1');
+
+    Route::post('/identify', [PasswordAuthController::class, 'identify'])
+        ->middleware('throttle:20,1');
+    Route::post('/register', [PasswordAuthController::class, 'register'])
+        ->middleware('throttle:10,1');
+    Route::post('/login', [PasswordAuthController::class, 'login'])
+        ->middleware('throttle:10,1');
+    Route::post('/forgot-password', [PasswordAuthController::class, 'forgotPassword'])
+        ->middleware('throttle:5,1');
+    Route::post('/reset-password', [PasswordAuthController::class, 'resetPassword'])
         ->middleware('throttle:10,1');
 
     Route::get('/oauth/providers', [OAuthController::class, 'providers']);

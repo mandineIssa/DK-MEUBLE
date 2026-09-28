@@ -21,7 +21,9 @@ export default function WhatsAppButton() {
         setEnabled(w.enabled !== false);
         setAgentImage(w.agent_image || "");
         const phone = (w.phone || site.whatsapp || "").replace(/\D/g, "");
-        const msg = w.message || "Bonjour, je souhaite des informations sur vos produits.";
+        const msg =
+          w.message ||
+          "Bonjour DK HOMETECH, je suis intéressé par un produit et j'aimerais avoir plus d'informations.";
         setHref(waLink(msg, phone) || fallback);
       })
       .catch(() => setHref(fallback));
@@ -35,7 +37,7 @@ export default function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contacter DK HOMETECH sur WhatsApp"
-      className="fixed bottom-6 right-6 z-50 hidden items-center gap-2 md:flex"
+      className="fixed bottom-24 right-4 z-50 flex items-center gap-2 md:bottom-6 md:right-6"
     >
       {agentImage ? (
         <span className="relative h-12 w-12 overflow-hidden rounded-full border-2 border-white shadow-lg">

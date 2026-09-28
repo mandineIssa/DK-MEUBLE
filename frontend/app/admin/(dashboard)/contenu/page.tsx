@@ -59,6 +59,11 @@ export default function AdminContenuPage() {
       <p className="mt-1 text-sm text-brand-black/60">
         Modifiez les textes et images des pages publiques (format JSON structuré).
       </p>
+      {pageKey === "home" ? (
+        <p className="mt-3 rounded-xl bg-white p-3 text-sm text-brand-black/70">
+          Le bandeau et les blocs de l’accueil se règlent dans Admin → Accueil. Ce JSON n’est plus affiché sur la page d’accueil.
+        </p>
+      ) : null}
 
       <div className="mt-5 flex flex-wrap gap-2">
         {PAGES.map((p) => (

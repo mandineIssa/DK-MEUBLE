@@ -22,7 +22,7 @@ export default async function QuotePage({
 
   return (
     <div className="bg-[#ececec]">
-      <section className="bg-brand-black text-white">
+      <section className="bg-white text-brand-black">
         <div className="mx-auto max-w-7xl px-4 py-10 md:px-6 md:py-12">
           <p className="text-sm font-medium uppercase tracking-wider text-brand-orange">
             {hero.eyebrow || "Devis"}
@@ -30,7 +30,7 @@ export default async function QuotePage({
           <h1 className="mt-2 text-3xl font-extrabold md:text-4xl">
             {hero.title || "Demande de devis"}
           </h1>
-          <p className="mt-3 max-w-2xl text-white/75">
+          <p className="mt-3 max-w-2xl text-brand-black/70">
             {hero.subtitle ||
               "Particulier ou entreprise : décrivez votre besoin et nous vous recontactons avec une proposition adaptée."}
           </p>

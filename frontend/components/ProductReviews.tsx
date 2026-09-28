@@ -13,7 +13,13 @@ type Review = {
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-export default function ProductReviews({ slug }: { slug: string }) {
+export default function ProductReviews({
+  slug,
+  samples,
+}: {
+  slug: string;
+  samples?: Array<{ name?: string; city?: string; rating?: number; body?: string }>;
+}) {
   const [average, setAverage] = useState(0);
   const [count, setCount] = useState(0);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -72,28 +78,56 @@ export default function ProductReviews({ slug }: { slug: string }) {
 
   return (
     <section className="mt-8 rounded-2xl bg-white p-5 shadow-sm">
-      <div>
-        <h2 className="font-bold text-brand-black">Avis clients</h2>
-        <p className="text-sm text-brand-black/60">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-extrabold text-brand-black">Avis clients</h2>
           {count > 0 ? (
-            <>
-              {average}/5 · {count} avis
-            </>
+            <p className="mt-1 text-brand-black">
+              <span className="text-3xl font-extrabold">{average.toLocaleString("fr-FR")}</span>
+              <span className="ml-2 text-brand-orange">{"★".repeat(Math.round(average))}{"☆".repeat(5 - Math.round(average))}</span>
+              <span className="ml-2 text-sm text-brand-black/55">{count} avis</span>
+            </p>
           ) : (
-            "Soyez le premier à donner votre avis"
+            <p className="mt-1 text-brand-black">
+              <span className="text-3xl font-extrabold">4,8</span>
+              <span className="ml-2 text-brand-orange">★★★★★</span>
+              <span className="ml-2 text-sm text-brand-black/55">Exemple</span>
+            </p>
           )}
-        </p>
+        </div>
       </div>
 
-      <ul className="mt-4 space-y-3">
-        {reviews.map((r) => (
+      <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {(reviews.length > 0
+          ? reviews.map((r) => ({ ...r, city: "" }))
+          : (samples || [])
+              .filter((r) => r.name && r.body)
+              .map((r, i) => ({
+                id: -1 - i,
+                author_name: r.name || "",
+                city: r.city || "",
+                rating: r.rating || 5,
+                title: null,
+                body: r.body || "",
+                created_at: "",
+              }))
+        ).map((r) => (
           <li key={r.id} className="rounded-xl bg-[#f5f5f5] p-4">
-            <p className="text-sm font-semibold text-brand-black">
-              {r.author_name}{" "}
-              <span className="text-brand-orange">
-                {"★".repeat(r.rating)}
-                {"☆".repeat(5 - r.rating)}
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-orange/15 text-xs font-bold text-brand-orange">
+                {r.author_name.slice(0, 1)}
               </span>
+              <div>
+                <p className="text-sm font-semibold text-brand-black">{r.author_name}</p>
+                <p className="text-xs text-brand-black/50">
+                  {"city" in r && r.city ? r.city : "Client"}
+                  {r.id < 0 ? " · Exemple" : ""}
+                </p>
+              </div>
+            </div>
+            <p className="mt-2 text-brand-orange">
+              {"★".repeat(r.rating)}
+              {"☆".repeat(5 - r.rating)}
             </p>
             {r.title && <p className="mt-1 text-sm font-medium">{r.title}</p>}
             <p className="mt-1 whitespace-pre-line text-sm text-brand-black/70">{r.body}</p>

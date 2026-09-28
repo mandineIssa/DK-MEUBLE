@@ -32,6 +32,16 @@ class HomepageService
             'title' => 'Bannière principale',
             'display_order' => 10,
             'is_active' => true,
+            'meta' => [
+                'headline' => 'L’équipement de votre maison',
+                'subhead' => 'Électroménager · Mobilier · Électronique',
+                'body' => 'Qualité, confort et service au meilleur prix au Sénégal.',
+                'primary_label' => 'Découvrir nos produits',
+                'secondary_label' => 'Voir les promotions',
+                'secondary_href' => '/promotions',
+                'categories_label' => 'Toutes les catégories',
+                'interval_seconds' => 5,
+            ],
         ]);
 
         HomepageSlide::create([

@@ -4,6 +4,9 @@ import HomeTrustBadges from "@/components/home/HomeTrustBadges";
 import HomeCategoryGrid from "@/components/home/HomeCategoryGrid";
 import HomeProductCarousel from "@/components/home/HomeProductCarousel";
 import HomeBrands from "@/components/home/HomeBrands";
+import HomeActions from "@/components/home/HomeActions";
+import HomeVisit from "@/components/home/HomeVisit";
+import HomeOffers from "@/components/home/HomeOffers";
 import { api } from "@/lib/api";
 import { buildPageMetadata, SITE_NAME } from "@/lib/seo";
 
@@ -52,7 +55,7 @@ export default async function HomePage() {
 
         switch (section.type) {
           case "hero":
-            return <HomeHeroSlider key={section.id} slides={section.slides || []} />;
+            return <HomeHeroSlider key={section.id} slides={section.slides || []} meta={section.meta} />;
           case "trust_badges":
             return (
               <div key={section.id} className={bgClass}>
@@ -90,6 +93,9 @@ export default async function HomePage() {
             return null;
         }
       })}
+      <HomeOffers />
+      <HomeVisit />
+      <HomeActions />
     </div>
   );
 }

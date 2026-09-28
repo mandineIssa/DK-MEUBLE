@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import type { Product } from "@/lib/api";
 import { imageUrl } from "@/lib/api";
 import { useCart } from "@/components/CartProvider";
+import FavoriteButton from "@/components/FavoriteButton";
 import ProductQuickView from "@/components/home/ProductQuickView";
 
 export default function HomeProductCarousel({
@@ -85,6 +86,8 @@ export default function HomeProductCarousel({
           const cover = product.images?.[0];
           const effective = product.effective_price ?? product.price;
           const compare = product.compare_at_price;
+          const saving =
+            compare && effective != null && compare > effective ? compare - effective : null;
           return (
             <article
               key={product.id}
@@ -92,7 +95,7 @@ export default function HomeProductCarousel({
               style={{ border: "1px solid var(--border-light)" }}
             >
               <div className="relative aspect-[4/3]" style={{ background: "var(--content-bg-alt)" }}>
-                <Link href={`/produits/${product.slug}`}>
+                <Link href={`/produits/${product.slug}`} className="relative block h-full">
                   {cover ? (
                     <Image
                       src={imageUrl(cover.path)}
@@ -112,6 +115,9 @@ export default function HomeProductCarousel({
                     {product.badge_label}
                   </span>
                 ) : null}
+                <span className="absolute right-2 top-2 z-10">
+                  <FavoriteButton productId={product.id} />
+                </span>
               </div>
               <div className="p-3">
                 <p
@@ -134,6 +140,11 @@ export default function HomeProductCarousel({
                   {compare ? (
                     <p className="price-compare text-[11px]">
                       {compare.toLocaleString("fr-FR")} FCFA
+                    </p>
+                  ) : null}
+                  {saving ? (
+                    <p className="text-[11px] font-semibold text-brand-orange">
+                      −{saving.toLocaleString("fr-FR")} FCFA
                     </p>
                   ) : null}
                 </div>

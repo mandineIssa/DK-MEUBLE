@@ -16,13 +16,14 @@ export default function OtpForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(60);
+  const [debugCode, setDebugCode] = useState("");
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     const ch = (sessionStorage.getItem("dk_otp_channel") || "phone") as Channel;
     const p = sessionStorage.getItem("dk_otp_phone") || "";
     const e = sessionStorage.getItem("dk_otp_email") || "";
-    sessionStorage.removeItem("dk_otp_debug");
+    setDebugCode(sessionStorage.getItem("dk_otp_debug") || "");
 
     if (ch === "email" && !e) {
       router.replace("/compte/connexion");
@@ -139,6 +140,12 @@ export default function OtpForm() {
             />
           ))}
         </div>
+
+        {debugCode ? (
+          <p className="rounded-xl bg-[#f7f7f7] px-3 py-2 text-xs text-brand-black/70">
+            Code de test (environnement local) : {debugCode}
+          </p>
+        ) : null}
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

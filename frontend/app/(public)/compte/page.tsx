@@ -93,6 +93,7 @@ export default function ComptePage() {
   async function logout() {
     await customerApi.logout();
     router.push("/");
+    router.refresh();
   }
 
   if (!profile) {
@@ -304,7 +305,7 @@ export default function ComptePage() {
           )}
         </section>
 
-        <section className="rounded-2xl bg-white p-6 shadow-sm">
+        <section id="favoris" className="rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="font-bold text-brand-black">Liste de souhaits</h2>
           {!wishlist.length ? (
             <p className="mt-4 text-sm text-brand-black/50">Aucun favori.</p>

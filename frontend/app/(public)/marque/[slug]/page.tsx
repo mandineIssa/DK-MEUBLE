@@ -51,7 +51,7 @@ export default async function MarquePage({ params }: { params: { slug: string } 
         ]}
       />
       <div className="bg-[#ececec]">
-        <section className="bg-brand-black text-white">
+        <section className="bg-white text-brand-black">
           <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-10 md:px-6">
             {data.brand.logo_path ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -64,9 +64,9 @@ export default async function MarquePage({ params }: { params: { slug: string } 
             <div>
               <h1 className="text-3xl font-extrabold">{data.brand.name}</h1>
               {data.brand.description ? (
-                <p className="mt-2 max-w-2xl text-white/75">{data.brand.description}</p>
+                <p className="mt-2 max-w-2xl text-brand-black/70">{data.brand.description}</p>
               ) : null}
-              <p className="mt-2 text-sm text-white/60">{data.meta.total} produits</p>
+              <p className="mt-2 text-sm text-brand-black/60">{data.meta.total} produits</p>
             </div>
           </div>
         </section>

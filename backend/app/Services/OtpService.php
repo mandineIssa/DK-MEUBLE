@@ -17,10 +17,17 @@ class OtpService
         $phone = $this->normalizePhone($phone);
         $plain = $this->storeOtp('phone', $phone, null);
 
-        $this->sms->send(
-            $phone,
-            "DK HOMETECH : votre code est {$plain}. Valable 5 minutes."
-        );
+        try {
+            $this->sms->send(
+                $phone,
+                "DK HOMETECH : votre code est {$plain}. Valable 5 minutes."
+            );
+        } catch (\Throwable $e) {
+            if (! app()->environment('local')) {
+                throw $e;
+            }
+            report($e);
+        }
 
         return $plain;
     }

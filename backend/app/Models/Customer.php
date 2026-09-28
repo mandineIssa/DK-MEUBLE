@@ -16,6 +16,7 @@ class Customer extends Authenticatable
         'phone',
         'name',
         'email',
+        'password',
         'google_id',
         'facebook_id',
         'phone_verified_at',
@@ -24,11 +25,16 @@ class Customer extends Authenticatable
         'email_opt_in',
     ];
 
+    protected $hidden = [
+        'password',
+    ];
+
     protected $casts = [
         'phone_verified_at' => 'datetime',
         'is_b2b' => 'boolean',
         'sms_opt_in' => 'boolean',
         'email_opt_in' => 'boolean',
+        'password' => 'hashed',
     ];
 
     public function company(): BelongsTo

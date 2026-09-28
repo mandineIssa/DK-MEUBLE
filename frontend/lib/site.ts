@@ -27,6 +27,12 @@ export type SiteInfo = {
   seoTitle: string;
   seoDescription: string;
   socialUrls: SiteSettings["socials"];
+  topbarEnabled: boolean;
+  topbarText1: string;
+  topbarText2: string;
+  topbarPhoneLabel: string;
+  topbarShowPhone: boolean;
+  topbarPhone: string;
 };
 
 const SOCIAL_META: Omit<SiteSocial, "href">[] = [
@@ -78,6 +84,12 @@ export const EMPTY_SITE: SiteInfo = {
     youtube: "",
     instagram: "",
   },
+  topbarEnabled: true,
+  topbarText1: "Livraison partout au Sénégal",
+  topbarText2: "Paiement Wave, Orange Money, espèces",
+  topbarPhoneLabel: "Appelez-nous",
+  topbarShowPhone: true,
+  topbarPhone: "",
 };
 
 /** @deprecated Utiliser getSite() — uniquement l’URL du site pour sitemap/robots */
@@ -139,6 +151,12 @@ export function siteFromSettings(settings: SiteSettings): SiteInfo {
       tiktok: String(socials.tiktok || "").trim(),
       youtube: String(socials.youtube || "").trim(),
     },
+    topbarEnabled: settings.topbar?.enabled !== false,
+    topbarText1: String(settings.topbar?.text_1 ?? EMPTY_SITE.topbarText1).trim(),
+    topbarText2: String(settings.topbar?.text_2 ?? EMPTY_SITE.topbarText2).trim(),
+    topbarPhoneLabel: String(settings.topbar?.phone_label ?? EMPTY_SITE.topbarPhoneLabel).trim(),
+    topbarShowPhone: settings.topbar?.show_phone !== false,
+    topbarPhone: String(settings.topbar?.phone || "").trim(),
   };
 }
 

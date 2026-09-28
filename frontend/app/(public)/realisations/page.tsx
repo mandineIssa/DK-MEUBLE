@@ -22,7 +22,7 @@ export default async function RealisationsPage() {
 
   return (
     <div className="bg-[#ececec]">
-      <section className="bg-brand-black text-white">
+      <section className="bg-white text-brand-black">
         <div className="mx-auto max-w-7xl px-4 py-10 md:px-6 md:py-14">
           <p className="text-sm font-medium uppercase tracking-wider text-brand-orange">
             {hero.eyebrow || "Portfolio"}
@@ -31,7 +31,7 @@ export default async function RealisationsPage() {
             {hero.title || "Nos réalisations"}
           </h1>
           {hero.subtitle && (
-            <p className="mt-3 max-w-2xl text-white/75">{hero.subtitle}</p>
+            <p className="mt-3 max-w-2xl text-brand-black/70">{hero.subtitle}</p>
           )}
         </div>
       </section>

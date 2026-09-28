@@ -105,6 +105,73 @@ export async function hasCustomerSession(): Promise<boolean> {
 }
 
 export const customerApi = {
+  identify: (login: string) =>
+    bff<{
+      channel: "email" | "phone";
+      login: string;
+      exists: boolean;
+      has_password: boolean;
+      has_email: boolean;
+    }>("auth/identify", {
+      method: "POST",
+      body: JSON.stringify({ login }),
+    }),
+
+  registerWithPassword: async (payload: {
+    name: string;
+    password: string;
+    password_confirmation: string;
+    email?: string;
+    phone?: string;
+  }) => {
+    const data = await bff<{
+      token: string;
+      is_new: boolean;
+      customer: { id: number; phone: string | null; name: string | null; email: string | null };
+    }>("auth/register", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    await setCustomerToken(data.token);
+    return data;
+  },
+
+  loginWithPassword: async (payload: { login: string; password: string }) => {
+    const data = await bff<{
+      token: string;
+      is_new: boolean;
+      customer: { id: number; phone: string | null; name: string | null; email: string | null };
+    }>("auth/login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    await setCustomerToken(data.token);
+    return data;
+  },
+
+  forgotPassword: (email: string) =>
+    bff<{ message: string; email: string; debug_code?: string }>("auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: async (payload: {
+    email: string;
+    code: string;
+    password: string;
+    password_confirmation: string;
+  }) => {
+    const data = await bff<{
+      token: string;
+      customer: { id: number; phone: string | null; name: string | null; email: string | null };
+    }>("auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    await setCustomerToken(data.token);
+    return data;
+  },
+
   requestOtp: (payload: { phone: string } | { email: string }) =>
     bff<{
       message: string;
@@ -171,6 +238,8 @@ export const customerApi = {
   logout: async () => {
     try {
       await bff("customer/logout", { method: "POST" });
+    } catch {
+      // Jeton déjà invalide : on efface quand même la session locale.
     } finally {
       await clearCustomerToken();
     }

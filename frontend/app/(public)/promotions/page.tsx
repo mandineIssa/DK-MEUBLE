@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo";
 import { api, imageUrl } from "@/lib/api";
 import PromoWaButton from "@/components/PromoWaButton";
+import PromoCountdown from "@/components/PromoCountdown";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,15 @@ export default async function PromotionsPage({
       meta: { total: 0, current_page: 1, last_page: 1, per_page: 24 },
       categories: [],
       legal_text: "",
+      banner: {
+        enabled: true,
+        title: "Promotions exceptionnelles",
+        subtitle: "Jusqu’à {max} sur une large sélection de produits",
+        button_label: "Voir toutes les promotions",
+        button_href: "#offres",
+        image: "",
+        show_countdown: true,
+      },
     }));
 
   const sortOptions = [
@@ -101,7 +111,47 @@ export default async function PromotionsPage({
             </ol>
           </nav>
 
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          {result.banner?.enabled !== false ? (
+            <div className="grid overflow-hidden rounded-2xl bg-brand-orange text-white md:grid-cols-[1.3fr_0.7fr]">
+              <div className="p-6 md:p-10">
+                <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">
+                  {result.banner?.title || "Promotions exceptionnelles"}
+                </h1>
+                <p className="mt-3 max-w-xl text-base text-white/90">
+                  {(result.banner?.subtitle || "Jusqu’à {max} sur une large sélection de produits").replace(
+                    "{max}",
+                    topDiscount > 0 ? `-${topDiscount} %` : "nos réductions"
+                  )}
+                </p>
+                {result.banner?.button_label ? (
+                  <Link
+                    href={result.banner.button_href || "#offres"}
+                    className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-bold text-brand-black"
+                  >
+                    {result.banner.button_label}
+                  </Link>
+                ) : null}
+              </div>
+              <div className="relative flex min-h-[220px] items-center justify-center bg-white/10 p-4 md:min-h-full">
+                {result.banner?.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={imageUrl(result.banner.image)}
+                    alt={result.banner?.title || "Produit en promotion"}
+                    className="max-h-72 w-full object-contain"
+                  />
+                ) : (
+                  <p className="px-6 text-center text-sm text-white/80">
+                    Ajoutez l’image du produit dans Admin → Promotions → Réglages.
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <h1 className="text-3xl font-extrabold text-brand-black">Promotions</h1>
+          )}
+
+          <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p
                 className="text-sm font-bold uppercase tracking-wider"
@@ -109,13 +159,7 @@ export default async function PromotionsPage({
               >
                 Offres
               </p>
-              <h1
-                className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl lg:text-[2.75rem]"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Promotions en cours
-              </h1>
-              <p className="mt-3 max-w-xl text-base" style={{ color: "var(--text-secondary)" }}>
+              <p className="mt-2 text-base" style={{ color: "var(--text-secondary)" }}>
                 Électroménager et mobilier en promo à Dakar — stocks limités, prix mis à jour
                 régulièrement.
               </p>
@@ -243,7 +287,7 @@ export default async function PromotionsPage({
           </div>
         </aside>
 
-        <div className="min-w-0">
+        <div id="offres" className="min-w-0">
           {result.data.length === 0 ? (
             <div
               className="rounded-2xl border bg-[var(--body-bg)] px-6 py-14 text-center shadow-sm"
@@ -349,6 +393,9 @@ export default async function PromotionsPage({
                       <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
                         Expire le {formatDate(promo.end_date)}
                       </p>
+                      {result.banner?.show_countdown !== false && promo.end_date ? (
+                        <PromoCountdown end={promo.end_date} />
+                      ) : null}
                       <div className="flex flex-wrap gap-2 pt-1">
                         <Link
                           href={slug ? `/produits/${slug}` : "/produits"}

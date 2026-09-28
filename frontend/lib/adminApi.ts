@@ -1319,6 +1319,13 @@ export type PromoSettings = {
   newsletter_frequency: "weekly" | "biweekly" | "monthly";
   expiry_alert_days: number;
   default_vendor_name: string;
+  banner_enabled?: boolean;
+  banner_title?: string;
+  banner_subtitle?: string;
+  banner_button_label?: string;
+  banner_button_href?: string;
+  banner_image?: string;
+  show_countdown?: boolean;
 };
 
 export type CategoryModuleSettings = {

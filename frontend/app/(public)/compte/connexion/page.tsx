@@ -3,7 +3,7 @@ import LoginForm from "@/components/compte/LoginForm";
 export const metadata = {
   title: "Connexion",
   description:
-    "Connexion ou création de compte DK HOMETECH par téléphone, Google ou Facebook.",
+    "Connexion ou création de compte DK HOMETECH par e-mail, téléphone, Google ou Facebook.",
 };
 
 export default function CompteConnexionPage() {

@@ -2,19 +2,30 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+import type { Product } from "@/lib/api";
 import { usePathname, useRouter } from "next/navigation";
 import { hasCustomerSession } from "@/lib/customerApi";
 import { api } from "@/lib/api";
-import { useSite } from "@/components/SiteProvider";
+import { useSite, useWaLink } from "@/components/SiteProvider";
 import { useTheme } from "@/components/ThemeProvider";
 import SiteBrand from "@/components/SiteBrand";
 import { useCartCount } from "@/components/CartProvider";
 import CategoryMegaMenu from "@/components/CategoryMegaMenu";
+import { formatSnPhone } from "@/lib/phone";
 import NotificationBell from "@/components/NotificationBell";
 
 function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
+
+const PRIMARY_NAV = [
+  { label: "Accueil", href: "/" },
+  { label: "Produits", href: "/produits" },
+  { label: "Promotions", href: "/promotions" },
+  { label: "Services", href: "/services" },
+  { label: "Entreprises", href: "/entreprises" },
+  { label: "Contact", href: "/contact" },
+];
 
 const FALLBACK_NAV = [
   { label: "Nos produits", href: "/produits" },
@@ -22,8 +33,17 @@ const FALLBACK_NAV = [
   { label: "Reconditionné", href: "/reconditionne" },
   { label: "Destockage", href: "/destockage" },
   { label: "Services", href: "/services" },
+  { label: "Entreprises", href: "/entreprises" },
   { label: "Contact", href: "/contact" },
 ];
+
+function ensureEntreprises(links: { label: string; href: string }[]) {
+  if (links.some((l) => l.href === "/entreprises")) return links;
+  const contact = links.findIndex((l) => l.href.startsWith("/contact"));
+  const item = { label: "Entreprises", href: "/entreprises" };
+  if (contact < 0) return [...links, item];
+  return [...links.slice(0, contact), item, ...links.slice(contact)];
+}
 
 export default function Header() {
   const pathname = usePathname();
@@ -35,6 +55,7 @@ export default function Header() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [navLinks, setNavLinks] = useState(FALLBACK_NAV);
   const [q, setQ] = useState("");
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
   const [compact, setCompact] = useState(false);
   const cartCount = useCartCount();
   const scrollThreshold = theme.header_compact_scroll || 80;
@@ -65,7 +86,7 @@ export default function Header() {
       if (raw) {
         const parsed = JSON.parse(raw) as { at: number; links: typeof FALLBACK_NAV };
         if (parsed?.links?.length && Date.now() - parsed.at < 5 * 60_000) {
-          setNavLinks(parsed.links);
+          setNavLinks(ensureEntreprises(parsed.links));
         }
       }
     } catch {
@@ -83,7 +104,9 @@ export default function Header() {
           }));
 
         const hasProducts = secondary.some((l) => l.href === "/produits");
-        const next = hasProducts ? secondary : [{ label: "Nos produits", href: "/produits" }, ...secondary];
+        const next = ensureEntreprises(
+          hasProducts ? secondary : [{ label: "Nos produits", href: "/produits" }, ...secondary]
+        );
         setNavLinks(next);
         try {
           sessionStorage.setItem("dk_nav_secondary", JSON.stringify({ at: Date.now(), links: next }));
@@ -94,13 +117,34 @@ export default function Header() {
       .catch(() => setNavLinks(FALLBACK_NAV));
   }, []);
 
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      api
+        .getProducts({ search: term, per_page: "5" })
+        .then(setSuggestions)
+        .catch(() => setSuggestions([]));
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [q]);
+
   const accountHref = loggedIn ? "/compte" : "/compte/connexion";
+  const waHref = useWaLink(
+    "Bonjour DK HOMETECH, je suis intéressé par un produit et j'aimerais avoir plus d'informations."
+  );
+  const primaryHrefs = new Set(PRIMARY_NAV.map((l) => l.href));
+  const extraLinks = navLinks.filter((l) => !primaryHrefs.has(l.href) && l.href !== "/categories");
   const phones = site.phones?.length ? site.phones : site.phoneDisplay ? [site.phoneDisplay] : [];
 
   function onSearch(e: FormEvent) {
     e.preventDefault();
     const term = q.trim();
     router.push(term ? `/produits?search=${encodeURIComponent(term)}` : "/produits");
+    setSuggestions([]);
     setMobileOpen(false);
     setSearchOpen(false);
   }
@@ -133,7 +177,7 @@ export default function Header() {
           <form
             onSubmit={onSearch}
             role="search"
-            className={`min-w-0 flex-1 items-stretch overflow-hidden rounded-md border bg-white ${
+            className={`relative min-w-0 flex-1 items-stretch overflow-visible rounded-md border bg-white ${
               compact ? "hidden md:flex" : "hidden sm:flex"
             }`}
             style={{ borderColor: "var(--border-light)" }}
@@ -153,6 +197,21 @@ export default function Header() {
             >
               Rechercher
             </button>
+            {suggestions.length > 0 ? (
+              <ul className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-md border bg-white text-sm shadow-lg" style={{ borderColor: "var(--border-light)" }}>
+                {suggestions.map((p) => (
+                  <li key={p.id}>
+                    <Link
+                      href={`/produits/${p.slug}`}
+                      className="block px-4 py-2 hover:bg-black/5"
+                      onClick={() => setSuggestions([])}
+                    >
+                      {p.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </form>
 
           <div className="ml-auto flex shrink-0 items-center gap-0.5 md:gap-1">
@@ -172,6 +231,18 @@ export default function Header() {
             </button>
 
             <NotificationBell />
+
+            <Link
+              href={loggedIn ? "/compte#favoris" : "/compte/connexion"}
+              className={iconBtn}
+              aria-label="Favoris"
+              title="Favoris"
+            >
+              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 4.6-7 9-7 9Z" />
+              </svg>
+              <span className="hidden text-xs font-semibold lg:inline">Favoris</span>
+            </Link>
 
             <Link
               href={accountHref}
@@ -201,6 +272,15 @@ export default function Header() {
               </svg>
               <span className="hidden text-xs font-semibold lg:inline">Aide</span>
             </Link>
+
+            {waHref ? (
+              <a href={waHref} target="_blank" rel="noopener noreferrer" className={iconBtn} aria-label="WhatsApp">
+                <svg viewBox="0 0 24 24" className="h-6 w-6 text-whatsapp" fill="currentColor">
+                  <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.39 1.26 4.81L2 22l5.42-1.42a9.9 9.9 0 0 0 4.62 1.17h.01c5.46 0 9.9-4.45 9.9-9.91C21.95 6.45 17.5 2 12.04 2Z" />
+                </svg>
+                <span className="hidden text-xs font-semibold lg:inline">WhatsApp</span>
+              </a>
+            ) : null}
 
             <Link
               href="/panier"
@@ -249,8 +329,8 @@ export default function Header() {
           role="search"
           className={
             searchOpen
-              ? "flex items-center gap-2 px-3 pb-3 lg:flex"
-              : "flex items-center gap-2 px-3 pb-3 sm:hidden"
+              ? "relative flex items-center gap-2 px-3 pb-3 lg:flex"
+              : "relative flex items-center gap-2 px-3 pb-3 sm:hidden"
           }
         >
           <div
@@ -273,6 +353,17 @@ export default function Header() {
               OK
             </button>
           </div>
+          {suggestions.length > 0 ? (
+            <ul className="absolute left-3 right-3 top-full z-50 overflow-hidden rounded-md border bg-white text-sm shadow-lg sm:hidden" style={{ borderColor: "var(--border-light)" }}>
+              {suggestions.map((p) => (
+                <li key={p.id}>
+                  <Link href={`/produits/${p.slug}`} className="block px-4 py-2" onClick={() => setSuggestions([])}>
+                    {p.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </form>
       </div>
 
@@ -290,7 +381,7 @@ export default function Header() {
           </div>
 
           <nav className="flex min-w-0 flex-1 items-stretch justify-center overflow-x-auto">
-            {navLinks.map((link) => {
+            {[...PRIMARY_NAV, ...extraLinks].map((link) => {
               const active = isActive(pathname, link.href);
               return (
                 <Link
@@ -312,15 +403,18 @@ export default function Header() {
             style={{ color: "var(--text-secondary)" }}
           >
             {phones.length ? (
-              phones.slice(0, 2).map((phone) => (
-                <a
-                  key={phone}
-                  href={`tel:${phone.replace(/\s/g, "")}`}
-                  className="block hover:text-[var(--accent-primary)]"
-                >
-                  {phone}
-                </a>
-              ))
+              phones.slice(0, 2).map((phone) => {
+                const formatted = formatSnPhone(phone);
+                return (
+                  <a
+                    key={phone}
+                    href={`tel:${formatted.tel}`}
+                    className="block hover:text-[var(--accent-primary)]"
+                  >
+                    {formatted.display}
+                  </a>
+                );
+              })
             ) : (
               <span className="opacity-50">Tél. à configurer</span>
             )}

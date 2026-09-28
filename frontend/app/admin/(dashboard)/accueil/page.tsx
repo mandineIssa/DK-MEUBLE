@@ -86,7 +86,7 @@ export default function AdminHomepagePage() {
       <div className="mb-6">
         <h1 className="text-2xl font-extrabold text-brand-black">Page d&apos;accueil</h1>
         <p className="mt-1 text-sm text-brand-black/60">
-          Pilotez hero, réassurance, catégories, carrousels, newsletter, footer et WhatsApp.
+          Textes, images et liens de l’accueil se règlent ici. La newsletter et le footer se règlent dans Admin → Footer.
         </p>
       </div>
 
@@ -129,6 +129,7 @@ export default function AdminHomepagePage() {
       {tab === "slides" ? (
         <SlidesPanel
           sectionId={hero?.id}
+          meta={hero?.meta}
           slides={hero?.slides || []}
           onReload={load}
           setMsg={setMsg}
@@ -388,12 +389,14 @@ function SectionsPanel({
 
 function SlidesPanel({
   sectionId,
+  meta,
   slides,
   onReload,
   setMsg,
   setErr,
 }: {
   sectionId?: number;
+  meta?: Record<string, unknown> | null;
   slides: AdminHomepageSlide[];
   onReload: () => Promise<void>;
   setMsg: (s: string) => void;
@@ -432,8 +435,79 @@ function SlidesPanel({
     }
   }
 
+  async function saveCopy(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!sectionId) return;
+    const form = new FormData(e.currentTarget);
+    try {
+      await adminApi.updateHomepageSection(sectionId, {
+        meta: {
+          ...(meta || {}),
+          headline: String(form.get("headline") || ""),
+          subhead: String(form.get("subhead") || ""),
+          body: String(form.get("body") || ""),
+          primary_label: String(form.get("primary_label") || ""),
+          secondary_label: String(form.get("secondary_label") || ""),
+          secondary_href: String(form.get("secondary_href") || ""),
+          categories_label: String(form.get("categories_label") || ""),
+          interval_seconds: Number(form.get("interval_seconds") || 5),
+        },
+      });
+      setMsg("Textes du bandeau enregistrés.");
+      await onReload();
+    } catch (error) {
+      setErr(error instanceof Error ? error.message : "Erreur");
+    }
+  }
+
+  const field = (key: string) => (typeof meta?.[key] === "string" || typeof meta?.[key] === "number" ? String(meta[key]) : "");
+
   return (
     <div className="space-y-4">
+      <form key={JSON.stringify(meta || {})} onSubmit={saveCopy} className="rounded-2xl bg-white p-4 shadow-sm">
+        <h2 className="mb-3 font-bold">Textes du bandeau</h2>
+        <div className="grid gap-3 md:grid-cols-2">
+          <label className="text-xs font-medium md:col-span-2">
+            Titre principal
+            <input name="headline" defaultValue={field("headline")} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+          </label>
+          <label className="text-xs font-medium md:col-span-2">
+            Sous-titre
+            <input name="subhead" defaultValue={field("subhead")} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+          </label>
+          <label className="text-xs font-medium md:col-span-2">
+            Texte
+            <input name="body" defaultValue={field("body")} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+          </label>
+          <label className="text-xs font-medium">
+            Bouton principal
+            <input name="primary_label" defaultValue={field("primary_label")} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+          </label>
+          <label className="text-xs font-medium">
+            Bouton secondaire
+            <input name="secondary_label" defaultValue={field("secondary_label")} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+          </label>
+          <label className="text-xs font-medium">
+            Lien du bouton secondaire
+            <input name="secondary_href" defaultValue={field("secondary_href")} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+          </label>
+          <label className="text-xs font-medium">
+            Titre du menu catégories
+            <input name="categories_label" defaultValue={field("categories_label")} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+          </label>
+          <label className="text-xs font-medium">
+            Défilement (secondes)
+            <input name="interval_seconds" type="number" min={2} max={30} defaultValue={field("interval_seconds") || "5"} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+          </label>
+        </div>
+        <p className="mt-3 text-xs text-brand-black/50">
+          Le bouton principal utilise le lien de chaque slide. Le titre du slide s’affiche au-dessus du titre principal.
+        </p>
+        <button type="submit" className="mt-4 rounded-full bg-brand-orange px-4 py-2 text-sm font-bold text-white">
+          Enregistrer les textes
+        </button>
+      </form>
+
       <form onSubmit={create} className="rounded-2xl bg-white p-4 shadow-sm">
         <h2 className="mb-3 font-bold">Ajouter un slide</h2>
         <div className="grid gap-3 md:grid-cols-2">
@@ -477,11 +551,11 @@ function SlidesPanel({
             <input name="image_desktop" className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
           </label>
           <label className="text-xs font-medium">
-            Titre
+            Nom affiché sur ce slide
             <input name="title" className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
           </label>
           <label className="text-xs font-medium">
-            Sous-titre
+            Sous-titre de ce slide (sinon le sous-titre commun)
             <input name="subtitle" className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
           </label>
           <label className="text-xs font-medium">
@@ -807,6 +881,83 @@ function SettingsPanel({
           Enregistrer le menu
         </button>
       </form>
+
+      <BlocksForm hp={hp} onSave={onSave} />
     </div>
+  );
+}
+
+function BlocksForm({
+  hp,
+  onSave,
+}: {
+  hp: Record<string, unknown>;
+  onSave: (partial: Record<string, unknown>) => Promise<void>;
+}) {
+  const blocks = (hp.blocks || {}) as Record<string, string>;
+  const fields: Array<[string, string, "input" | "textarea"]> = [
+    ["offers_title", "Titre des offres", "input"],
+    ["offers_link_label", "Lien « tout voir »", "input"],
+    ["furniture_kicker", "Sur-titre meubles", "input"],
+    ["furniture_title", "Titre meubles (vide = masquer le bloc)", "input"],
+    ["furniture_text", "Texte meubles", "textarea"],
+    ["furniture_cta", "Bouton meubles", "input"],
+    ["latest_title", "Titre nouveautés (vide = masquer)", "input"],
+    ["reasons_title", "Titre des arguments", "input"],
+    ["reasons_text", "Arguments (une ligne = un argument, vide = masquer)", "textarea"],
+    ["services_title", "Titre services", "input"],
+    ["visit_title", "Titre de la vidéo", "input"],
+    ["visit_text", "Texte sous la vidéo", "textarea"],
+    ["about_title", "Titre présentation", "input"],
+    ["about_text", "Texte présentation", "textarea"],
+    ["about_link_label", "Lien à propos", "input"],
+    ["contact_title", "Titre contact", "input"],
+    ["contact_write_label", "Bouton contact", "input"],
+    ["contact_showrooms_label", "Bouton showrooms", "input"],
+    ["contact_map_label", "Bouton carte", "input"],
+    ["pro_kicker", "Sur-titre entreprises", "input"],
+    ["pro_title", "Titre entreprises (vide = masquer)", "input"],
+    ["pro_text", "Texte entreprises", "textarea"],
+    ["pro_cta", "Bouton entreprises", "input"],
+    ["pro_href", "Lien entreprises", "input"],
+    ["shortcuts_text", "Raccourcis (une ligne : Libellé|/lien)", "textarea"],
+  ];
+
+  return (
+    <form
+      className="rounded-2xl bg-white p-4 shadow-sm"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const form = new FormData(e.currentTarget);
+        const next: Record<string, string> = { ...blocks };
+        for (const [key] of fields) next[key] = String(form.get(key) || "");
+        await onSave({ homepage: { ...hp, blocks: next } });
+      }}
+    >
+      <h2 className="mb-1 font-bold">Textes des blocs</h2>
+      <p className="mb-3 text-sm text-brand-black/55">
+        Offres, meubles, arguments, visite, contact et entreprises. La vidéo elle-même se change dans Admin → Paramètres.
+      </p>
+      <div className="grid gap-3 md:grid-cols-2">
+        {fields.map(([key, label, kind]) => (
+          <label key={key} className={`block text-sm ${kind === "textarea" ? "md:col-span-2" : ""}`}>
+            <span className="text-brand-black/60">{label}</span>
+            {kind === "textarea" ? (
+              <textarea
+                name={key}
+                defaultValue={blocks[key] || ""}
+                rows={key.endsWith("_text") ? 4 : 2}
+                className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+              />
+            ) : (
+              <input name={key} defaultValue={blocks[key] || ""} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+            )}
+          </label>
+        ))}
+      </div>
+      <button type="submit" className="mt-4 rounded-full bg-brand-orange px-4 py-2 text-sm font-bold text-white">
+        Enregistrer les textes
+      </button>
+    </form>
   );
 }

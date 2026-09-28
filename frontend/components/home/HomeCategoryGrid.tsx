@@ -38,9 +38,14 @@ export default function HomeCategoryGrid({
                 />
               ) : null}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-              <p className="absolute bottom-3 left-3 right-3 text-sm font-bold text-white md:text-base">
-                {item.title || item.category?.name}
-              </p>
+              <div className="absolute bottom-3 left-3 right-3">
+                <p className="text-sm font-bold text-white md:text-base">
+                  {item.title || item.category?.name}
+                </p>
+                <span className="mt-1 inline-block text-xs font-semibold text-white underline-offset-2 group-hover:underline">
+                  Découvrir
+                </span>
+              </div>
             </Link>
           );
         })}

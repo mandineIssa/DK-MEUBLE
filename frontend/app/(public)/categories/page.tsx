@@ -21,11 +21,11 @@ export default async function CategoriesPage() {
 
   return (
     <div className="bg-[#ececec]">
-      <section className="bg-brand-black text-white">
+      <section className="bg-white text-brand-black">
         <div className="mx-auto max-w-7xl px-4 py-10 md:px-6 md:py-12">
           <p className="text-sm font-medium uppercase tracking-wider text-brand-orange">Catalogue</p>
           <h1 className="mt-2 text-3xl font-extrabold md:text-4xl">Catégories</h1>
-          <p className="mt-2 text-white/70">
+          <p className="mt-2 text-brand-black/70">
             Électroménager organisé par familles et sous-familles
           </p>
         </div>

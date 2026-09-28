@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Manuel admin — Enregistrer des produits | DK HOMETECH</title>
+  <style>
+    @page { size: A4; margin: 14mm 14mm 16mm; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: #1a1a1a;
+      font-family: "Segoe UI", Montserrat, Arial, sans-serif;
+      font-size: 11.5pt;
+      line-height: 1.45;
+    }
+    h1 { font-size: 22pt; line-height: 1.15; margin: 0 0 6px; }
+    h2 {
+      font-size: 15pt;
+      margin: 0 0 8px;
+      padding-top: 4px;
+      page-break-after: avoid;
+    }
+    h3 { font-size: 12.5pt; margin: 14px 0 6px; page-break-after: avoid; }
+    p { margin: 0 0 8px; }
+    ol, ul { margin: 0 0 10px; padding-left: 1.2em; }
+    li { margin: 0 0 4px; }
+    .cover {
+      border-top: 8px solid #f68b1e;
+      padding-top: 18px;
+      margin-bottom: 18px;
+    }
+    .kicker {
+      color: #f68b1e;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 10pt;
+      margin: 0 0 8px;
+    }
+    .meta { color: #555; font-size: 10.5pt; }
+    .box {
+      background: #fff7ef;
+      border-left: 4px solid #f68b1e;
+      padding: 8px 12px;
+      margin: 10px 0 14px;
+      page-break-inside: avoid;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0 14px;
+      font-size: 10.5pt;
+      page-break-inside: avoid;
+    }
+    th, td {
+      border: 1px solid #e6e6e6;
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #1a1a1a; color: #fff; font-weight: 650; }
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 10pt;
+      background: #f4f4f4;
+      padding: 0 3px;
+    }
+    figure {
+      margin: 10px 0 16px;
+      page-break-inside: avoid;
+    }
+    figure img {
+      width: 100%;
+      height: auto;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+    }
+    figcaption {
+      font-size: 9.5pt;
+      color: #555;
+      margin-top: 4px;
+    }
+    .section { page-break-before: always; }
+    .keep { page-break-inside: avoid; }
+    .small { font-size: 10pt; color: #444; }
+  </style>
+</head>
+<body>
+
+<section class="cover">
+  <p class="kicker">DK HOMETECH · Espace administration</p>
+  <h1>Manuel pour enregistrer des produits</h1>
+  <p>Guide pas à pas, avec les écrans réels de l’administration : connexion, catégorie, marque, fiche produit, photos, tableau du catalogue et import CSV.</p>
+  <p class="meta">Document du 28 septembre 2026. Les captures proviennent de l’interface admin du site.</p>
+  <div class="box">
+    <strong>Où ouvrir l’administration.</strong>
+    Sur le site en ligne : <code>https://dkhometech.sn/admin/login</code>.
+    En local, pendant le développement : <code>http://localhost:3000/admin/login</code>.
+    Utilisez le compte administrateur qui vous a été remis. Ce manuel ne contient pas le mot de passe.
+  </div>
+  <div class="box">
+    Les textes visibles sur le formulaire d’exemple (SKU RF-350, « Réfrigérateur 350 L ») servent à montrer la saisie. Ce produit d’exemple n’a pas été enregistré.
+  </div>
+</section>
+
+<h2>Sommaire</h2>
+<ol>
+  <li>Se connecter</li>
+  <li>Créer la catégorie avant le produit</li>
+  <li>Créer la marque si besoin</li>
+  <li>Ouvrir le catalogue Produits</li>
+  <li>Remplir la fiche, champ par champ</li>
+  <li>Ajouter les photos à la création</li>
+  <li>Enregistrer et lire le tableau</li>
+  <li>Modifier un produit et sa galerie</li>
+  <li>Ajouter une photo depuis la ligne du tableau</li>
+  <li>Supprimer un produit</li>
+  <li>Importer ou exporter un CSV</li>
+  <li>Checklist avant de publier</li>
+</ol>
+
+<section class="section">
+  <h2>1. Se connecter</h2>
+  <ol>
+    <li>Ouvrez l’adresse de connexion indiquée en première page.</li>
+    <li>Saisissez l’adresse e-mail du compte administrateur.</li>
+    <li>Saisissez le mot de passe.</li>
+    <li>Cliquez sur le bouton orange <strong>Se connecter</strong>.</li>
+  </ol>
+  <p>La page suivante est l’espace administration. Le menu de gauche reste visible. Le lien <strong>Produits</strong> est celui du catalogue.</p>
+  <figure>
+    <img src="captures/01-connexion.png" alt="Écran de connexion de l’administration" />
+    <figcaption>Figure 1 — Écran de connexion. Le bouton orange lance la session.</figcaption>
+  </figure>
+</section>
+
+<section class="section">
+  <h2>2. Créer la catégorie avant le produit</h2>
+  <p>Un produit doit appartenir à une catégorie. Si la bonne catégorie existe déjà, passez à l’étape 4 et choisissez-la dans la liste. Sinon, créez-la d’abord.</p>
+  <ol>
+    <li>Dans le menu de gauche, cliquez sur <strong>Catégories</strong>.</li>
+    <li>Descendez jusqu’au bloc <strong>Nouvelle catégorie</strong>.</li>
+    <li>Remplissez au minimum le <strong>Nom</strong>.</li>
+    <li>Laissez le <strong>Slug</strong> vide : le site le fabrique à partir du nom. Ce slug sera la valeur <code>category_slug</code> si vous importez plus tard un CSV.</li>
+    <li>Choisissez le <strong>Parent</strong>. « — Racine — » crée une catégorie principale. Un parent existant crée une sous-catégorie.</li>
+    <li>Laissez la case <strong>Active</strong> cochée pour que la catégorie soit utilisable.</li>
+    <li>Cliquez sur <strong>Ajouter</strong>.</li>
+  </ol>
+  <p>La catégorie apparaît ensuite dans l’arborescence, avec son slug (texte après la barre oblique) et le nombre de produits. Les boutons <strong>Éditer</strong>, les flèches et <strong>Suppr.</strong> servent à la modifier, la déplacer ou la retirer.</p>
+  <figure>
+    <img src="captures/13-categories.png" alt="Page Catégories de l’administration" />
+    <figcaption>Figure 2 — Menu Catégories. « Importer suggestion » ajoute une arborescence électroménager sans écraser les slugs déjà présents.</figcaption>
+  </figure>
+  <figure>
+    <img src="captures/14-formulaire-categorie.png" alt="Formulaire Nouvelle catégorie" />
+    <figcaption>Figure 3 — Formulaire. Le nom est obligatoire. Le parent vide crée une catégorie principale.</figcaption>
+  </figure>
+  <h3>Champs de la catégorie</h3>
+  <table>
+    <tr><th>Champ</th><th>Rôle</th></tr>
+    <tr><td>Nom *</td><td>Nom affiché dans le menu et dans la liste du produit.</td></tr>
+    <tr><td>Slug</td><td>Adresse courte. Vide = généré depuis le nom. À recopier tel quel dans un CSV (<code>category_slug</code>).</td></tr>
+    <tr><td>Parent</td><td>Vide (racine) = catégorie principale. Sinon, sous-catégorie de la catégorie choisie.</td></tr>
+    <tr><td>Description</td><td>Texte de présentation de la catégorie.</td></tr>
+    <tr><td>Meta title / Meta description</td><td>Textes pour le référencement de la page catégorie.</td></tr>
+    <tr><td>Active</td><td>Cochez pour rendre la catégorie disponible.</td></tr>
+    <tr><td>Catégorie populaire</td><td>La met en avant parmi les catégories populaires.</td></tr>
+  </table>
+</section>
+
+<section class="section">
+  <h2>3. Créer la marque si besoin</h2>
+  <p>La marque est facultative. Un produit peut être enregistré avec « — Aucune — ».</p>
+  <ol>
+    <li>Dans le menu, cliquez sur <strong>Marques</strong>.</li>
+    <li>Saisissez le <strong>Nom</strong>.</li>
+    <li>Laissez le slug vide pour le générer automatiquement, ou saisissez-le vous-même.</li>
+    <li>Cliquez sur <strong>Ajouter</strong>.</li>
+  </ol>
+  <p>Deux cases existent sous la description : <strong>Marque en vedette</strong> (bandeau) et <strong>Afficher dans le footer</strong>. Après création, <strong>Éditer</strong> ouvre aussi le panneau des photos et du logo.</p>
+  <figure>
+    <img src="captures/15-marques.png" alt="Page Marques" />
+    <figcaption>Figure 4 — Formulaire des marques. Seul le nom est obligatoire.</figcaption>
+  </figure>
+</section>
+
+<section class="section">
+  <h2>4. Ouvrir le catalogue Produits</h2>
+  <ol>
+    <li>Cliquez sur <strong>Produits</strong> dans le menu (bouton orange quand la page est ouverte).</li>
+    <li>En haut à droite, cliquez sur <strong>＋ Ajouter un produit</strong>.</li>
+  </ol>
+  <p>Le bouton devient <strong>Annuler</strong> tant que le formulaire est ouvert. Annuler ferme la fiche et n’enregistre rien.</p>
+  <p>Sous le titre se trouve le bloc <strong>Import / Export CSV</strong>, décrit au chapitre 11. Pour un seul produit, utilisez le formulaire.</p>
+  <figure>
+    <img src="captures/02-liste-produits.png" alt="Page Produits avec le bouton Ajouter" />
+    <figcaption>Figure 5 — Page Produits. Le bouton orange ouvre la fiche « Nouveau produit ».</figcaption>
+  </figure>
+</section>
+
+<section class="section">
+  <h2>5. Remplir la fiche, champ par champ</h2>
+  <p>Le titre du formulaire est <strong>Nouveau produit</strong>. Deux champs sont obligatoires : <strong>Catégorie</strong> et <strong>Nom</strong>. Le navigateur refuse l’enregistrement si l’un des deux est vide.</p>
+
+  <h3>Catégorie, marque, référence et nom</h3>
+  <ol>
+    <li><strong>Catégorie</strong> — ouvrez la liste et choisissez la catégorie créée au chapitre 2. « Choisir… » n’est pas une catégorie valide.</li>
+    <li><strong>Marque</strong> — choisissez une marque, ou laissez « — Aucune — ».</li>
+    <li><strong>SKU</strong> — référence interne (exemple de saisie : RF-350). Ce champ peut rester vide.</li>
+    <li><strong>Nom</strong> — nom commercial affiché sur le site. Exemple de saisie : Réfrigérateur 350 L.</li>
+    <li><strong>Résumé</strong> — une phrase courte sous le nom. Exemple : Réfrigérateur 2 portes, classe A+.</li>
+  </ol>
+  <p>L’adresse web du produit (slug) n’est pas demandée ici. Elle est créée automatiquement à partir du nom.</p>
+  <figure>
+    <img src="captures/03-formulaire-haut.png" alt="Haut du formulaire nouveau produit" />
+    <figcaption>Figure 6 — Début de la fiche. La catégorie est choisie dans la liste.</figcaption>
+  </figure>
+  <figure>
+    <img src="captures/04-formulaire-nom.png" alt="Champs SKU, nom et résumé" />
+    <figcaption>Figure 7 — SKU, nom obligatoire et résumé. Les valeurs de la capture sont un exemple.</figcaption>
+  </figure>
+
+  <h3>Caractéristiques</h3>
+  <p>Une caractéristique par ligne, au format <code>Libellé: valeur</code>. Les deux-points séparent le libellé de la valeur.</p>
+  <p>Exemple de saisie :</p>
+  <ul>
+    <li><code>Capacité: 350 L</code></li>
+    <li><code>Nombre de portes: 2</code></li>
+    <li><code>Classe énergétique: A+</code></li>
+    <li><code>Garantie: 12 mois</code></li>
+  </ul>
+  <p>Le placeholder du champ rappelle le même format : « Capacité: 320 L » puis « Nombre de portes: 2 ».</p>
+  <figure>
+    <img src="captures/05-caracteristiques.png" alt="Zone caractéristiques et début de description" />
+    <figcaption>Figure 8 — Caractéristiques, une par ligne, puis la description libre.</figcaption>
+  </figure>
+
+  <h3>Description, prix, stock, état et statut</h3>
+  <ol>
+    <li><strong>Description</strong> — texte plus long de la fiche produit.</li>
+    <li><strong>Prix (vide = sur devis)</strong> — montant en FCFA, sans espace ni symbole. Laissez le champ vide pour afficher « Sur devis » sur le site.</li>
+    <li><strong>Prix promo</strong> — prix réduit en FCFA. Laissez-le vide s’il n’y a pas de promotion.</li>
+    <li><strong>Stock</strong> — nombre d’unités. Exemple de saisie : 4.</li>
+    <li><strong>État</strong> — <strong>Neuf</strong> ou <strong>Reconditionné</strong>.</li>
+    <li><strong>Statut</strong> — voir le tableau ci-dessous. La valeur de départ est <strong>Publié</strong>.</li>
+    <li><strong>Déstockage</strong> — cochez pour afficher le badge « Déstockage » sur la fiche publique.</li>
+    <li><strong>Produit personnalisable</strong> — cochez pour afficher le badge « Personnalisable ».</li>
+  </ol>
+  <table>
+    <tr><th>Statut</th><th>Effet</th></tr>
+    <tr><td>Publié</td><td>Le produit apparaît dans le catalogue public.</td></tr>
+    <tr><td>Brouillon</td><td>Le produit est enregistré dans l’admin et reste hors du catalogue public.</td></tr>
+    <tr><td>Archivé</td><td>Le produit est retiré du catalogue public et reste dans l’admin.</td></tr>
+  </table>
+  <figure>
+    <img src="captures/08-prix.png" alt="Champs prix et prix promo" />
+    <figcaption>Figure 9 — Prix vide = sur devis. Prix promo facultatif. Le stock est juste en dessous.</figcaption>
+  </figure>
+  <figure>
+    <img src="captures/07-prix-statut.png" alt="État, statut et cases à cocher" />
+    <figcaption>Figure 10 — État Neuf, statut Publié, cases Déstockage et Produit personnalisable.</figcaption>
+  </figure>
+</section>
+
+<section class="section">
+  <h2>6. Ajouter les photos à la création</h2>
+  <p>En bas de la fiche « Nouveau produit », le bloc <strong>Photos du produit</strong> accepte une ou plusieurs images. Formats acceptés : JPEG, PNG, WebP.</p>
+  <ol>
+    <li>Cliquez sur le sélecteur de fichiers.</li>
+    <li>Choisissez une ou plusieurs photos.</li>
+    <li>Les noms s’affichent sous le sélecteur. <strong>Retirer</strong> enlève un fichier de la liste avant l’enregistrement.</li>
+    <li>Les fichiers partent vers le serveur au moment du clic sur <strong>Enregistrer</strong>. Le message de l’écran le précise : « elles seront uploadées à l’enregistrement ».</li>
+  </ol>
+  <p>La première photo de la liste devient la couverture affichée dans le catalogue.</p>
+  <figure>
+    <img src="captures/06-prix-photos.png" alt="Sélecteur de photos et bouton Enregistrer" />
+    <figcaption>Figure 11 — Photos avant enregistrement, puis le bouton noir Enregistrer.</figcaption>
+  </figure>
+</section>
+
+<section class="section">
+  <h2>7. Enregistrer et lire le tableau</h2>
+  <ol>
+    <li>Relisez catégorie, nom, prix et statut.</li>
+    <li>Cliquez sur <strong>Enregistrer</strong>. Le bouton affiche « Enregistrement… » pendant l’envoi.</li>
+    <li>Le formulaire se ferme. Le produit apparaît dans le tableau.</li>
+  </ol>
+  <p>Le tableau a cinq colonnes : <strong>Photo</strong>, <strong>Nom</strong>, <strong>Prix</strong>, <strong>Statut</strong>, <strong>Actions</strong>.</p>
+  <ul>
+    <li>Le prix s’affiche en FCFA, en orange. Un prix vide s’affiche « Sur devis ».</li>
+    <li>Le statut <strong>Publié</strong> est une pastille verte.</li>
+    <li>Les actions de chaque ligne sont <strong>Éditer</strong> (orange), <strong>＋ Photo</strong> (bleu) et <strong>Supprimer</strong> (rouge).</li>
+  </ul>
+  <p>Si un message rouge apparaît au-dessus du formulaire, l’enregistrement a échoué. Corrigez le champ indiqué, puis cliquez de nouveau sur Enregistrer.</p>
+  <figure>
+    <img src="captures/12-tableau-produits.png" alt="Colonnes prix, statut et actions du tableau" />
+    <figcaption>Figure 12 — Actions d’une ligne : Éditer, ＋ Photo, Supprimer.</figcaption>
+  </figure>
+</section>
+
+<section class="section">
+  <h2>8. Modifier un produit et sa galerie</h2>
+  <ol>
+    <li>Dans le tableau, cliquez sur <strong>Éditer</strong> de la ligne voulue.</li>
+    <li>Le formulaire s’ouvre avec le titre <strong>Modifier le produit</strong> et les valeurs déjà enregistrées.</li>
+    <li>Changez les champs nécessaires.</li>
+    <li>Cliquez sur <strong>Enregistrer</strong> pour garder les changements de texte, de prix ou de statut.</li>
+    <li><strong>Annuler</strong>, en haut de page, ferme la fiche sans enregistrer les champs du formulaire.</li>
+  </ol>
+  <p>Une fois le produit déjà créé, les photos se gèrent dans le bloc <strong>Photos du produit</strong>, sans attendre le bouton Enregistrer du formulaire. Chaque action photo (ajout, rôle, ordre, suppression) est envoyée tout de suite.</p>
+  <figure>
+    <img src="captures/10-galerie-photos.png" alt="Bloc Photos du produit en mode édition" />
+    <figcaption>Figure 13 — En édition, la galerie indique le nombre de photos. La première sert de couverture.</figcaption>
+  </figure>
+  <figure>
+    <img src="captures/11-roles-photos.png" alt="Vignette, rôle, libellé et boutons d’ordre" />
+    <figcaption>Figure 14 — Chaque photo a un rôle, un libellé, les flèches d’ordre et Suppr.</figcaption>
+  </figure>
+
+  <h3>Ce que vous pouvez faire sur chaque photo</h3>
+  <table>
+    <tr><th>Contrôle</th><th>Effet</th></tr>
+    <tr><td>Couverture</td><td>La première photo de la liste est la couverture du catalogue. Le mot « Couverture » s’affiche en orange sous cette photo.</td></tr>
+    <tr><td>Rôle</td><td>Liste : Principale, Devant, Arrière, Côté, Côté gauche, Côté droit, Intérieur, Détail, Autre. Le choix est enregistré dès que vous changez la liste.</td></tr>
+    <tr><td>Libellé libre</td><td>Texte optionnel, par exemple « Vue salon ». Il est enregistré quand vous quittez le champ.</td></tr>
+    <tr><td>↑ et ↓</td><td>Montent ou descendent la photo. La photo passée en première position devient la couverture.</td></tr>
+    <tr><td>Suppr.</td><td>Demande « Supprimer cette photo ? ». La confirmation retire uniquement cette image.</td></tr>
+  </table>
+
+  <h3>Ajouter plusieurs photos sur un produit déjà créé</h3>
+  <ol>
+    <li>Choisissez le <strong>Rôle (nouvelles)</strong>, par défaut Principale.</li>
+    <li>Saisissez un <strong>Libellé</strong> si vous voulez un texte, par exemple « Vue salon ».</li>
+    <li>Cliquez sur <strong>＋ Ajouter photos</strong> et sélectionnez un ou plusieurs fichiers JPEG, PNG ou WebP.</li>
+    <li>Le bouton affiche « Upload… » pendant l’envoi. Les vignettes apparaissent ensuite dans la liste.</li>
+  </ol>
+</section>
+
+<section class="section">
+  <h2>9. Ajouter une photo depuis la ligne du tableau</h2>
+  <p>Pour ajouter une seule photo sans ouvrir toute la fiche :</p>
+  <ol>
+    <li>Sur la ligne du produit, cliquez sur <strong>＋ Photo</strong>.</li>
+    <li>Choisissez un fichier JPEG, PNG ou WebP.</li>
+    <li>Le libellé devient « Upload… » le temps de l’envoi, puis la miniature de la ligne se met à jour.</li>
+  </ol>
+  <p>Pour classer les photos, leur donner un rôle ou en supprimer une, ouvrez <strong>Éditer</strong> et utilisez la galerie du chapitre 8.</p>
+
+  <h2>10. Supprimer un produit</h2>
+  <ol>
+    <li>Sur la ligne, cliquez sur <strong>Supprimer</strong>.</li>
+    <li>Le navigateur demande « Supprimer ce produit ? ».</li>
+    <li>Confirmez pour retirer le produit du catalogue. Annulez la boîte de dialogue pour le conserver.</li>
+  </ol>
+</section>
+
+<section class="section">
+  <h2>11. Importer ou exporter un CSV</h2>
+  <p>Le bloc <strong>Import / Export CSV</strong> est en haut de la page Produits, sous le bouton d’ajout. Il sert à créer ou mettre à jour beaucoup de produits d’un coup.</p>
+  <figure>
+    <img src="captures/09-import-csv.png" alt="Boutons template, export et upload CSV" />
+    <figcaption>Figure 15 — Template, export du catalogue et upload. Le séparateur est le point-virgule.</figcaption>
+  </figure>
+  <ol>
+    <li>Cliquez sur <strong>Télécharger le template</strong>.</li>
+    <li>Ouvrez le fichier dans Excel ou Google Sheets.</li>
+    <li>Remplissez une ligne par produit. Gardez le séparateur <strong>point-virgule</strong> (<code>;</code>).</li>
+    <li>La catégorie doit déjà exister. Dans <code>category_slug</code>, recopiez le slug affiché sur la page Catégories (le texte après la barre oblique).</li>
+    <li>Enregistrez en CSV.</li>
+    <li>Cliquez sur <strong>Uploader un CSV</strong> et choisissez le fichier.</li>
+  </ol>
+  <p>Si le slug du produit existe déjà, la ligne <strong>met à jour</strong> ce produit. Un slug nouveau crée un produit. Un message vert confirme l’import. Les lignes en erreur s’affichent en rouge sous les boutons : corrigez le fichier et réimportez.</p>
+  <p><strong>Exporter le catalogue</strong> télécharge les produits déjà enregistrés, au même format, pour les modifier puis les réimporter.</p>
+  <p><strong>Colonnes du template</strong> (le détail est aussi repliable sous les boutons) :</p>
+  <table>
+    <tr><th>Colonne</th><th>Contenu</th></tr>
+    <tr><td>sku</td><td>Référence interne.</td></tr>
+    <tr><td>name *</td><td>Nom du produit. Obligatoire.</td></tr>
+    <tr><td>slug</td><td>Adresse du produit. Si cette valeur existe déjà, la ligne met le produit à jour.</td></tr>
+    <tr><td>category_slug *</td><td>Slug exact d’une catégorie déjà créée. Obligatoire.</td></tr>
+    <tr><td>brand_slug</td><td>Slug d’une marque déjà créée. Vide = aucune marque.</td></tr>
+    <tr><td>short_description</td><td>Résumé.</td></tr>
+    <tr><td>description</td><td>Description longue.</td></tr>
+    <tr><td>price</td><td>Prix en FCFA. Vide = sur devis.</td></tr>
+    <tr><td>promo_price</td><td>Prix promo en FCFA.</td></tr>
+    <tr><td>stock_quantity</td><td>Quantité en stock.</td></tr>
+    <tr><td>condition</td><td><code>neuf</code> ou <code>reconditionne</code>.</td></tr>
+    <tr><td>is_clearance</td><td><code>1</code> pour Déstockage, <code>0</code> sinon.</td></tr>
+    <tr><td>is_customizable</td><td><code>1</code> pour Personnalisable, <code>0</code> sinon.</td></tr>
+    <tr><td>status</td><td><code>draft</code> (brouillon), <code>published</code> (publié) ou <code>archived</code> (archivé).</td></tr>
+    <tr><td>meta_title</td><td>Titre de référencement.</td></tr>
+    <tr><td>meta_description</td><td>Description de référencement.</td></tr>
+    <tr><td>image_urls</td><td>Adresses d’images déjà en ligne, séparées par <code>|</code>.</td></tr>
+  </table>
+</section>
+
+<section class="section">
+  <h2>12. Checklist avant de publier</h2>
+  <ol>
+    <li>La catégorie existe et elle est active.</li>
+    <li>Le nom du produit est celui que le client doit lire.</li>
+    <li>Le prix est en FCFA, ou le champ est vide pour « Sur devis ».</li>
+    <li>Le statut est <strong>Publié</strong> si le produit doit être visible sur le site.</li>
+    <li>Au moins une photo est présente. La première de la galerie est la couverture.</li>
+    <li>Les caractéristiques suivent le format <code>Libellé: valeur</code>, une par ligne.</li>
+    <li>Après Enregistrer, la ligne est bien dans le tableau, avec la bonne pastille de statut.</li>
+  </ol>
+  <div class="box">
+    <strong>Ordre le plus simple pour un produit.</strong>
+    Catégories → (Marques si besoin) → Produits → ＋ Ajouter un produit → catégorie, nom, prix, photos → Enregistrer → vérifier la ligne du tableau.
+  </div>
+  <p class="small">DK HOMETECH — manuel d’enregistrement des produits, administration du site.</p>
+</section>
+
+</body>
+</html>

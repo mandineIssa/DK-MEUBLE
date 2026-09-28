@@ -2,10 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Product, imageUrl } from "@/lib/api";
 import { useCart } from "@/components/CartProvider";
 import ProductContactActions from "@/components/ProductContactActions";
+import FavoriteButton from "@/components/FavoriteButton";
+import { useCompare } from "@/components/CompareProvider";
 
 export default function ProductCard({ product }: { product: Product }) {
   const cover = product.images?.[0];
@@ -17,13 +20,16 @@ export default function ProductCard({ product }: { product: Product }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const { addToCart } = useCart();
+  const compareList = useCompare();
+  const router = useRouter();
 
-  async function onAdd() {
+  async function onAdd(goCheckout = false) {
     if (effective == null) return;
     setBusy(true);
     setError("");
     try {
       await addToCart(product.id, 1);
+      if (goCheckout) router.push("/commande");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
     } finally {
@@ -57,6 +63,11 @@ export default function ProductCard({ product }: { product: Product }) {
               Photo à venir
             </div>
           )}
+          {product.stock_quantity != null && product.stock_quantity > 0 && product.stock_quantity <= 3 ? (
+            <span className="absolute bottom-3 left-3 rounded-sm bg-brand-black px-2 py-1 text-[11px] font-bold text-white">
+              Stock limité
+            </span>
+          ) : null}
           {product.badge_label && (
             <span
               className="absolute left-3 top-3 rounded-sm px-2.5 py-1 text-xs font-bold text-white"
@@ -65,6 +76,9 @@ export default function ProductCard({ product }: { product: Product }) {
               {product.badge_label}
             </span>
           )}
+          <span className="absolute right-2 top-2 z-10">
+            <FavoriteButton productId={product.id} />
+          </span>
         </div>
         <div className="px-4 pt-3">
           {product.brand?.name && (
@@ -85,25 +99,47 @@ export default function ProductCard({ product }: { product: Product }) {
                 {compare.toLocaleString("fr-FR")} FCFA
               </p>
             ) : null}
+            {compare && effective != null && compare > effective ? (
+              <p className="text-xs font-semibold text-brand-orange">
+                −{(compare - effective).toLocaleString("fr-FR")} FCFA
+              </p>
+            ) : null}
           </div>
         </div>
       </Link>
 
-      <div className="flex items-center justify-between gap-2 px-4 pb-4 pt-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 pb-4 pt-3">
         {effective != null ? (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={onAdd}
-            className="btn-accent rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-60"
-          >
-            {busy ? "…" : "Panier"}
-          </button>
+          <>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => onAdd(false)}
+              className="btn-accent rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-60"
+            >
+              {busy ? "…" : "Panier"}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => onAdd(true)}
+              className="rounded-full border border-brand-black/15 px-3 py-1.5 text-xs font-semibold"
+            >
+              Acheter
+            </button>
+          </>
         ) : (
           <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
             Sur devis
           </span>
         )}
+        <button
+          type="button"
+          onClick={() => compareList.toggle({ id: product.id, slug: product.slug, name: product.name })}
+          className="text-xs font-semibold text-brand-black/60"
+        >
+          {compareList.has(product.id) ? "Retiré" : "Comparer"}
+        </button>
         <ProductContactActions productId={product.id} productName={product.name} />
       </div>
       {error && (

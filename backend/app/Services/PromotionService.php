@@ -24,6 +24,13 @@ class PromotionService
             'newsletter_frequency' => 'weekly',
             'expiry_alert_days' => 2,
             'default_vendor_name' => 'DK HOMETECH',
+            'banner_enabled' => true,
+            'banner_title' => 'Promotions exceptionnelles',
+            'banner_subtitle' => 'Jusqu’à {max} sur une large sélection de produits',
+            'banner_button_label' => 'Voir toutes les promotions',
+            'banner_button_href' => '#offres',
+            'banner_image' => '',
+            'show_countdown' => true,
         ];
     }
 
