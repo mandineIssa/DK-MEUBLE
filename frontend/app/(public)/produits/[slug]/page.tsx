@@ -53,6 +53,10 @@ export default async function ProductDetailPage({ params }: Props) {
     .slice(0, 4);
   const average = reviews?.average || 0;
   const count = reviews?.count || 0;
+  const serviceReviews = (settingsProductPage?.reviews || []).filter((review) => review.body);
+  const serviceAverage = serviceReviews.length
+    ? serviceReviews.reduce((sum, review) => sum + (Number(review.rating) || 0), 0) / serviceReviews.length
+    : 0;
 
   const crumbs = [
     { name: "Accueil", path: "/" },
@@ -76,9 +80,8 @@ export default async function ProductDetailPage({ params }: Props) {
       <ProductDetailClient
         product={product}
         similarProducts={similarProducts}
-        reviewAverage={count > 0 ? average : 4.8}
-        reviewCount={count > 0 ? count : (settingsProductPage?.reviews?.filter((r) => r.body).length || 0)}
-        reviewsAreExample={count === 0}
+        reviewAverage={count > 0 ? average : serviceAverage}
+        reviewCount={count > 0 ? count : serviceReviews.length}
         productPage={settingsProductPage}
       />
     </>

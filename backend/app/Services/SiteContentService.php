@@ -49,9 +49,9 @@ class SiteContentService
                 'example_stock' => 'En stock',
                 'example_specs' => "Marque: Hisense\nCapacité: 320 L\nNombre de portes: 2\nClasse énergétique: A+\nDimensions (L × P × H): 60 × 65 × 170 cm\nPoids: 65 kg\nGarantie: 12 mois",
                 'reviews' => [
-                    ['name' => 'Awa D.', 'city' => 'Dakar', 'rating' => 5, 'body' => 'Très bon réfrigérateur, livraison rapide. Je recommande.'],
-                    ['name' => 'Boubacar S.', 'city' => 'Thiès', 'rating' => 5, 'body' => 'Produit conforme à la description. Service impeccable.'],
-                    ['name' => 'Fatou K.', 'city' => 'Mbour', 'rating' => 4, 'body' => 'Excellent rapport qualité-prix.'],
+                    ['name' => 'Awa D.', 'city' => 'Dakar', 'rating' => 5, 'body' => 'Livraison rapide à Dakar et équipe très disponible. Je recommande.'],
+                    ['name' => 'Boubacar S.', 'city' => 'Thiès', 'rating' => 5, 'body' => 'Installation soignée et conseils clairs en magasin. Service impeccable.'],
+                    ['name' => 'Fatou K.', 'city' => 'Mbour', 'rating' => 4, 'body' => 'Bon accueil et suivi après la commande.'],
                 ],
             ],
             'topbar' => [

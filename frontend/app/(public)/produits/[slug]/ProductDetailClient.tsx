@@ -18,16 +18,14 @@ import ProductCard from "@/components/ProductCard";
 export default function ProductDetailClient({
   product,
   similarProducts = [],
-  reviewAverage = 4.8,
-  reviewCount = 124,
-  reviewsAreExample = true,
+  reviewAverage = 0,
+  reviewCount = 0,
   productPage,
 }: {
   product: Product;
   similarProducts?: Product[];
   reviewAverage?: number;
   reviewCount?: number;
-  reviewsAreExample?: boolean;
   productPage?: SiteSettings["product_page"];
 }) {
   const images = product.images?.length ? product.images : [];
@@ -61,36 +59,17 @@ export default function ProductDetailClient({
     return list;
   }, [product.is_customizable, product.condition, product.is_clearance]);
 
-  const specEntries = useMemo(() => {
-    if (!product.specs || typeof product.specs !== "object") return [];
-    return Object.entries(product.specs).filter(([, value]) => value != null && String(value).trim() !== "");
+  const shownSpecs = useMemo(() => {
+    if (!product.specs || typeof product.specs !== "object") return [] as Array<[string, string]>;
+    return Object.entries(product.specs)
+      .filter(([, value]) => value != null && String(value).trim() !== "")
+      .map(([key, value]) => [key, String(value)] as [string, string]);
   }, [product.specs]);
-  const specsAreExample = specEntries.length === 0;
-  const exampleSpecs = String(
-    productPage?.example_specs ??
-      "Capacité: 320 L\nNombre de portes: 2\nClasse énergétique: A+"
-  )
-    .split(/\n/)
-    .map((line) => {
-      const cut = line.indexOf(":");
-      if (cut < 1) return null;
-      const key = line.slice(0, cut).trim();
-      const value = line.slice(cut + 1).trim();
-      return key && value ? ([key, value] as [string, string]) : null;
-    })
-    .filter((row): row is [string, string] => Boolean(row));
-  const shownSpecs: Array<[string, string]> = specsAreExample
-    ? exampleSpecs
-    : specEntries.map(([key, value]) => [key, String(value)]);
-  const descriptionIsExample = !product.description?.trim();
+  const description = product.description?.trim() || product.short_description?.trim() || "";
   const discount =
     compare && effective && compare > effective ? Math.round((1 - effective / compare) * 100) : null;
   const stockKnown = product.stock_quantity != null;
-  const inStock = stockKnown ? (product.stock_quantity as number) > 0 : Boolean(productPage?.example_stock);
-  const exampleStock = productPage?.example_stock || "";
-  const exampleDiscount = productPage?.example_discount || "";
-  const chipLabels = ["capacité", "porte", "classe", "énergie"];
-  const chips = shownSpecs.filter(([key]) => chipLabels.some((word) => key.toLowerCase().includes(word)));
+  const inStock = stockKnown ? (product.stock_quantity as number) > 0 : false;
 
   async function onAdd(goCheckout = false) {
     if (effective == null) return;
@@ -176,16 +155,18 @@ export default function ProductDetailClient({
             </p>
             <h1 className="mt-1 text-3xl font-extrabold text-brand-black">{product.name}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-              <span className="font-extrabold text-brand-black">{reviewAverage.toLocaleString("fr-FR")}</span>
-              <span className="text-brand-orange">{"★".repeat(Math.min(5, Math.max(0, Math.round(reviewAverage))))}{"☆".repeat(5 - Math.min(5, Math.max(0, Math.round(reviewAverage))))}</span>
-              <span className="text-brand-black/55">({reviewCount} avis)</span>
-              {reviewsAreExample ? (
-                <span className="rounded-full bg-brand-orange/15 px-2 py-0.5 text-[11px] font-bold text-brand-orange">Exemple</span>
-              ) : null}
-              {stockKnown || exampleStock ? (
+              {reviewCount > 0 ? (
+                <>
+                  <span className="font-extrabold text-brand-black">{reviewAverage.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}</span>
+                  <span className="text-brand-orange">{"★".repeat(Math.min(5, Math.max(0, Math.round(reviewAverage))))}{"☆".repeat(5 - Math.min(5, Math.max(0, Math.round(reviewAverage))))}</span>
+                  <span className="text-brand-black/55">({reviewCount} avis)</span>
+                </>
+              ) : (
+                <span className="text-brand-black/55">Avis sur nos services</span>
+              )}
+              {stockKnown ? (
                 <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${inStock ? "bg-green-100 text-green-800" : "bg-red-100 text-red-700"}`}>
-                  {stockKnown ? (inStock ? "En stock" : "Rupture") : exampleStock}
-                  {!stockKnown ? " · Exemple" : ""}
+                  {inStock ? "En stock" : "Rupture"}
                 </span>
               ) : null}
             </div>
@@ -196,18 +177,17 @@ export default function ProductDetailClient({
                   {compare.toLocaleString("fr-FR")} FCFA
                 </p>
               ) : null}
-              {discount != null || exampleDiscount ? (
+              {discount != null ? (
                 <span className="rounded-md bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
-                  {discount != null ? `−${discount} %` : `${exampleDiscount} · Exemple`}
+                  −{discount} %
                 </span>
               ) : null}
             </div>
-            {chips.length > 0 ? (
+            {shownSpecs.length > 0 ? (
               <ul className="mt-3 flex flex-wrap gap-2">
-                {chips.map(([key, value]) => (
+                {shownSpecs.slice(0, 6).map(([key, value]) => (
                   <li key={key} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-brand-black shadow-sm">
-                    {value}
-                    {specsAreExample ? " · Exemple" : ""}
+                    {key}: {value}
                   </li>
                 ))}
               </ul>
@@ -332,9 +312,6 @@ export default function ProductDetailClient({
             {productPage?.show_delivery !== false && (productPage?.delivery_line_1 || productPage?.delivery_line_2 || productPage?.delivery_title) ? (
               <div className="rounded-2xl bg-white p-4 shadow-sm">
                 <p className="font-bold text-brand-black">{productPage?.delivery_title || "Livraison estimée"}</p>
-                {productPage?.delivery_is_example !== false ? (
-                  <p className="mt-1 text-[11px] font-bold text-brand-orange">Exemple</p>
-                ) : null}
                 {productPage?.delivery_line_1 ? <p className="mt-2 text-sm text-brand-black/75">{productPage.delivery_line_1}</p> : null}
                 {productPage?.delivery_line_2 ? <p className="text-sm text-brand-black/75">{productPage.delivery_line_2}</p> : null}
                 {productPage?.delivery_link_label ? (
@@ -358,9 +335,6 @@ export default function ProductDetailClient({
             {productPage?.show_installment !== false && productPage?.installment_text ? (
               <div className="rounded-2xl bg-white p-4 shadow-sm">
                 <p className="font-bold text-brand-black">{productPage.installment_title || "Paiement échelonné"}</p>
-                {productPage.installment_is_example !== false ? (
-                  <p className="mt-1 text-[11px] font-bold text-brand-orange">Exemple</p>
-                ) : null}
                 <p className="mt-2 text-sm text-brand-black/75">{productPage.installment_text}</p>
                 {productPage.installment_link_label ? (
                   <Link href="/paiement" className="mt-2 inline-block text-sm font-bold text-brand-orange">
@@ -425,47 +399,31 @@ export default function ProductDetailClient({
             ))}
           </div>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-2">
-            <div id="description">
-              <div className="mb-2 flex items-center gap-2">
-                <h2 className="font-bold text-brand-black">Description</h2>
-                {descriptionIsExample ? (
-                  <span className="rounded-full bg-brand-orange/15 px-2 py-0.5 text-[11px] font-bold text-brand-orange">Exemple</span>
-                ) : null}
+          <div className={`mt-6 grid gap-6 ${description && shownSpecs.length > 0 ? "lg:grid-cols-2" : ""}`}>
+            {description ? (
+              <div id="description">
+                <h2 className="mb-2 font-bold text-brand-black">Description</h2>
+                <p className="whitespace-pre-line text-sm leading-relaxed text-brand-black/75">{description}</p>
               </div>
-              {descriptionIsExample ? (
-                <>
-                  <p className="text-sm leading-relaxed text-brand-black/75">
-                    {product.name} allie performance, économie d’énergie et design moderne. Idéal pour les familles, il offre un grand espace de rangement.
-                  </p>
-                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-brand-black/75">
-                    <li>Système de refroidissement rapide</li>
-                    <li>Économie d’énergie</li>
-                    <li>Éclairage LED</li>
-                    <li>Design moderne et élégant</li>
-                  </ul>
-                </>
-              ) : (
-                <p className="whitespace-pre-line text-sm leading-relaxed text-brand-black/75">{product.description}</p>
-              )}
-            </div>
+            ) : (
+              <div id="description" />
+            )}
 
-            <div id="caracteristiques" className="rounded-2xl border border-black/5 p-4">
-              <div className="mb-3 flex items-center gap-2">
-                <h2 className="font-bold text-brand-black">Caractéristiques techniques</h2>
-                {specsAreExample ? (
-                  <span className="rounded-full bg-brand-orange/15 px-2 py-0.5 text-[11px] font-bold text-brand-orange">Exemple</span>
-                ) : null}
+            {shownSpecs.length > 0 ? (
+              <div id="caracteristiques" className="rounded-2xl border border-black/5 p-4">
+                <h2 className="mb-3 font-bold text-brand-black">Caractéristiques techniques</h2>
+                <dl className="divide-y divide-black/5 text-sm">
+                  {shownSpecs.map(([key, value]) => (
+                    <div key={key} className="grid grid-cols-[1fr_auto] gap-3 py-2">
+                      <dt className="text-brand-black/70">{key}</dt>
+                      <dd className="font-semibold text-brand-black">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
               </div>
-              <dl className="divide-y divide-black/5 text-sm">
-                {shownSpecs.map(([key, value]) => (
-                  <div key={key} className="grid grid-cols-[1fr_auto] gap-3 py-2">
-                    <dt className="text-brand-black/70">{key}</dt>
-                    <dd className="font-semibold text-brand-black">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
+            ) : (
+              <div id="caracteristiques" />
+            )}
           </div>
         </section>
 

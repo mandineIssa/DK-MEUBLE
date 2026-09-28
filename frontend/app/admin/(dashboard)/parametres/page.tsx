@@ -22,14 +22,12 @@ const defaultProductPage: NonNullable<SiteSettings["product_page"]> = {
   installment_is_example: true,
   show_share: true,
   share_title: "Partager",
-  example_discount: "−20 %",
-  example_stock: "En stock",
-  example_specs:
-    "Marque: Hisense\nCapacité: 320 L\nNombre de portes: 2\nClasse énergétique: A+\nDimensions (L × P × H): 60 × 65 × 170 cm\nPoids: 65 kg\nGarantie: 12 mois",
+  example_discount: "",
+  example_stock: "",
   reviews: [
-    { name: "Awa D.", city: "Dakar", rating: 5, body: "Très bon réfrigérateur, livraison rapide. Je recommande." },
-    { name: "Boubacar S.", city: "Thiès", rating: 5, body: "Produit conforme à la description. Service impeccable." },
-    { name: "Fatou K.", city: "Mbour", rating: 4, body: "Excellent rapport qualité-prix." },
+    { name: "Awa D.", city: "Dakar", rating: 5, body: "Livraison rapide à Dakar et équipe très disponible. Je recommande." },
+    { name: "Boubacar S.", city: "Thiès", rating: 5, body: "Installation soignée et conseils clairs en magasin. Service impeccable." },
+    { name: "Fatou K.", city: "Mbour", rating: 4, body: "Bon accueil et suivi après la commande." },
   ],
 };
 
@@ -347,7 +345,7 @@ export default function AdminParametresPage() {
         <section className="rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="font-bold text-brand-black">Fiche produit</h2>
           <p className="mt-1 text-xs text-brand-black/50">
-            Colonne de droite, réduction et avis affichés quand le produit n’a pas encore ses propres données. Laissez un texte vide pour le masquer.
+            Livraison, installation et paiement concernent les services du magasin. Les caractéristiques affichées viennent de chaque produit. Laissez un texte vide pour le masquer.
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {(
@@ -382,20 +380,6 @@ export default function AdminParametresPage() {
               </label>
             ))}
           </div>
-          <label className="mt-3 block text-sm">
-            <span className="text-brand-black/60">Caractéristiques d’exemple (une par ligne : Libellé: valeur)</span>
-            <textarea
-              rows={6}
-              className="mt-1 w-full rounded-xl border border-brand-black/10 px-3 py-2 font-mono text-sm"
-              value={form.product_page?.example_specs || ""}
-              onChange={(e) =>
-                setForm((f) => ({
-                  ...f,
-                  product_page: { ...f.product_page, example_specs: e.target.value },
-                }))
-              }
-            />
-          </label>
           <div className="mt-3 flex flex-wrap gap-4 text-sm">
             {(
               [
@@ -423,7 +407,7 @@ export default function AdminParametresPage() {
             ))}
           </div>
           <div className="mt-5 space-y-3">
-            <p className="text-sm font-semibold text-brand-black">Avis d’exemple</p>
+            <p className="text-sm font-semibold text-brand-black">Avis sur les services</p>
             {(form.product_page?.reviews || []).map((review, index) => (
               <div key={index} className="grid gap-2 rounded-xl border border-black/5 p-3 sm:grid-cols-4">
                 <input

@@ -88,11 +88,7 @@ export default function ProductReviews({
               <span className="ml-2 text-sm text-brand-black/55">{count} avis</span>
             </p>
           ) : (
-            <p className="mt-1 text-brand-black">
-              <span className="text-3xl font-extrabold">4,8</span>
-              <span className="ml-2 text-brand-orange">★★★★★</span>
-              <span className="ml-2 text-sm text-brand-black/55">Exemple</span>
-            </p>
+            <p className="mt-1 text-sm text-brand-black/60">Avis sur la livraison, l’installation et le service en magasin.</p>
           )}
         </div>
       </div>
@@ -121,7 +117,6 @@ export default function ProductReviews({
                 <p className="text-sm font-semibold text-brand-black">{r.author_name}</p>
                 <p className="text-xs text-brand-black/50">
                   {"city" in r && r.city ? r.city : "Client"}
-                  {r.id < 0 ? " · Exemple" : ""}
                 </p>
               </div>
             </div>

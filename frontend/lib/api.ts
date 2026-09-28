@@ -594,7 +594,7 @@ let settingsMemory: SiteSettings | null = null;
 let settingsInflight: Promise<SiteSettings> | null = null;
 
 async function fetchSettings(): Promise<SiteSettings> {
-  if (settingsMemory) return settingsMemory;
+  if (typeof window !== "undefined" && settingsMemory) return settingsMemory;
   if (typeof window !== "undefined") {
     try {
       const raw = sessionStorage.getItem(SETTINGS_STORAGE_KEY);
@@ -612,8 +612,8 @@ async function fetchSettings(): Promise<SiteSettings> {
   if (!settingsInflight) {
     settingsInflight = request<SiteSettings>("/api/settings")
       .then((data) => {
-        settingsMemory = data;
         if (typeof window !== "undefined") {
+          settingsMemory = data;
           try {
             sessionStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify({ ...data, _at: Date.now() }));
           } catch {
