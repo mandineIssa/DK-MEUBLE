@@ -238,13 +238,13 @@ export default async function ShowroomsPage() {
               {whatsappHref ? (
                 <a
                   href={whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                target="_blank"
+                rel="noopener noreferrer"
                   className="inline-flex items-center justify-center rounded-full bg-[#25D366] px-5 py-2.5 text-sm font-bold text-white"
-                >
+              >
                   WhatsApp
-                </a>
-              ) : null}
+              </a>
+            ) : null}
               <Link
                 href="/contact"
                 className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-bold text-white"

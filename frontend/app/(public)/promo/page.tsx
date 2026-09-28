@@ -6,10 +6,10 @@ export default function PromoRedirectPage({
 }: {
   searchParams: { category?: string; sort?: string; page?: string };
 }) {
-  const p = new URLSearchParams();
+    const p = new URLSearchParams();
   if (searchParams.category) p.set("category", searchParams.category);
   if (searchParams.sort) p.set("sort", searchParams.sort);
   if (searchParams.page) p.set("page", searchParams.page);
-  const qs = p.toString();
+    const qs = p.toString();
   permanentRedirect(`/promotions${qs ? `?${qs}` : ""}`);
 }

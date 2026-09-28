@@ -204,8 +204,9 @@ export default async function ContactPage() {
 
         {/* Formulaire + infos / carte */}
         <section className="grid gap-6 lg:grid-cols-5 lg:items-start lg:gap-8">
+          <div className="flex flex-col gap-6 lg:col-span-3">
           <div
-            className="rounded-2xl border bg-[var(--body-bg)] p-6 shadow-sm md:p-8 lg:col-span-3"
+            className="rounded-2xl border bg-[var(--body-bg)] p-6 shadow-sm md:p-8"
             style={{ borderColor: "var(--border-light)" }}
           >
             <h2 className="text-xl font-extrabold md:text-2xl" style={{ color: "var(--text-primary)" }}>
@@ -218,6 +219,18 @@ export default async function ContactPage() {
             <div className="mt-6">
               <ContactForm />
             </div>
+          </div>
+          <Link
+            href="/showrooms"
+            className="block overflow-hidden rounded-2xl border shadow-sm"
+            style={{ borderColor: "var(--border-light)" }}
+          >
+            <img
+              src="/contact-visite-dk-hometech.png"
+              alt="DK HOMETECH — venez nous rendre visite à Dakar"
+              className="h-auto w-full"
+            />
+          </Link>
           </div>
 
           <aside className="space-y-4 lg:col-span-2">

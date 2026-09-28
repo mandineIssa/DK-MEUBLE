@@ -47,8 +47,13 @@ export function buildPageMetadata(input: SeoInput): Metadata {
     : undefined;
   const images = image ? [{ url: image }] : undefined;
 
+  const fullTitle = input.title.includes(SITE_NAME)
+    ? input.title
+    : `${input.title} | ${SITE_NAME}`;
+
   return {
-    title: input.title,
+    // absolute : le template racine « %s | DK HOMETECH » ne double pas la marque
+    title: { absolute: fullTitle },
     description,
     keywords: input.keywords,
     alternates: { canonical: url },
@@ -60,13 +65,13 @@ export function buildPageMetadata(input: SeoInput): Metadata {
       locale: DEFAULT_LOCALE,
       url,
       siteName: SITE_NAME,
-      title: input.title.includes(SITE_NAME) ? input.title : `${input.title} | ${SITE_NAME}`,
+      title: fullTitle,
       description,
       images,
     },
     twitter: {
       card: "summary_large_image",
-      title: input.title.includes(SITE_NAME) ? input.title : `${input.title} | ${SITE_NAME}`,
+      title: fullTitle,
       description,
       images: image ? [image] : undefined,
     },
@@ -77,6 +82,14 @@ export const NOINDEX_METADATA: Metadata = {
   robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
   alternates: { canonical: undefined },
 };
+
+function formatTel(raw: string): string | undefined {
+  const digits = raw.replace(/\D+/g, "");
+  if (!digits) return undefined;
+  if (digits.startsWith("221") && digits.length >= 12) return `+${digits}`;
+  if (digits.length === 9) return `+221${digits}`;
+  return raw.trim();
+}
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -95,12 +108,25 @@ export function productAvailability(product: Product): string {
 }
 
 export function buildOrganizationSchema(site: SiteInfo) {
-  const sameAs = Object.values(site.socialUrls || {}).filter(Boolean);
+  const sameAs = Object.values(site.socialUrls || {})
+    .filter(Boolean)
+    .map((url) => {
+      try {
+        const u = new URL(url);
+        u.search = "";
+        u.hash = "";
+        return u.toString().replace(/\/$/, "");
+      } catch {
+        return url;
+      }
+    });
   const logo = site.logoUrl
     ? site.logoUrl.startsWith("http")
       ? site.logoUrl
       : absoluteImageUrl(site.logoUrl)
     : undefined;
+  const telephone = formatTel(site.phoneTel || site.phoneDisplay || "");
+  const alwaysOpen = /24\s*h/i.test(site.hours || "");
 
   return {
     "@context": "https://schema.org",
@@ -111,7 +137,7 @@ export function buildOrganizationSchema(site: SiteInfo) {
     url: absoluteUrl("/"),
     logo: logo || undefined,
     email: site.email || undefined,
-    telephone: site.phoneTel || site.phoneDisplay || undefined,
+    telephone: telephone || undefined,
     address: site.address
       ? {
           "@type": "PostalAddress",
@@ -124,7 +150,22 @@ export function buildOrganizationSchema(site: SiteInfo) {
           addressLocality: "Dakar",
           addressCountry: "SN",
         },
-    openingHours: site.hours || undefined,
+    openingHoursSpecification: alwaysOpen
+      ? {
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+          ],
+          opens: "00:00",
+          closes: "23:59",
+        }
+      : undefined,
     areaServed: [
       { "@type": "City", name: "Dakar" },
       { "@type": "Country", name: "Sénégal" },
