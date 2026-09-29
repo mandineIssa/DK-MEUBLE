@@ -13,7 +13,7 @@ export default function CallButton() {
   return (
     <a
       href={`tel:${phone.tel}`}
-      className="fixed bottom-24 left-4 z-50 rounded-full bg-brand-orange px-4 py-3 text-xs font-bold text-white md:hidden"
+      className="fixed left-4 z-[60] rounded-full bg-brand-orange px-4 py-3 text-xs font-bold text-white shadow-md md:hidden bottom-[calc(8.25rem+env(safe-area-inset-bottom,0px)+var(--vv-bottom,0px))]"
     >
       Appeler
     </a>

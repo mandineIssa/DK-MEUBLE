@@ -26,19 +26,20 @@ async function proxy(req: NextRequest, ctx: Ctx) {
 
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
+  const cartToken = req.headers.get("x-cart-token");
+  if (cartToken) headers.set("X-Cart-Token", cartToken);
+
   const init: RequestInit = {
     method: req.method,
     headers,
     cache: "no-store",
   };
 
-  if (req.method !== "GET" && req.method !== "HEAD" && req.method !== "DELETE") {
+  if (req.method !== "GET" && req.method !== "HEAD") {
     const contentType = req.headers.get("content-type");
     if (contentType) headers.set("Content-Type", contentType);
     const body = await req.text();
     if (body) init.body = body;
-  } else if (req.method === "DELETE") {
-    // DELETE sans corps — évite Content-Type: application/json vide
   }
 
   const upstream = await fetch(url, init);
@@ -56,6 +57,9 @@ async function proxy(req: NextRequest, ctx: Ctx) {
         status: upstream.status,
         headers: {
           "Content-Type": upstream.headers.get("Content-Type") || "application/json",
+          ...(upstream.headers.get("X-Cart-Token")
+            ? { "X-Cart-Token": upstream.headers.get("X-Cart-Token") as string }
+            : {}),
         },
       });
 

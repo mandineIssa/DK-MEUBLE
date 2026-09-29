@@ -37,7 +37,7 @@ export default function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contacter DK HOMETECH sur WhatsApp"
-      className="fixed bottom-24 right-4 z-50 flex items-center gap-2 md:bottom-6 md:right-6"
+      className="fixed right-4 z-50 flex items-center gap-2 bottom-[calc(8.25rem+env(safe-area-inset-bottom,0px)+var(--vv-bottom,0px))] md:bottom-6 md:right-6"
     >
       {agentImage ? (
         <span className="relative h-12 w-12 overflow-hidden rounded-full border-2 border-white shadow-lg">

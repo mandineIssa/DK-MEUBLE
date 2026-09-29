@@ -18,6 +18,17 @@ export type CartSummary = {
   subtotal: number;
 };
 
+function endpoint(path: string) {
+  if (typeof window !== "undefined") {
+    return `/api/bff${path.replace(/^\/api/, "")}`;
+  }
+  return `${API_URL}${path}`;
+}
+
+function networkError() {
+  return new Error("Connexion impossible. Vérifiez le réseau et réessayez.");
+}
+
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(CART_KEY);
@@ -36,7 +47,12 @@ async function cartRequest(path: string, options?: RequestInit): Promise<CartSum
   const token = getToken();
   if (token) headers["X-Cart-Token"] = token;
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(endpoint(path), { ...options, headers, cache: "no-store" });
+  } catch {
+    throw networkError();
+  }
   const newToken = res.headers.get("X-Cart-Token");
   if (newToken) saveToken(newToken);
 
@@ -74,11 +90,17 @@ export async function checkoutApi(payload: Record<string, unknown>) {
   const token = getToken();
   if (token) headers["X-Cart-Token"] = token;
 
-  const res = await fetch(`${API_URL}/api/checkout`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(payload),
-  });
+  let res: Response;
+  try {
+    res = await fetch(endpoint("/api/checkout"), {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+      cache: "no-store",
+    });
+  } catch {
+    throw networkError();
+  }
   const newToken = res.headers.get("X-Cart-Token");
   if (newToken) saveToken(newToken);
   if (!res.ok) {

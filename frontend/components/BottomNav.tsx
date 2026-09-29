@@ -59,7 +59,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-black/10 bg-brand-black pb-[env(safe-area-inset-bottom)] text-white md:hidden">
+    <nav className="fixed left-0 right-0 z-40 border-t border-black/10 bg-brand-black pb-[env(safe-area-inset-bottom)] text-white md:hidden bottom-[var(--vv-bottom,0px)]">
       <ul className="mx-auto flex max-w-lg items-stretch justify-between px-1">
         {items.map((item) => {
           const path = item.href.split("#")[0];

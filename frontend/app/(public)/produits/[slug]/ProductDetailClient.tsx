@@ -264,7 +264,7 @@ export default function ProductDetailClient({
               reportableId={product.id}
               productName={product.name}
             />
-            {cartMsg && <p className="mt-2 text-sm text-green-700">{cartMsg}</p>}
+            {cartMsg && <p className="mt-2 text-sm font-semibold text-red-600">{cartMsg}</p>}
             {waHref && (
               <a
                 href={waHref}
@@ -445,7 +445,7 @@ export default function ProductDetailClient({
         </section>
       </div>
       {effective != null ? (
-        <div className="fixed inset-x-0 bottom-16 z-30 flex gap-2 border-t bg-white p-3 md:hidden">
+        <div className="fixed inset-x-0 z-30 flex gap-2 border-t bg-white p-3 md:hidden bottom-[calc(3.75rem+env(safe-area-inset-bottom,0px)+var(--vv-bottom,0px))]">
           <button type="button" onClick={() => onAdd(false)} className="flex-1 rounded-full bg-brand-orange py-3 text-sm font-bold text-white">
             Ajouter au panier
           </button>

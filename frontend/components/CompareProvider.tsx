@@ -63,7 +63,7 @@ export function CompareProvider({ children }: { children: React.ReactNode }) {
       {items.length > 0 ? (
         <a
           href="/comparer"
-          className="fixed bottom-24 left-4 z-40 rounded-full bg-brand-black px-4 py-2 text-xs font-bold text-white md:bottom-6"
+          className="fixed left-1/2 z-[55] -translate-x-1/2 rounded-full bg-brand-black px-4 py-2 text-xs font-bold text-white shadow-md bottom-[calc(12.25rem+env(safe-area-inset-bottom,0px)+var(--vv-bottom,0px))] md:bottom-6 md:left-4 md:translate-x-0"
         >
           Comparer ({items.length})
         </a>

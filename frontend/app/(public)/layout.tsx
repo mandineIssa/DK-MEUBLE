@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import PromoPopupLoader from "@/components/PromoPopup";
+import VisualViewportPin from "@/components/VisualViewportPin";
 import VisitTracker from "@/components/VisitTracker";
 import JsonLd from "@/components/seo/JsonLd";
 import { SiteProvider } from "@/components/SiteProvider";
@@ -36,6 +37,7 @@ export default async function PublicLayout({ children }: { children: React.React
             <main className="flex flex-1 flex-col pb-20 md:pb-0">{children}</main>
             <Footer />
           </div>
+          <VisualViewportPin />
           <BottomNav />
           <PromoPopupLoader />
           <WhatsAppButton />
