@@ -547,12 +547,12 @@ async function fetchNavigation(): Promise<NavigationPayload> {
   return navigationInflight;
 }
 
-const HOME_STORAGE_KEY = "dk_homepage_v2";
+const HOME_STORAGE_KEY = "dk_homepage_v3";
 let homepageMemory: HomepagePayload | null = null;
 let homepageInflight: Promise<HomepagePayload> | null = null;
 
 async function fetchHomepage(): Promise<HomepagePayload> {
-  if (homepageMemory?.sections) {
+  if (typeof window !== "undefined" && homepageMemory?.sections) {
     return homepageMemory;
   }
   if (typeof window !== "undefined") {
@@ -570,10 +570,10 @@ async function fetchHomepage(): Promise<HomepagePayload> {
     }
   }
   if (!homepageInflight) {
-    homepageInflight = request<HomepagePayload>("/api/homepage")
+    homepageInflight = request<HomepagePayload>("/api/homepage", { cache: "no-store" })
       .then((data) => {
-        homepageMemory = data;
         if (typeof window !== "undefined") {
+          homepageMemory = data;
           try {
             sessionStorage.setItem(HOME_STORAGE_KEY, JSON.stringify({ ...data, _at: Date.now() }));
           } catch {

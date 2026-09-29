@@ -9,32 +9,51 @@ import SiteBrand from "@/components/SiteBrand";
 
 type FooterPayload = Awaited<ReturnType<typeof api.getFooter>>;
 
-const SOCIAL_ICONS: Record<string, { path: string; bg: string }> = {
-  facebook: {
-    bg: "#1877F2",
-    path: "M14 8h2.5V5.5H14c-1.7 0-2.5 1-2.5 2.6V10H9v2.8h2.5V19H14v-6.2h2.2L17 10h-3V8.2c0-.5.2-.7.7-.7z",
-  },
-  instagram: {
-    bg: "#E4405F",
-    path: "M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm5 4.5A4.5 4.5 0 1 0 16.5 12 4.5 4.5 0 0 0 12 7.5zm5.2-.9a1.1 1.1 0 1 0 1.1 1.1 1.1 1.1 0 0 0-1.1-1.1zM12 9.2A2.8 2.8 0 1 1 9.2 12 2.8 2.8 0 0 1 12 9.2z",
-  },
-  tiktok: {
-    bg: "#010101",
-    path: "M16.5 4c.6 1.7 1.9 3 3.5 3.5V10c-1.5-.1-2.9-.6-4-1.5v6.3A5.8 5.8 0 1 1 10 9.1v2.2a3.6 3.6 0 1 0 2.5 3.4V4h4z",
-  },
-  youtube: {
-    bg: "#FF0000",
-    path: "M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C17.9 5 12 5 12 5s-5.9 0-7.7.3A2.7 2.7 0 0 0 2.4 7.2 28 28 0 0 0 2 12a28 28 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9C6.1 19 12 19 12 19s5.9 0 7.7-.3a2.7 2.7 0 0 0 1.9-1.9A28 28 0 0 0 22 12a28 28 0 0 0-.4-4.8zM10 15.2V8.8L15.5 12 10 15.2z",
-  },
-  x: {
-    bg: "#111",
-    path: "M4 4h4.2l4 5.5L16.8 4H20l-6.1 7.2L20.5 20H16.3l-4.4-6L7.2 20H4l6.5-7.7L4 4z",
-  },
-  whatsapp: {
-    bg: "#25D366",
-    path: "M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.39 1.26 4.81L2 22l5.42-1.42a9.9 9.9 0 0 0 4.62 1.17h.01c5.46 0 9.9-4.45 9.9-9.91C21.95 6.45 17.5 2 12.04 2Z",
-  },
-};
+function SocialGlyph({ platform }: { platform: string }) {
+  const cls = "h-7 w-7";
+  if (platform === "instagram") {
+    return (
+      <svg viewBox="0 0 24 24" className={cls} fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden>
+        <rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5" />
+        <circle cx="12" cy="12" r="4.1" />
+        <circle cx="17.3" cy="6.7" r="0.9" fill="currentColor" stroke="none" />
+      </svg>
+    );
+  }
+  if (platform === "tiktok") {
+    return (
+      <svg viewBox="0 0 24 24" className={cls} fill="currentColor" aria-hidden>
+        <path d="M14.2 3.2c.5 2.6 2 4.5 4.3 5.1v2.8a7.2 7.2 0 0 1-4.1-1.3v6.6a5.7 5.7 0 1 1-5.7-5.7c.3 0 .6 0 .9.1v2.9a2.8 2.8 0 1 0 1.9 2.7V3.2h2.7Z" />
+      </svg>
+    );
+  }
+  if (platform === "x" || platform === "twitter") {
+    return (
+      <svg viewBox="0 0 24 24" className={cls} fill="currentColor" aria-hidden>
+        <path d="M14.7 10.4 21.8 2.2h-1.7l-6.1 7.1L9 2.2H2.4l7.5 10.9L2.4 21.8h1.7l6.6-7.6 5.3 7.6h6.6l-8-11.4Zm-2.3 2.7-.8-1.1L5 3.7h2.6l4.9 7 .8 1.1 6.3 9h-2.6l-5.2-7.4Z" />
+      </svg>
+    );
+  }
+  if (platform === "youtube") {
+    return (
+      <svg viewBox="0 0 24 24" className={cls} fill="currentColor" aria-hidden>
+        <path d="M22 12.2s0-3.2-.4-4.6a2.9 2.9 0 0 0-2-2C17.9 5.2 12 5.2 12 5.2s-5.9 0-7.6.4a2.9 2.9 0 0 0-2 2C2 9 2 12.2 2 12.2s0 3.2.4 4.6a2.9 2.9 0 0 0 2 2c1.7.4 7.6.4 7.6.4s5.9 0 7.6-.4a2.9 2.9 0 0 0 2-2c.4-1.4.4-4.6.4-4.6ZM10.1 15.4V9l5.2 3.2-5.2 3.2Z" />
+      </svg>
+    );
+  }
+  if (platform === "whatsapp") {
+    return (
+      <svg viewBox="0 0 24 24" className={cls} fill="currentColor" aria-hidden>
+        <path d="M12 3.2A8.7 8.7 0 0 0 4.6 16.3L3.4 20.8l4.6-1.2A8.7 8.7 0 1 0 12 3.2Zm4.9 12.3c-.2.6-1.2 1.1-1.7 1.1-.4.1-.9.2-2.9-.6-2.4-1-4-3.5-4.1-3.6-.1-.2-1-1.3-1-2.5s.6-1.8.9-2c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .5.4.2.6.7 2 .7 2.1.1.2 0 .3-.1.5l-.4.5c-.1.2-.3.3-.1.6.2.3.7 1.2 1.6 1.9 1.1.9 2 1.1 2.3 1.3.2.1.4.1.6-.1l.7-.8c.2-.2.3-.2.6-.1.2.1 1.5.7 1.8.8.2.1.4.2.4.3.1.3 0 .8-.2 1.4Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" className={cls} fill="currentColor" aria-hidden>
+      <path d="M14.5 8.2h-2V6.8c0-.5.3-.6.6-.6H15V4h-2.2C10.4 4 9.8 5.8 9.8 7v1.2H8v2.4h1.8V20h2.7v-9.4h2.1l.2-2.4Z" />
+    </svg>
+  );
+}
 
 function themeStyle(theme?: FooterPayload["settings"]["theme"]): CSSProperties {
   if (!theme) return {};
@@ -395,25 +414,19 @@ export default function Footer() {
               <h3 className="mb-3 text-sm font-bold uppercase tracking-wide">
                 {s?.socials_heading || "Retrouvez-nous sur"}
               </h3>
-              <div className="flex flex-wrap gap-2">
-                {socials.map((soc) => {
-                  const icon = SOCIAL_ICONS[soc.platform] || SOCIAL_ICONS.facebook;
-                  return (
-                    <a
-                      key={`${soc.platform}-${soc.id}`}
-                      href={soc.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={soc.platform}
-                      style={{ background: icon.bg }}
-                      className="flex h-9 w-9 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--footer-accent)]"
-                    >
-                      <svg viewBox="0 0 24 24" className="h-4 w-4 fill-white">
-                        <path d={icon.path} />
-                      </svg>
-                    </a>
-                  );
-                })}
+              <div className="flex flex-wrap items-center gap-6">
+                {socials.map((soc) => (
+                  <a
+                    key={`${soc.platform}-${soc.id}`}
+                    href={soc.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={soc.platform}
+                    className="text-white transition hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--footer-accent)]"
+                  >
+                    <SocialGlyph platform={soc.platform} />
+                  </a>
+                ))}
               </div>
             </div>
 

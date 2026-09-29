@@ -4,6 +4,7 @@ import CallButton from "@/components/CallButton";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import PromoPopupLoader from "@/components/PromoPopup";
 import VisitTracker from "@/components/VisitTracker";
 import JsonLd from "@/components/seo/JsonLd";
 import { SiteProvider } from "@/components/SiteProvider";
@@ -36,6 +37,7 @@ export default async function PublicLayout({ children }: { children: React.React
             <Footer />
           </div>
           <BottomNav />
+          <PromoPopupLoader />
           <WhatsAppButton />
           <CallButton />
         </CompareProvider>

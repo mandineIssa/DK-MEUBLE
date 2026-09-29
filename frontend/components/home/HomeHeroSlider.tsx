@@ -147,16 +147,21 @@ export default function HomeHeroSlider({
           </div>
 
           {frames.length > 1 ? (
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-              {frames.map((item, i) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  aria-label={item.label || `Slide ${i + 1}`}
-                  onClick={() => setIndex(i)}
-                  className={`h-2.5 w-2.5 rounded-full ${i === index ? "bg-brand-orange" : "bg-white"}`}
-                />
-              ))}
+            <div className="absolute bottom-4 left-3 right-3 flex flex-col items-center gap-2 md:left-6 md:right-6">
+              <div className="flex max-w-full gap-2 overflow-x-auto pb-1">
+                {frames.map((item, i) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setIndex(i)}
+                    className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold [text-shadow:none] ${
+                      i === index ? "bg-brand-orange text-white" : "bg-white text-[#1a1a1a]"
+                    }`}
+                  >
+                    {item.label || `Slide ${i + 1}`}
+                  </button>
+                ))}
+              </div>
             </div>
           ) : null}
         </div>
