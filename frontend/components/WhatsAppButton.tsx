@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useSite, useWaLink } from "@/components/SiteProvider";
 import { waLink } from "@/lib/site";
 
 export default function WhatsAppButton() {
+  const pathname = usePathname();
   const site = useSite();
   const fallback = useWaLink();
   const [href, setHref] = useState<string | null>(fallback);
@@ -30,6 +32,7 @@ export default function WhatsAppButton() {
   }, [fallback, site.whatsapp]);
 
   if (!enabled || !href) return null;
+  if (pathname.startsWith("/panier") || pathname.startsWith("/commande")) return null;
 
   return (
     <a

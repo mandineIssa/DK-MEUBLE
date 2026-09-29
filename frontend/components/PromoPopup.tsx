@@ -114,7 +114,7 @@ export function PromoPopup({
     <aside
       role="dialog"
       aria-label="Promotions en cours"
-      className="fixed left-3 z-[45] w-[min(92vw,380px)] overflow-hidden rounded-xl bg-white shadow-[0_12px_40px_rgba(0,0,0,0.22)] bottom-[calc(16rem+env(safe-area-inset-bottom,0px)+var(--vv-bottom,0px))] md:bottom-6 md:left-6"
+      className="fixed left-3 z-[45] w-[min(22rem,calc(100%-1.5rem))] overflow-hidden rounded-xl bg-white shadow-[0_12px_40px_rgba(0,0,0,0.22)] bottom-[calc(16rem+env(safe-area-inset-bottom,0px)+var(--vv-bottom,0px))] md:bottom-6 md:left-6"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >

@@ -20,7 +20,7 @@ function BrandName({
   if (parts.length >= 2) {
     const last = parts.pop()!;
     return (
-      <span className={`${className} font-bold tracking-tight`}>
+      <span className={`${className} block font-bold tracking-tight`}>
         <span className={primary}>{parts.join(" ")}</span>{" "}
         <span className={accent}>{last}</span>
       </span>
@@ -43,10 +43,10 @@ export default function SiteBrand({
   const size = compact ? 36 : 40;
 
   return (
-    <span className="flex shrink-0 items-center gap-2">
+    <span className="flex min-w-0 items-center gap-2">
       {logoSrc ? (
         <span
-          className="relative overflow-hidden rounded-full bg-white"
+          className="relative shrink-0 overflow-hidden rounded-full bg-white"
           style={{ width: size, height: size }}
         >
           <Image
@@ -72,7 +72,7 @@ export default function SiteBrand({
           </svg>
         </span>
       )}
-      <BrandName name={site.name} className={compact ? "text-base" : "text-lg"} variant={variant} />
+      <BrandName name={site.name} className={`min-w-0 truncate ${compact ? "text-base" : "text-lg"}`} variant={variant} />
     </span>
   );
 }

@@ -166,11 +166,11 @@ export default function Header() {
         }}
       >
         <div
-          className={`mx-auto flex max-w-7xl items-center gap-3 px-3 sm:px-4 md:gap-6 md:px-5 ${
+          className={`mx-auto flex min-w-0 max-w-7xl items-center gap-2 px-3 sm:gap-3 sm:px-4 md:gap-6 md:px-5 ${
             compact ? "py-1.5" : "py-3 md:py-3.5"
           }`}
         >
-          <Link href="/" className="shrink-0" onClick={() => setMobileOpen(false)}>
+          <Link href="/" className="min-w-0 shrink" onClick={() => setMobileOpen(false)}>
             <SiteBrand compact={compact} variant="light" />
           </Link>
 
@@ -219,7 +219,7 @@ export default function Header() {
             <button
               type="button"
               className={`inline-flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-primary)] hover:text-[var(--accent-primary)] ${
-                compact ? "md:hidden" : "sm:hidden"
+                compact ? "md:hidden" : "hidden"
               }`}
               aria-label="Rechercher"
               onClick={() => setSearchOpen((v) => !v)}
