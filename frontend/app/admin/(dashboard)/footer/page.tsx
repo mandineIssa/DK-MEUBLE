@@ -237,10 +237,9 @@ export default function AdminFooterPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-extrabold text-brand-black">Footer</h1>
-      <p className="mt-1 text-sm text-brand-black/50">
-        Bas de page entièrement paramétrable : newsletter, colonnes, réseaux, paiements, thème et
-        pages légales. Aucun lien codé en dur côté front.
+      <h1 className="text-2xl font-extrabold text-brand-black">Pied de page</h1>
+      <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+        Ce que le visiteur voit tout en bas : newsletter, colonnes de liens, réseaux, moyens de paiement.
       </p>
       {msg ? <p className="mt-3 text-sm font-medium text-brand-orange">{msg}</p> : null}
 

@@ -38,7 +38,12 @@ export default function AdminCommandesPage() {
   return (
     <div className="p-6 md:p-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-2xl font-extrabold">Commandes</h1>
+        <div>
+          <h1 className="text-2xl font-extrabold text-brand-black">Commandes</h1>
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+            Achats passés sur le site. Le statut dit si la commande est à confirmer, en préparation ou livrée.
+          </p>
+        </div>
         <div className="flex gap-2">
           <Link href="/admin/livraison" className="rounded-full border px-4 py-2 text-sm font-semibold">
             Zones livraison

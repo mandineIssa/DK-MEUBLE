@@ -9,6 +9,7 @@ import { useCart } from "@/components/CartProvider";
 import { useCompare } from "@/components/CompareProvider";
 import FavoriteButton from "@/components/FavoriteButton";
 import ProductQuickView from "@/components/home/ProductQuickView";
+import ProductLink from "@/components/ProductLink";
 import CategoryFilterSidebar from "@/components/category/CategoryFilterSidebar";
 import ViewSortBar, { type ViewMode } from "@/components/category/ViewSortBar";
 
@@ -584,9 +585,10 @@ function PlpProductCard({
   if (list) {
     return (
       <article className="flex gap-4 border border-[#e8e8e8] bg-white p-3">
-        <Link
+        <ProductLink
           href={`/produits/${product.slug}`}
-          className="relative h-28 w-36 shrink-0 overflow-hidden bg-[#f5f5f5]"
+          label={product.name}
+          className="h-28 w-36 shrink-0 overflow-hidden bg-[#f5f5f5]"
         >
           {cover ? (
             <Image src={imageUrl(cover.path)} alt={product.name} fill className="object-cover" sizes="144px" />
@@ -599,16 +601,16 @@ function PlpProductCard({
               {product.badge_label}
             </span>
           ) : null}
-        </Link>
+        </ProductLink>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] uppercase text-[#999]">{product.category?.name}</p>
-          <Link
+          <ProductLink
             href={`/produits/${product.slug}`}
+            label={product.name}
             className="line-clamp-2 font-bold uppercase text-[#1a1a1a]"
-            title={product.name}
           >
             {product.name}
-          </Link>
+          </ProductLink>
           <div className="mt-1 flex items-baseline gap-2">
             {compare ? (
               <p className="text-xs line-through" style={{ color: accent }}>
@@ -650,7 +652,7 @@ function PlpProductCard({
     <>
       <article className="group relative border border-[#e8e8e8] bg-white">
         <div className="relative aspect-square bg-white">
-          <Link href={`/produits/${product.slug}`}>
+          <ProductLink href={`/produits/${product.slug}`} label={product.name} className="absolute inset-0">
             {cover ? (
               <Image
                 src={imageUrl(cover.path)}
@@ -661,7 +663,7 @@ function PlpProductCard({
                 sizes="(max-width: 640px) 50vw, 25vw"
               />
             ) : null}
-          </Link>
+          </ProductLink>
           {product.badge_label ? (
             <span
               className="absolute right-2 top-2 px-2 py-0.5 text-[11px] font-bold text-white"
@@ -682,13 +684,13 @@ function PlpProductCard({
           <p className="text-[10px] font-medium uppercase tracking-wide text-[#999]">
             {product.category?.name}
           </p>
-          <Link
+          <ProductLink
             href={`/produits/${product.slug}`}
+            label={product.name}
             className="mt-0.5 line-clamp-2 text-sm font-bold uppercase text-[#1a1a1a]"
-            title={product.name}
           >
             {product.name}
-          </Link>
+          </ProductLink>
           <div className="mt-1 flex flex-wrap items-baseline gap-1.5">
             {compare ? (
               <p className="text-[11px] line-through" style={{ color: accent }}>

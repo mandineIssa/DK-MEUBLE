@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Product, imageUrl } from "@/lib/api";
@@ -9,6 +8,7 @@ import { useCart } from "@/components/CartProvider";
 import ProductContactActions from "@/components/ProductContactActions";
 import FavoriteButton from "@/components/FavoriteButton";
 import { useCompare } from "@/components/CompareProvider";
+import ProductLink from "@/components/ProductLink";
 
 export default function ProductCard({ product }: { product: Product }) {
   const cover = product.images?.[0];
@@ -42,7 +42,7 @@ export default function ProductCard({ product }: { product: Product }) {
       className="group relative w-full min-w-0 overflow-hidden rounded-xl bg-[var(--body-bg)] transition hover:-translate-y-0.5 hover:shadow-md"
       style={{ border: "1px solid var(--border-light)" }}
     >
-      <Link href={`/produits/${product.slug}`} className="block min-w-0">
+      <ProductLink href={`/produits/${product.slug}`} label={product.name} className="block min-w-0">
         <div
           className="relative aspect-[4/3] w-full overflow-hidden rounded-t-xl"
           style={{ background: "var(--content-bg-alt)" }}
@@ -106,7 +106,7 @@ export default function ProductCard({ product }: { product: Product }) {
             ) : null}
           </div>
         </div>
-      </Link>
+      </ProductLink>
 
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 pb-4 pt-3">
         {effective != null ? (
@@ -140,7 +140,13 @@ export default function ProductCard({ product }: { product: Product }) {
         >
           {compareList.has(product.id) ? "Retiré" : "Comparer"}
         </button>
-        <ProductContactActions productId={product.id} productName={product.name} />
+        <ProductContactActions
+          productId={product.id}
+          productName={product.name}
+          sku={product.sku}
+          price={effective}
+          slug={product.slug}
+        />
       </div>
       {error && (
         <p className="px-4 pb-3 text-xs" style={{ color: "var(--danger-color)" }}>

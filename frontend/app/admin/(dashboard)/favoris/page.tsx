@@ -47,8 +47,8 @@ export default function AdminFavorisPage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-extrabold text-brand-black">Favoris clients</h1>
-      <p className="mt-1 text-sm text-brand-black/50">
-        Produits ajoutés aux favoris (surveillance prix / stock)
+      <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+        Produits qu’un client a enregistrés pour plus tard. Utile pour voir ce qui intéresse sans achat.
       </p>
 
       <form onSubmit={onSearch} className="mt-6 flex flex-wrap gap-2">

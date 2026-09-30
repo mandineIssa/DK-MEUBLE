@@ -93,7 +93,9 @@ export default function AdminRealisationsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-brand-black">Réalisations</h1>
-          <p className="text-sm text-brand-black/60">Portfolio affiché sur le site</p>
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+            Photos de chantiers et d’installations, montrées sur la page Réalisations.
+          </p>
         </div>
         <button
           type="button"

@@ -23,7 +23,9 @@ export default function AdminAvisPage() {
   return (
     <div className="p-6 md:p-8">
       <h1 className="text-2xl font-extrabold text-brand-black">Avis clients</h1>
-      <p className="mt-1 text-sm text-brand-black/60">Modération des notes et commentaires produits</p>
+      <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+        Notes laissées par les clients. Seuls les avis que vous approuvez apparaissent sur le site.
+      </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
         {[

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSite, useWaLink } from "@/components/SiteProvider";
+import { productWhatsAppMessage } from "@/lib/whatsappMessage";
 
 function telHref(num: string) {
   const digits = num.replace(/\D/g, "");
@@ -12,6 +13,9 @@ function telHref(num: string) {
 type Props = {
   productId: number;
   productName: string;
+  sku?: string | null;
+  price?: number | null;
+  slug?: string | null;
   /** Compact icons row (cards) vs larger (fiche produit) */
   variant?: "card" | "detail";
 };
@@ -19,10 +23,17 @@ type Props = {
 export default function ProductContactActions({
   productId,
   productName,
+  sku,
+  price,
+  slug,
   variant = "card",
 }: Props) {
   const site = useSite();
-  const wa = useWaLink(`Bonjour, je suis intéressé(e) par : ${productName}`);
+  const [origin, setOrigin] = useState("");
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+  const wa = useWaLink(productWhatsAppMessage({ name: productName, sku, price, slug }, origin));
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const phones = site.phones ?? [];

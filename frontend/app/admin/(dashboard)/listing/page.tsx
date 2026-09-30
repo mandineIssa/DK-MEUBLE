@@ -147,9 +147,9 @@ export default function AdminPlpSettingsPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-extrabold">Réglages listing (PLP)</h1>
-      <p className="mt-1 text-sm text-brand-black/60">
-        Titre, catégories / sous-catégories du filtre, barre vue/tri.
+      <h1 className="text-2xl font-extrabold text-brand-black">Pages catégorie</h1>
+      <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+        Ce que le client voit en ouvrant une catégorie : titre, filtres et façon de trier les produits.
       </p>
       {msg ? <p className="mt-3 text-sm text-green-700">{msg}</p> : null}
       {err ? <p className="mt-3 text-sm text-red-600">{err}</p> : null}

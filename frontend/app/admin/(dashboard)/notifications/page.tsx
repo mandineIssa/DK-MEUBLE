@@ -118,7 +118,7 @@ export default function AdminNotificationsPage() {
     <div className="p-6">
       <h1 className="text-2xl font-extrabold text-brand-black">Notifications</h1>
       <p className="mt-1 text-sm text-brand-black/50">
-        Templates, canaux, favoris, panier abandonné et signalements
+        Messages automatiques : commande, rappel de panier, alerte prix. Choisissez ce qui part par e-mail ou dans le compte client.
       </p>
       {msg ? <p className="mt-3 text-sm font-medium text-brand-orange">{msg}</p> : null}
 

@@ -44,7 +44,7 @@ export default function AdminPromoSettingsPage() {
         <div>
           <h1 className="text-2xl font-extrabold text-brand-black">Réglages Promo</h1>
           <p className="mt-1 text-sm text-brand-black/60">
-            Seuils, durée, validation et texte légal — rien n’est codé en dur côté front.
+            Durée des offres, seuil minimum et mention légale affichée à côté du prix promo.
           </p>
         </div>
         <Link

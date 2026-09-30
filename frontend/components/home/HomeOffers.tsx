@@ -2,6 +2,7 @@ import Link from "next/link";
 import { api, imageUrl } from "@/lib/api";
 import { homepageBlocks } from "@/lib/homepageBlocks";
 import PromoCountdown from "@/components/PromoCountdown";
+import ProductLink from "@/components/ProductLink";
 
 export default async function HomeOffers() {
   const [result, settings] = await Promise.all([
@@ -41,9 +42,10 @@ export default async function HomeOffers() {
           const product = promo.product;
           const image = product?.images?.[0]?.path;
           return (
-            <Link
+            <ProductLink
               key={promo.id}
               href={product?.slug ? `/produits/${product.slug}` : "/promotions"}
+              label={product?.name || "Produit"}
               className="overflow-hidden rounded-2xl bg-white shadow-sm"
             >
               <div className="relative aspect-[4/3] bg-[#f5f5f5]">
@@ -64,7 +66,7 @@ export default async function HomeOffers() {
                   {promo.price_original.toLocaleString("fr-FR")} FCFA
                 </p>
               </div>
-            </Link>
+            </ProductLink>
           );
         })}
       </div>

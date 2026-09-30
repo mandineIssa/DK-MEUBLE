@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
+import { useRouter } from "next/navigation";
 import { api, imageUrl, type Product, type Promotion } from "@/lib/api";
 
 /** Une offre affichée dans le carrousel. */
@@ -73,6 +74,7 @@ export function PromoPopup({
   const [visible, setVisible] = useState(false);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (products.length === 0) return;
@@ -136,14 +138,21 @@ export function PromoPopup({
 
       <div className="relative h-[248px] sm:h-[268px]">
         {products.map((product, slideIndex) => (
-          <a
+          <div
             key={product.lien}
-            href={product.lien}
-            className={`absolute inset-0 flex flex-col bg-white transition-opacity duration-500 ${
+            role="link"
+            tabIndex={slideIndex === index ? 0 : -1}
+            onClick={() => router.push(product.lien)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                router.push(product.lien);
+              }
+            }}
+            className={`absolute inset-0 flex cursor-pointer flex-col bg-white transition-opacity duration-500 ${
               slideIndex === index ? "z-[1] opacity-100" : "pointer-events-none opacity-0"
             }`}
             aria-hidden={slideIndex !== index}
-            tabIndex={slideIndex === index ? 0 : -1}
           >
             <div className="relative h-[140px] shrink-0 bg-[#f4f4f4] sm:h-[152px]">
               {product.image ? (
@@ -163,7 +172,7 @@ export function PromoPopup({
               <p className="mt-1 text-lg font-extrabold leading-none text-brand-orange">{product.prixPromo}</p>
               <p className="mt-1 text-xs text-brand-black/45 line-through">{product.prixOriginal}</p>
             </div>
-          </a>
+          </div>
         ))}
       </div>
 

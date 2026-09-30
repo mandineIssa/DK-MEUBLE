@@ -44,35 +44,31 @@ export default function AdminDashboardPage() {
   }, [visits]);
 
   const maxV = Math.max(1, ...series.map((d) => d.v));
-  const points = series
-    .map((d, i) => {
-      const x = series.length === 1 ? 50 : (i / (series.length - 1)) * 100;
-      const y = 100 - (d.v / maxV) * 85 - 5;
-      return `${x},${y}`;
-    })
-    .join(" ");
 
   const cards = [
-    { label: "Produits", value: stats.products, href: "/admin/produits", color: "bg-brand-orange" },
-    { label: "Devis (nouveaux)", value: stats.quotes, href: "/admin/devis", color: "bg-whatsapp" },
-    { label: "Messages (nouveaux)", value: stats.messages, href: "/admin/messages", color: "bg-[#2B7CFF]" },
-    { label: "Visites (ce mois)", value: stats.visits, href: "/admin/visites", color: "bg-[#7C3AED]" },
+    { label: "Produits au catalogue", value: stats.products, href: "/admin/produits", hint: "Fiches créées, publiées ou non" },
+    { label: "Devis en attente", value: stats.quotes, href: "/admin/devis", hint: "Demandes pas encore traitées" },
+    { label: "Messages non lus", value: stats.messages, href: "/admin/messages", hint: "Écrits depuis la page Contact" },
+    { label: "Visites ce mois", value: stats.visits, href: "/admin/visites", hint: "Pages vues depuis le 1er du mois" },
   ];
 
   return (
     <div className="p-6 md:p-8">
       <h1 className="text-2xl font-extrabold text-brand-black">Tableau de bord</h1>
-      <p className="mt-1 text-sm text-brand-black/60">Vue d&apos;ensemble de l&apos;activité DK HOMETECH</p>
+      <p className="mt-1 max-w-2xl text-sm leading-relaxed text-brand-black/60">
+        Ce qui demande une action : nouveaux devis, messages non lus, taille du catalogue et visites du mois.
+      </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map((c) => (
           <Link
             key={c.label}
             href={c.href}
-            className={`${c.color} rounded-2xl p-5 text-white shadow-sm transition hover:opacity-95`}
+            className="rounded-2xl border border-black/5 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           >
-            <p className="text-sm font-medium text-white/85">{c.label}</p>
-            <p className="mt-2 text-3xl font-extrabold">{loading ? "…" : c.value.toLocaleString("fr-FR")}</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-brand-orange">{c.label}</p>
+            <p className="mt-2 text-3xl font-extrabold tabular-nums text-brand-black">{loading ? "…" : c.value.toLocaleString("fr-FR")}</p>
+            <p className="mt-2 text-sm text-brand-black/55">{c.hint}</p>
           </Link>
         ))}
       </div>
@@ -81,38 +77,29 @@ export default function AdminDashboardPage() {
         <div className="rounded-2xl bg-white p-5 shadow-sm lg:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h2 className="font-bold text-brand-black">Évolution des visites</h2>
-              <p className="mt-1 text-xs text-brand-black/50">12 derniers mois — données réelles</p>
+              <h2 className="font-bold text-brand-black">Visites des 12 derniers mois</h2>
+              <p className="mt-1 text-xs text-brand-black/50">Nombre de pages vues. Le détail et la provenance sont dans Visites.</p>
             </div>
             <Link href="/admin/visites" className="text-xs font-bold text-brand-orange hover:underline">
               Voir le détail →
             </Link>
           </div>
-          <div className="mt-4">
-            <svg viewBox="0 0 100 100" className="h-48 w-full" preserveAspectRatio="none">
-              <polyline
-                fill="none"
-                stroke="#FF7A00"
-                strokeWidth="2"
-                points={points}
-                vectorEffect="non-scaling-stroke"
-              />
-              <polyline
-                fill="rgba(255,122,0,0.12)"
-                stroke="none"
-                points={`0,100 ${points} 100,100`}
-              />
-            </svg>
-            <div className="mt-1 flex justify-between text-[10px] text-brand-black/40">
-              {series.map((d) => (
-                <span key={d.m}>{d.m}</span>
-              ))}
-            </div>
-          </div>
+          <ul className="mt-4 space-y-2">
+            {series.map((d) => (
+              <li key={d.m} className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3">
+                <span className="text-xs font-semibold text-brand-black/70">{d.m}</span>
+                <div className="h-2 overflow-hidden rounded-full bg-brand-black/5">
+                  <div className="h-full rounded-full bg-brand-orange" style={{ width: `${Math.max(d.v > 0 ? 4 : 0, (d.v / maxV) * 100)}%` }} />
+                </div>
+                <span className="text-xs tabular-nums text-brand-black/50">{d.v.toLocaleString("fr-FR")}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="rounded-2xl bg-white p-5 shadow-sm">
-          <h2 className="font-bold text-brand-black">Actions rapides</h2>
+          <h2 className="font-bold text-brand-black">Aller plus loin</h2>
+          <p className="mt-1 text-xs text-brand-black/50">Les tâches les plus fréquentes.</p>
           <div className="mt-4 grid gap-3">
             <Link
               href="/admin/produits"
@@ -136,7 +123,7 @@ export default function AdminDashboardPage() {
               href="/admin/visites"
               className="flex items-center gap-3 rounded-xl bg-[#7C3AED]/10 px-4 py-3 text-sm font-semibold text-[#7C3AED] hover:bg-[#7C3AED]/20"
             >
-              <span className="text-lg">📈</span> Statistiques visites
+              <span className="text-lg">📈</span> Voir qui visite le site
             </Link>
             <Link
               href="/"

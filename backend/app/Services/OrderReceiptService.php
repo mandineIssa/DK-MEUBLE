@@ -41,7 +41,7 @@ class OrderReceiptService
     public function download(Order $order): StreamedResponse
     {
         $order->loadMissing(['items', 'deliveryZone', 'showroom']);
-        $path = $this->ensure($order);
+        $path = $this->regenerate($order);
 
         return Storage::disk('local')->download(
             $path,
@@ -56,10 +56,20 @@ class OrderReceiptService
 
         $brand = Setting::query()->where('key', 'brand')->value('value');
         $contact = Setting::query()->where('key', 'contact')->value('value');
-        $company = is_array($brand) ? ($brand['name'] ?? 'DK HOMETECH') : 'DK HOMETECH';
-        $phone = is_array($contact) ? ($contact['phone'] ?? '') : '';
-        $email = is_array($contact) ? ($contact['email'] ?? '') : '';
-        $address = is_array($contact) ? ($contact['address'] ?? '') : '';
+        $company = $this->displayCompany(is_array($brand) ? (string) ($brand['name'] ?? '') : '');
+        $phone = $this->contactPhone(is_array($contact) ? $contact : []);
+        $email = trim(is_array($contact) ? (string) ($contact['email'] ?? '') : '');
+        $address = trim(is_array($contact) ? (string) ($contact['address'] ?? '') : '');
+        if ($phone === '') {
+            $phone = '+221 77 890 43 22';
+        }
+        if ($email === '') {
+            $email = 'admin@dkhometech.sn';
+        }
+        if ($address === '') {
+            $address = 'Dakar, Parcelle Unité 21';
+        }
+        $phone = $this->formatDisplayPhone($phone);
 
         $pdf = class_exists(\Dompdf\Dompdf::class)
             ? $this->renderWithDompdf($order, $company, $phone, $email, $address)
@@ -74,7 +84,10 @@ class OrderReceiptService
     private function renderWithDompdf(Order $order, string $company, string $phone, string $email, string $address): string
     {
         $html = $this->html($order, $company, $phone, $email, $address);
-        $dompdf = new \Dompdf\Dompdf(['isRemoteEnabled' => false]);
+        $dompdf = new \Dompdf\Dompdf([
+            'isRemoteEnabled' => false,
+            'defaultFont' => 'DejaVu Sans',
+        ]);
         $dompdf->loadHtml($html, 'UTF-8');
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
@@ -85,50 +98,137 @@ class OrderReceiptService
     private function html(Order $order, string $company, string $phone, string $email, string $address): string
     {
         $fmt = fn (int|float $n) => number_format((float) $n, 0, ',', ' ').' FCFA';
-        $deliveryLabel = $order->delivery_method === 'domicile'
-            ? 'Livraison à domicile'.($order->deliveryZone ? ' — '.$order->deliveryZone->zone_name : '')
-            : 'Retrait showroom'.($order->showroom ? ' — '.$order->showroom->name : '');
+        $isHome = $order->delivery_method === 'domicile';
+        $place = $isHome
+            ? ($order->deliveryZone->zone_name ?? '')
+            : ($order->showroom->name ?? '');
+        $deliveryLine = ($isHome ? 'Livraison à domicile' : 'Retrait en magasin')
+            .($place !== '' ? ' — '.$place : '');
 
-        $rows = '';
+        $lines = [];
+        $n = 1;
         foreach ($order->items as $item) {
-            $rows .= '<tr>'
-                .'<td>'.e($item->product_name).'</td>'
-                .'<td style="text-align:center">'.(int) $item->quantity.'</td>'
-                .'<td style="text-align:right">'.$fmt((int) $item->unit_price).'</td>'
-                .'<td style="text-align:right">'.$fmt((int) $item->subtotal).'</td>'
-                .'</tr>';
+            $lines[] = [
+                'n' => $n,
+                'name' => (string) $item->product_name,
+                'qty' => (int) $item->quantity,
+                'unit' => $fmt((int) $item->unit_price),
+                'subtotal' => $fmt((int) $item->subtotal),
+            ];
+            $n++;
         }
 
-        return '<!DOCTYPE html><html><head><meta charset="utf-8"><style>
-            body{font-family:DejaVu Sans,sans-serif;font-size:12px;color:#111;margin:32px}
-            h1{font-size:22px;margin:0 0 4px;color:#e85d04}
-            h2{font-size:16px;margin:24px 0 8px}
-            .muted{color:#666}
-            table{width:100%;border-collapse:collapse;margin-top:12px}
-            th,td{border-bottom:1px solid #ddd;padding:8px 4px;text-align:left}
-            th{background:#f7f7f7;font-size:11px;text-transform:uppercase}
-            .tot{font-size:14px;font-weight:bold}
-            .box{border:1px solid #eee;padding:12px;margin-top:12px}
-        </style></head><body>
-            <h1>'.e($company).'</h1>
-            <p class="muted">'.e($address).'<br>'.e($phone).($email ? ' · '.e($email) : '').'</p>
-            <h2>Reçu de commande</h2>
-            <div class="box">
-                <p><strong>Référence :</strong> '.e($order->reference).'</p>
-                <p><strong>Date :</strong> '.e(optional($order->created_at)->timezone(config('app.timezone'))->format('d/m/Y H:i')).'</p>
-                <p><strong>Statut :</strong> '.e($order->order_status).' · Paiement : '.e($order->payment_method).' ('.e($order->payment_status).')</p>
-                <p><strong>Client :</strong> '.e($order->customer_name).' · '.e($order->phone).($order->email ? ' · '.e($order->email) : '').'</p>
-                <p><strong>Livraison :</strong> '.e($deliveryLabel).($order->address ? '<br>'.e($order->address) : '').'</p>
-            </div>
-            <table>
-                <thead><tr><th>Article</th><th>Qté</th><th>P.U.</th><th>Sous-total</th></tr></thead>
-                <tbody>'.$rows.'</tbody>
-            </table>
-            <p style="text-align:right;margin-top:16px">Sous-total : '.$fmt((int) $order->subtotal).'</p>
-            <p style="text-align:right">Livraison : '.$fmt((int) $order->delivery_fee).'</p>
-            <p class="tot" style="text-align:right">Total : '.$fmt((int) $order->total).'</p>
-            <p class="muted" style="margin-top:32px">Document généré automatiquement — '.e($company).'</p>
-        </body></html>';
+        $status = (string) $order->order_status;
+        $paymentStatus = (string) $order->payment_status;
+
+        return view('pdf.order-receipt', [
+            'company' => $company,
+            'phone' => $phone,
+            'email' => $email,
+            'address' => $address,
+            'reference' => (string) $order->reference,
+            'dateLabel' => optional($order->created_at)->timezone(config('app.timezone'))->format('d/m/Y H:i') ?? '',
+            'customerName' => (string) $order->customer_name,
+            'customerPhone' => (string) $order->phone,
+            'deliveryLine' => $deliveryLine,
+            'deliveryAddress' => (string) ($order->address ?? ''),
+            'statusLabel' => $this->statusLabel($status),
+            'statusStyle' => $this->statusStyle($status),
+            'paymentLabel' => $this->paymentLabel((string) $order->payment_method),
+            'paymentStatusLabel' => $this->statusLabel($paymentStatus),
+            'lines' => $lines,
+            'subtotal' => $fmt((int) $order->subtotal),
+            'deliveryFee' => $fmt((int) $order->delivery_fee),
+            'total' => $fmt((int) $order->total),
+            'icons' => ReceiptArtwork::all(),
+        ])->render();
+    }
+
+    private function formatDisplayPhone(string $phone): string
+    {
+        $digits = preg_replace('/\D+/', '', $phone) ?? '';
+        if (str_starts_with($digits, '221') && strlen($digits) >= 12) {
+            $digits = substr($digits, -9);
+        }
+        if (strlen($digits) === 9) {
+            return '+221 '.substr($digits, 0, 2).' '.substr($digits, 2, 3).' '.substr($digits, 5, 2).' '.substr($digits, 7, 2);
+        }
+
+        return $phone;
+    }
+
+    private function displayCompany(string $name): string
+    {
+        $name = trim($name);
+        if ($name === '' || stripos($name, 'meuble') !== false) {
+            return 'DK HOMETECH';
+        }
+
+        return $name;
+    }
+
+    /**
+     * @param  array<string, mixed>  $contact
+     */
+    private function contactPhone(array $contact): string
+    {
+        $display = trim((string) ($contact['phone_display'] ?? ''));
+        if ($display !== '') {
+            return $display;
+        }
+        $tel = trim((string) ($contact['phone_tel'] ?? $contact['phone'] ?? ''));
+        if ($tel !== '') {
+            return $tel;
+        }
+        $phones = $contact['phones'] ?? '';
+        if (is_array($phones)) {
+            return trim((string) ($phones[0] ?? ''));
+        }
+        $first = trim((string) strtok((string) $phones, ",\n"));
+
+        return $first;
+    }
+
+    private function paymentLabel(string $method): string
+    {
+        $methods = CheckoutSettings::get()['payment_methods'] ?? [];
+        foreach ($methods as $row) {
+            if (($row['key'] ?? '') === $method && ! empty($row['label'])) {
+                return (string) $row['label'];
+            }
+        }
+
+        return $this->statusLabel($method);
+    }
+
+    private function statusLabel(string $value): string
+    {
+        return match ($value) {
+            'en_attente' => 'En attente',
+            'confirmee' => 'Confirmée',
+            'en_preparation' => 'En préparation',
+            'expediee' => 'Expédiée',
+            'livree' => 'Livrée',
+            'annulee' => 'Annulée',
+            'paye', 'paid' => 'Payé',
+            'echoue', 'failed' => 'Échoué',
+            'cash' => 'Paiement à la livraison',
+            'wave' => 'Wave',
+            'orange_money' => 'Orange Money',
+            'carte' => 'Carte bancaire',
+            'virement' => 'Virement',
+            default => $value === '' ? '—' : ucfirst(str_replace('_', ' ', $value)),
+        };
+    }
+
+    private function statusStyle(string $status): string
+    {
+        return match ($status) {
+            'confirmee', 'livree', 'paye', 'paid' => 'background:#e8f6ee;color:#157347;',
+            'annulee', 'echoue', 'failed' => 'background:#fdecec;color:#b42318;',
+            'en_preparation', 'expediee' => 'background:#e8f1fb;color:#1d4e89;',
+            default => 'background:#fff4e8;color:#c05621;',
+        };
     }
 
     /**
@@ -147,9 +247,11 @@ class OrderReceiptService
             trim(implode(' | ', array_filter([$phone, $email]))),
             '',
             'RECU DE COMMANDE',
-            'Reference : '.$order->reference,
+            'Votre achat, notre engagement',
+            'N° reçu : '.$order->reference,
             'Date : '.optional($order->created_at)->format('d/m/Y H:i'),
-            'Statut : '.$order->order_status.' | Paiement : '.$order->payment_method.' ('.$order->payment_status.')',
+            'Statut : '.$this->statusLabel((string) $order->order_status),
+            'Paiement : '.$this->paymentLabel((string) $order->payment_method).' — '.$this->statusLabel((string) $order->payment_status),
             'Client : '.$order->customer_name.' | '.$order->phone.($order->email ? ' | '.$order->email : ''),
             'Livraison : '.$deliveryLabel,
         ];
@@ -173,6 +275,7 @@ class OrderReceiptService
         $lines[] = str_pad('Livraison', 56).str_pad($fmt((int) $order->delivery_fee), 14, ' ', STR_PAD_LEFT);
         $lines[] = str_pad('TOTAL', 56).str_pad($fmt((int) $order->total), 14, ' ', STR_PAD_LEFT);
         $lines[] = '';
+        $lines[] = 'Merci pour votre confiance. Votre commande est bien enregistree.';
         $lines[] = 'Document genere automatiquement — '.$company;
 
         return $this->buildPdfFromLines(array_values(array_filter($lines, fn ($l) => $l !== null)));

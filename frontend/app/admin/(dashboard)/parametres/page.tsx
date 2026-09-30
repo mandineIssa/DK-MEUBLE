@@ -183,8 +183,7 @@ export default function AdminParametresPage() {
     <div className="p-6 md:p-8">
       <h1 className="text-2xl font-extrabold text-brand-black">Paramètres</h1>
       <p className="mt-1 text-sm text-brand-black/60">
-        Logo, téléphone, WhatsApp, email et réseaux sociaux affichés sur le site. Laissez vide un
-        champ pour ne pas l’afficher.
+        Logo, téléphone, WhatsApp, e-mail et réseaux affichés sur le site. Un champ vide n’apparaît pas.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 max-w-3xl space-y-6">

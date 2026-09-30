@@ -162,8 +162,8 @@ export default function AdminPromotionsPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-brand-black">Promotions</h1>
-          <p className="mt-1 text-sm text-brand-black/60">
-            Gestion des offres publiques — réduction recalculée automatiquement.
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+            Réductions visibles sur les fiches et la page Promotions. Le prix barré se calcule à partir du prix d’origine.
           </p>
         </div>
         <Link

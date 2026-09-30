@@ -199,7 +199,9 @@ export default function AdminProductsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-brand-black">Produits</h1>
-          <p className="text-sm text-brand-black/60">Catalogue publié sur le site</p>
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+            Chaque fiche publiée est visible par les clients. Un brouillon reste caché tant qu’il n’est pas publié.
+          </p>
         </div>
         <button
           onClick={() =>

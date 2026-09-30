@@ -57,7 +57,7 @@ export default function AdminContenuPage() {
     <div className="p-6 md:p-8">
       <h1 className="text-2xl font-extrabold text-brand-black">Contenu des pages</h1>
       <p className="mt-1 text-sm text-brand-black/60">
-        Modifiez les textes et images des pages publiques (format JSON structuré).
+        Textes des pages À propos, livraison, retours et paiement. Ce que vous enregistrez remplace le texte du site.
       </p>
       {pageKey === "home" ? (
         <p className="mt-3 rounded-xl bg-white p-3 text-sm text-brand-black/70">

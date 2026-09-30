@@ -37,7 +37,9 @@ export default function AdminQuotesPage() {
   return (
     <div className="p-6 md:p-8">
       <h1 className="text-2xl font-extrabold text-brand-black">Demandes de devis</h1>
-      <p className="text-sm text-brand-black/60">Prospects particuliers et entreprises</p>
+      <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+        Demandes envoyées depuis une fiche produit. Changez le statut quand vous avez répondu.
+      </p>
 
       <div className="mt-6 space-y-4">
         {loading && <p className="text-brand-black/50">Chargement...</p>}

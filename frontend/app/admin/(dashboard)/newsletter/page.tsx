@@ -43,8 +43,8 @@ export default function AdminNewsletterPage() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-brand-black">Newsletter</h1>
-          <p className="text-sm text-brand-black/60">
-            Inscriptions provenant du formulaire de la page d&apos;accueil ({rows.length})
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+            Personnes qui ont demandé à recevoir les offres. {rows.length} inscription{rows.length > 1 ? "s" : ""} pour le moment.
           </p>
         </div>
         <button

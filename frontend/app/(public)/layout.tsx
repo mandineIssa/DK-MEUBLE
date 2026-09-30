@@ -9,6 +9,7 @@ import VisualViewportPin from "@/components/VisualViewportPin";
 import VisitTracker from "@/components/VisitTracker";
 import JsonLd from "@/components/seo/JsonLd";
 import { SiteProvider } from "@/components/SiteProvider";
+import { ProductInquiryProvider } from "@/components/ProductInquiry";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { CartProvider } from "@/components/CartProvider";
 import { CompareProvider } from "@/components/CompareProvider";
@@ -27,6 +28,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <ThemeProvider>
         <CartProvider>
         <CompareProvider>
+        <ProductInquiryProvider>
           <JsonLd data={[buildOrganizationSchema(site), buildWebSiteSchema()]} />
           <Suspense fallback={null}>
             <VisitTracker />
@@ -42,6 +44,7 @@ export default async function PublicLayout({ children }: { children: React.React
           <PromoPopupLoader />
           <WhatsAppButton />
           <CallButton />
+        </ProductInquiryProvider>
         </CompareProvider>
         </CartProvider>
       </ThemeProvider>

@@ -270,8 +270,8 @@ export default function AdminCategoriesPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-brand-black">Catégories</h1>
-          <p className="text-sm text-brand-black/60">
-            Arborescence électroménager — compteurs dynamiques, aucun hardcode public.
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+            Les rayons du site. Le nom, l’ordre et l’image définis ici sont ceux du menu et des pages catégorie.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

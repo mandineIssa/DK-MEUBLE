@@ -47,7 +47,10 @@ export default function AdminMarquesPage() {
 
   return (
     <div className="p-6 md:p-8">
-      <h1 className="text-2xl font-extrabold">Marques</h1>
+      <h1 className="text-2xl font-extrabold text-brand-black">Marques</h1>
+      <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+        Marques proposées sur les fiches et dans les filtres. Une marque sans produit n’apparaît pas au client.
+      </p>
       <form onSubmit={onSubmit} className="mt-6 max-w-xl space-y-3 rounded-2xl bg-white p-5 shadow-sm">
         <input
           required

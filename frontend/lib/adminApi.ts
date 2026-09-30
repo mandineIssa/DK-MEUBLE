@@ -85,7 +85,10 @@ export type VisitsStats = {
   daily: Array<{ date: string; label: string; views: number; visitors: number }>;
   monthly: Array<{ month: string; label: string; views: number; visitors: number }>;
   top_pages: Array<{ path: string; title: string | null; views: number }>;
+  top_products: Array<{ slug: string; name: string; path: string; views: number; visitors: number }>;
+  product_requests: Array<{ name: string; slug: string | null; quotes: number; chats: number; total: number }>;
   sources: Array<{ key: string; label: string; views: number; pct: number }>;
+  today_sources: Array<{ key: string; label: string; views: number; pct: number }>;
   devices: Array<{ key: string; label: string; views: number; pct: number }>;
   recent: Array<{
     id: number;

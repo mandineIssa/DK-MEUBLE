@@ -132,10 +132,9 @@ export default function AdminNavigationPage() {
   return (
     <div className="p-6">
       <div className="mb-4">
-        <h1 className="text-2xl font-extrabold text-brand-black">Méga-menu / Navigation</h1>
-        <p className="mt-1 text-sm text-brand-black/60">
-          Structure d’affichage du header, indépendante de la taxonomie produit. Les liens pointent
-          vers les URLs canoniques des catégories.
+        <h1 className="text-2xl font-extrabold text-brand-black">Menu du site</h1>
+        <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+          Les liens du haut de page. Chaque entrée ouvre une catégorie ou une page du site.
         </p>
       </div>
 

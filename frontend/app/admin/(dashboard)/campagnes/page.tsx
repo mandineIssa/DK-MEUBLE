@@ -47,7 +47,7 @@ export default function AdminCampagnesPage() {
     <div className="p-6 md:p-8">
       <h1 className="text-2xl font-extrabold text-brand-black">Campagnes SMS / Email</h1>
       <p className="mt-1 text-sm text-brand-black/60">
-        Promotions envoyées aux clients inscrits (opt-in). SMS via Twilio ou log ; email via MAIL_*.
+        Offres envoyées aux clients qui ont accepté de les recevoir, par SMS ou par e-mail.
       </p>
 
       <form onSubmit={onSubmit} className="mt-6 max-w-2xl space-y-3 rounded-2xl bg-white p-6 shadow-sm">

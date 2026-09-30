@@ -74,8 +74,8 @@ export default function AdminClientsPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-brand-black">Clients inscrits</h1>
-          <p className="text-sm text-brand-black/60">
-            Comptes créés via téléphone (OTP) ou Google / Facebook.
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+            Personnes qui ont créé un compte, par téléphone ou par Google et Facebook.
           </p>
         </div>
         <form

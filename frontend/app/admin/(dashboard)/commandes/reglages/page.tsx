@@ -29,7 +29,10 @@ export default function AdminCommandesReglagesPage() {
   return (
     <div className="p-6 md:p-8">
       <Link href="/admin/commandes" className="text-sm text-brand-orange">← Commandes</Link>
-      <h1 className="mt-2 text-2xl font-extrabold">Réglages commandes</h1>
+      <h1 className="mt-2 text-2xl font-extrabold text-brand-black">Réglages des commandes</h1>
+      <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+        Ce que le client peut faire au moment de payer : commander sans compte, moyens de paiement proposés.
+      </p>
       <form onSubmit={onSubmit} className="mt-6 max-w-xl space-y-3 rounded-2xl bg-white p-5 shadow-sm">
         <label className="flex items-center gap-2 text-sm">
           <input

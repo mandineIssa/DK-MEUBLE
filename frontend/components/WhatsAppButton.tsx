@@ -5,12 +5,16 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useSite, useWaLink } from "@/components/SiteProvider";
+import { useProductInquiry } from "@/components/ProductInquiry";
 import { waLink } from "@/lib/site";
+import { productWhatsAppMessage, WHATSAPP_GENERAL_MESSAGE } from "@/lib/whatsappMessage";
 
 export default function WhatsAppButton() {
   const pathname = usePathname();
   const site = useSite();
-  const fallback = useWaLink();
+  const { product, origin } = useProductInquiry();
+  const message = product ? productWhatsAppMessage(product, origin) : WHATSAPP_GENERAL_MESSAGE;
+  const fallback = useWaLink(message);
   const [href, setHref] = useState<string | null>(fallback);
   const [agentImage, setAgentImage] = useState<string>("");
   const [enabled, setEnabled] = useState(true);
@@ -23,13 +27,10 @@ export default function WhatsAppButton() {
         setEnabled(w.enabled !== false);
         setAgentImage(w.agent_image || "");
         const phone = (w.phone || site.whatsapp || "").replace(/\D/g, "");
-        const msg =
-          w.message ||
-          "Bonjour DK HOMETECH, je suis intéressé par un produit et j'aimerais avoir plus d'informations.";
-        setHref(waLink(msg, phone) || fallback);
+        setHref(waLink(message, phone) || fallback);
       })
       .catch(() => setHref(fallback));
-  }, [fallback, site.whatsapp]);
+  }, [fallback, message, site.whatsapp]);
 
   if (!enabled || !href) return null;
   if (pathname.startsWith("/panier") || pathname.startsWith("/commande")) return null;

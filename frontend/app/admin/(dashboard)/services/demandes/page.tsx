@@ -36,7 +36,10 @@ export default function AdminServiceRequestsPage() {
           <Link href="/admin/services" className="text-sm text-brand-orange">
             ← Services
           </Link>
-          <h1 className="mt-1 text-2xl font-extrabold">Demandes de service</h1>
+          <h1 className="mt-1 text-2xl font-extrabold text-brand-black">Demandes de service</h1>
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+            Clients qui ont demandé une installation ou une prestation. Le statut indique si c’est nouveau, en cours ou traité.
+          </p>
         </div>
         <select
           value={status}

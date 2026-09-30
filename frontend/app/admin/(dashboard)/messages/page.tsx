@@ -30,7 +30,9 @@ export default function AdminMessagesPage() {
   return (
     <div className="p-6 md:p-8">
       <h1 className="text-2xl font-extrabold text-brand-black">Messages de contact</h1>
-      <p className="text-sm text-brand-black/60">Formulaire de la page Contact</p>
+      <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+        Messages envoyés depuis la page Contact. Un message nouveau n’a pas encore été lu.
+      </p>
 
       <div className="mt-6 space-y-4">
         {loading && <p className="text-brand-black/50">Chargement...</p>}

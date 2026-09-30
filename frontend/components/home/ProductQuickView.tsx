@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import type { Product } from "@/lib/api";
 import { imageUrl } from "@/lib/api";
 import { useCart } from "@/components/CartProvider";
+import ProductLink from "@/components/ProductLink";
 
 export default function ProductQuickView({
   product,
@@ -77,12 +77,13 @@ export default function ProductQuickView({
                 Ajouter au panier
               </button>
             ) : null}
-            <Link
+            <ProductLink
               href={`/produits/${product.slug}`}
+              label={product.name}
               className="flex-1 rounded-full border border-black/10 py-2.5 text-center text-sm font-bold text-brand-black"
             >
               Voir la fiche
-            </Link>
+            </ProductLink>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,6 +8,8 @@ import { Product, imageUrl, type SiteSettings } from "@/lib/api";
 import { useCart } from "@/components/CartProvider";
 import { useCompare } from "@/components/CompareProvider";
 import { useWaLink } from "@/components/SiteProvider";
+import { useProductInquiry } from "@/components/ProductInquiry";
+import { productWhatsAppMessage } from "@/lib/whatsappMessage";
 import ProductContactActions from "@/components/ProductContactActions";
 import ProductReviews from "@/components/ProductReviews";
 import FavoriteButton from "@/components/FavoriteButton";
@@ -38,14 +40,24 @@ export default function ProductDetailClient({
   const compareList = useCompare();
   const router = useRouter();
   const similar = similarProducts;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+  const { setProduct, origin } = useProductInquiry();
+  const inquiryPrice = product.effective_price ?? product.price;
   const waHref = useWaLink(
-    `Bonjour DK HOMETECH, je suis intéressé par ${product.name}${product.sku ? ` (réf. ${product.sku})` : ""}${
-      (product.effective_price ?? product.price) != null
-        ? `, ${(product.effective_price ?? product.price)!.toLocaleString("fr-FR")} FCFA`
-        : ""
-    }. ${siteUrl}/produits/${product.slug}`
+    productWhatsAppMessage(
+      { name: product.name, sku: product.sku, price: inquiryPrice, slug: product.slug },
+      origin
+    )
   );
+
+  useEffect(() => {
+    setProduct({
+      name: product.name,
+      sku: product.sku,
+      price: inquiryPrice,
+      slug: product.slug,
+    });
+    return () => setProduct(null);
+  }, [setProduct, product.name, product.sku, product.slug, inquiryPrice]);
   const cover = images[activeIdx] || images[0];
   const effective = product.effective_price ?? product.price;
   const compare = product.compare_at_price;
@@ -238,7 +250,13 @@ export default function ProductDetailClient({
                   Demander un devis
                 </Link>
               )}
-              <ProductContactActions productId={product.id} productName={product.name} />
+              <ProductContactActions
+                productId={product.id}
+                productName={product.name}
+                sku={product.sku}
+                price={inquiryPrice}
+                slug={product.slug}
+              />
             </div>
             <div className="mt-3 flex flex-wrap gap-3">
               <FavoriteButton productId={product.id} />
@@ -272,7 +290,7 @@ export default function ProductDetailClient({
                 rel="noopener noreferrer"
                 className="mt-3 inline-flex rounded-full bg-whatsapp px-5 py-2.5 text-sm font-semibold text-white"
               >
-                Commander sur WhatsApp
+                Demander sur WhatsApp
               </a>
             )}
 

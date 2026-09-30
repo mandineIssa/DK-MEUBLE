@@ -86,7 +86,7 @@ export default function AdminHomepagePage() {
       <div className="mb-6">
         <h1 className="text-2xl font-extrabold text-brand-black">Page d&apos;accueil</h1>
         <p className="mt-1 text-sm text-brand-black/60">
-          Textes, images et liens de l’accueil se règlent ici. La newsletter et le footer se règlent dans Admin → Footer.
+          Images et textes du bandeau d’accueil. Le pied de page et la newsletter se règlent dans Pied de page.
         </p>
       </div>
 

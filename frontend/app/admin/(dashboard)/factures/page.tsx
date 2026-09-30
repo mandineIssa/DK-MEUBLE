@@ -25,9 +25,9 @@ export default function AdminFacturesPage() {
 
   return (
     <div className="p-6 md:p-8">
-      <h1 className="text-2xl font-extrabold text-brand-black">Factures B2B</h1>
+      <h1 className="text-2xl font-extrabold text-brand-black">Factures entreprises</h1>
       <p className="mt-1 text-sm text-brand-black/60">
-        Factures liées aux devis groupés. Créez-les depuis Devis B2B → « Générer facture ».
+        Factures des devis entreprises. Elles se créent depuis Devis entreprises, avec le bouton Générer une facture.
       </p>
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 

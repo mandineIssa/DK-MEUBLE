@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Models\PageView;
+use App\Models\Product;
+use App\Models\ProductChat;
+use App\Models\Quote;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -72,6 +75,7 @@ class AnalyticsService
         $topPages = $this->topPages($from, $to, 15);
         $sources = $this->breakdown($from, $to, 'source', $pageviews);
         $devices = $this->breakdown($from, $to, 'device', $pageviews);
+        $todaySources = $this->breakdown($todayStart, now(), 'source', $today);
 
         $recent = PageView::query()
             ->latest('id')
@@ -107,7 +111,10 @@ class AnalyticsService
             'daily' => $daily,
             'monthly' => $monthly,
             'top_pages' => $topPages,
+            'top_products' => $this->topProducts($from, $to),
+            'product_requests' => $this->productRequests($from, $to),
             'sources' => $sources,
+            'today_sources' => $todaySources,
             'devices' => $devices,
             'recent' => $recent,
         ];
@@ -239,6 +246,115 @@ class AnalyticsService
                 'views' => (int) $r->views,
             ])
             ->all();
+    }
+
+    protected function topProducts(Carbon $from, Carbon $to, int $limit = 8): array
+    {
+        $rows = PageView::query()
+            ->select('path', DB::raw('COUNT(*) as views'), DB::raw('COUNT(DISTINCT visitor_id) as visitors'), DB::raw('MAX(title) as title'))
+            ->whereBetween('created_at', [$from, $to])
+            ->where('path', 'like', '/produits/%')
+            ->groupBy('path')
+            ->orderByDesc('views')
+            ->limit(40)
+            ->get();
+
+        $slugs = [];
+        foreach ($rows as $row) {
+            $slug = $this->productSlug((string) $row->path);
+            if ($slug !== null) {
+                $slugs[] = $slug;
+            }
+        }
+
+        $products = Product::query()->whereIn('slug', $slugs)->get(['name', 'slug'])->keyBy('slug');
+        $out = [];
+        foreach ($rows as $row) {
+            $slug = $this->productSlug((string) $row->path);
+            if ($slug === null) {
+                continue;
+            }
+            $product = $products->get($slug);
+            $out[] = [
+                'slug' => $slug,
+                'name' => $product->name ?? $this->cleanTitle($row->title) ?? $slug,
+                'path' => $row->path,
+                'views' => (int) $row->views,
+                'visitors' => (int) $row->visitors,
+            ];
+            if (count($out) >= $limit) {
+                break;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Demandes liées à un produit : devis et discussions sur la fiche.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function productRequests(Carbon $from, Carbon $to, int $limit = 8): array
+    {
+        $quotes = Quote::query()
+            ->select('product_id', DB::raw('COUNT(*) as n'))
+            ->whereBetween('created_at', [$from, $to])
+            ->whereNotNull('product_id')
+            ->groupBy('product_id')
+            ->pluck('n', 'product_id');
+
+        $chats = ProductChat::query()
+            ->select('product_id', DB::raw('COUNT(*) as n'))
+            ->whereBetween('created_at', [$from, $to])
+            ->whereNotNull('product_id')
+            ->groupBy('product_id')
+            ->pluck('n', 'product_id');
+
+        $ids = $quotes->keys()->merge($chats->keys())->unique()->filter()->values();
+        if ($ids->isEmpty()) {
+            return [];
+        }
+
+        $products = Product::query()->whereIn('id', $ids)->get(['id', 'name', 'slug'])->keyBy('id');
+        $out = [];
+        foreach ($ids as $id) {
+            $quoteCount = (int) ($quotes[$id] ?? 0);
+            $chatCount = (int) ($chats[$id] ?? 0);
+            $product = $products->get($id);
+            $out[] = [
+                'name' => $product->name ?? 'Produit #'.$id,
+                'slug' => $product->slug ?? null,
+                'quotes' => $quoteCount,
+                'chats' => $chatCount,
+                'total' => $quoteCount + $chatCount,
+            ];
+        }
+
+        usort($out, fn ($a, $b) => $b['total'] <=> $a['total']);
+
+        return array_slice($out, 0, $limit);
+    }
+
+    protected function productSlug(string $path): ?string
+    {
+        $slug = trim(Str::after($path, '/produits/'), '/');
+        if ($slug === '' || str_contains($slug, '/')) {
+            return null;
+        }
+
+        return $slug;
+    }
+
+    protected function cleanTitle(mixed $title): ?string
+    {
+        $text = trim((string) $title);
+        if ($text === '') {
+            return null;
+        }
+        $text = trim(explode('|', $text)[0]);
+
+        return $text !== '' ? $text : null;
     }
 
     protected function breakdown(Carbon $from, Carbon $to, string $column, int $total): array

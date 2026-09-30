@@ -31,10 +31,9 @@ export default function AdminLivraisonPage() {
 
   return (
     <div className="p-6 md:p-8">
-      <h1 className="text-2xl font-extrabold">Zones de livraison</h1>
-      <p className="mt-1 text-sm text-brand-black/55">
-        Ces zones apparaissent dans le tunnel de commande (« À domicile ») avec le frais associé.
-        Vous pouvez ajouter, modifier ou supprimer librement.
+      <h1 className="text-2xl font-extrabold text-brand-black">Zones de livraison</h1>
+      <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+        Frais et délai que le client voit en choisissant la livraison à domicile. Une zone absente ne peut pas être choisie.
       </p>
       <form onSubmit={onSubmit} className="mt-6 flex max-w-2xl flex-wrap gap-3 rounded-2xl bg-white p-5 shadow-sm">
         <input required placeholder="Zone * (ex. Dakar — Plateau)" className="min-w-[14rem] flex-1 rounded-xl border px-3 py-2" value={form.zone_name} onChange={(e) => setForm((f) => ({ ...f, zone_name: e.target.value }))} />

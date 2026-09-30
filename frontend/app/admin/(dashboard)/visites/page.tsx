@@ -10,81 +10,66 @@ const PERIODS = [
   { id: "12m", label: "12 mois" },
 ] as const;
 
-function LineChart({
-  points,
-  color = "#FF7A00",
-}: {
-  points: Array<{ label: string; value: number }>;
-  color?: string;
-}) {
-  const max = Math.max(1, ...points.map((p) => p.value));
-  const coords = points
-    .map((p, i) => {
-      const x = points.length === 1 ? 50 : (i / (points.length - 1)) * 100;
-      const y = 100 - (p.value / max) * 82 - 8;
-      return `${x},${y}`;
-    })
-    .join(" ");
+type SourceRow = { key: string; label: string; views: number; pct: number };
 
-  return (
-    <div>
-      <svg viewBox="0 0 100 100" className="h-48 w-full" preserveAspectRatio="none">
-        <polyline fill="none" stroke={color} strokeWidth="2" points={coords} vectorEffect="non-scaling-stroke" />
-        <polyline
-          fill={`${color}22`}
-          stroke="none"
-          points={`0,100 ${coords} 100,100`}
-        />
-      </svg>
-      <div className="mt-1 flex justify-between gap-1 overflow-hidden text-[10px] text-brand-black/40">
-        {points.map((p, i) =>
-          i % Math.ceil(points.length / 8) === 0 || i === points.length - 1 ? (
-            <span key={`${p.label}-${i}`}>{p.label}</span>
-          ) : (
-            <span key={`${p.label}-${i}`} />
-          )
-        )}
-      </div>
-    </div>
-  );
+function formatDelta(today: number, yesterday: number) {
+  if (yesterday <= 0) {
+    return today > 0 ? "Premières visites aujourd’hui" : "Aucune visite hier non plus";
+  }
+  const pct = Math.round(((today - yesterday) / yesterday) * 100);
+  if (pct === 0) return "Stable par rapport à hier";
+  return pct > 0 ? `+${pct} % par rapport à hier` : `${pct} % par rapport à hier`;
 }
 
-function BarList({
+function Meter({
   items,
-  color = "#FF7A00",
+  empty,
 }: {
-  items: Array<{ label: string; views: number; pct?: number }>;
-  color?: string;
+  items: Array<{ label: string; value: number; hint?: string }>;
+  empty: string;
 }) {
-  const max = Math.max(1, ...items.map((i) => i.views));
+  const max = Math.max(1, ...items.map((item) => item.value));
+  if (items.length === 0) {
+    return <p className="text-sm text-brand-black/45">{empty}</p>;
+  }
   return (
-    <ul className="space-y-2.5">
+    <ul className="space-y-3">
       {items.map((item) => (
         <li key={item.label}>
-          <div className="mb-1 flex items-center justify-between gap-2 text-sm">
-            <span className="truncate font-medium text-brand-black">{item.label}</span>
-            <span className="shrink-0 text-xs text-brand-black/50">
-              {item.views.toLocaleString("fr-FR")}
-              {item.pct != null ? ` · ${item.pct}%` : ""}
+          <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
+            <span className="min-w-0 truncate font-semibold text-brand-black">{item.label}</span>
+            <span className="shrink-0 tabular-nums text-xs text-brand-black/55">
+              {item.value.toLocaleString("fr-FR")}
+              {item.hint ? ` · ${item.hint}` : ""}
             </span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-brand-black/5">
             <div
-              className="h-full rounded-full"
-              style={{ width: `${(item.views / max) * 100}%`, background: color }}
+              className="h-full rounded-full bg-brand-orange"
+              style={{ width: `${Math.max(4, (item.value / max) * 100)}%` }}
             />
           </div>
         </li>
       ))}
-      {items.length === 0 ? (
-        <li className="text-sm text-brand-black/45">Aucune donnée sur cette période.</li>
-      ) : null}
     </ul>
   );
 }
 
+function SourceList({ items }: { items: SourceRow[] }) {
+  return (
+    <Meter
+      empty="Aucune provenance enregistrée."
+      items={items.map((item) => ({
+        label: item.label,
+        value: item.views,
+        hint: `${item.pct} %`,
+      }))}
+    />
+  );
+}
+
 export default function AdminVisitesPage() {
-  const [period, setPeriod] = useState<string>("30d");
+  const [period, setPeriod] = useState<string>("7d");
   const [data, setData] = useState<VisitsStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -94,9 +79,9 @@ export default function AdminVisitesPage() {
     setLoading(true);
     adminApi
       .getVisitsStats(period)
-      .then((s) => {
+      .then((stats) => {
         if (!cancelled) {
-          setData(s);
+          setData(stats);
           setErr("");
         }
       })
@@ -111,23 +96,9 @@ export default function AdminVisitesPage() {
     };
   }, [period]);
 
-  const dailyPoints = useMemo(
-    () => (data?.daily || []).map((d) => ({ label: d.label, value: d.views })),
-    [data]
-  );
-  const monthlyPoints = useMemo(
-    () => (data?.monthly || []).map((d) => ({ label: d.label, value: d.views })),
-    [data]
-  );
-
-  const cards = data
-    ? [
-        { label: "Pages vues", value: data.summary.pageviews, sub: `Moy. ${data.summary.avg_per_day}/j` },
-        { label: "Visiteurs uniques", value: data.summary.unique_visitors, sub: `${data.summary.unique_today} aujourd’hui` },
-        { label: "Sessions", value: data.summary.sessions, sub: `${data.summary.today} vues aujourd’hui` },
-        { label: "Ce mois", value: data.summary.this_month, sub: `${data.summary.yesterday} hier` },
-      ]
-    : [];
+  const days = useMemo(() => [...(data?.daily || [])].reverse(), [data]);
+  const maxDay = Math.max(1, ...days.map((day) => day.views));
+  const todayKey = new Date().toISOString().slice(0, 10);
 
   async function onExport() {
     try {
@@ -148,28 +119,30 @@ export default function AdminVisitesPage() {
     }
   }
 
+  const summary = data?.summary;
+
   return (
-    <div className="p-6 md:p-8">
+    <div className="p-4 md:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-brand-black">Visites</h1>
-          <p className="mt-1 text-sm text-brand-black/60">
-            Pages vues, sources et évolution — tracking en temps réel
-            {data ? ` · ${data.range.from} → ${data.range.to}` : ""}
+          <p className="mt-1 max-w-xl text-sm text-brand-black/60">
+            Rapport du jour, provenance, produits consultés et demandes.
+            {data ? ` Période du ${data.range.from} au ${data.range.to}.` : ""}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex rounded-full bg-white p-1 shadow-sm">
-            {PERIODS.map((p) => (
+            {PERIODS.map((item) => (
               <button
-                key={p.id}
+                key={item.id}
                 type="button"
-                onClick={() => setPeriod(p.id)}
+                onClick={() => setPeriod(item.id)}
                 className={`rounded-full px-3 py-1.5 text-xs font-bold ${
-                  period === p.id ? "bg-brand-orange text-white" : "text-brand-black/60"
+                  period === item.id ? "bg-brand-orange text-white" : "text-brand-black/60"
                 }`}
               >
-                {p.label}
+                {item.label}
               </button>
             ))}
           </div>
@@ -185,105 +158,186 @@ export default function AdminVisitesPage() {
 
       {err ? <p className="mt-4 text-sm text-red-600">{err}</p> : null}
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {(loading && !data ? Array.from({ length: 4 }) : cards).map((c, i) =>
-          c ? (
-            <div key={c.label} className="rounded-2xl bg-white p-5 shadow-sm">
-              <p className="text-sm text-brand-black/55">{c.label}</p>
-              <p className="mt-1 text-3xl font-extrabold text-brand-black">
-                {c.value.toLocaleString("fr-FR")}
-              </p>
-              <p className="mt-1 text-xs text-brand-black/45">{c.sub}</p>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <article className="rounded-2xl bg-brand-black p-4 text-white shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Aujourd’hui</p>
+          <p className="mt-1 text-3xl font-extrabold tabular-nums">
+            {loading && !summary ? "—" : (summary?.today ?? 0).toLocaleString("fr-FR")}
+          </p>
+          <p className="mt-1 text-sm text-white/80">
+            pages vues · {(summary?.unique_today ?? 0).toLocaleString("fr-FR")} visiteurs
+          </p>
+          <p className="mt-2 text-xs font-semibold text-brand-orange">
+            {summary ? formatDelta(summary.today, summary.yesterday) : "Chargement…"}
+          </p>
+        </article>
+        {[
+          { label: "Hier", value: summary?.yesterday, hint: "pages vues" },
+          { label: "Pages vues", value: summary?.pageviews, hint: summary ? `moy. ${summary.avg_per_day} / jour` : "" },
+          { label: "Visiteurs", value: summary?.unique_visitors, hint: summary ? `${summary.sessions.toLocaleString("fr-FR")} sessions` : "" },
+        ].map((card) => (
+          <article key={card.label} className="rounded-2xl bg-white p-4 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand-black/45">{card.label}</p>
+            <p className="mt-1 text-3xl font-extrabold tabular-nums text-brand-black">
+              {loading && !summary ? "—" : (card.value ?? 0).toLocaleString("fr-FR")}
+            </p>
+            <p className="mt-1 text-xs text-brand-black/50">{card.hint}</p>
+          </article>
+        ))}
+      </div>
+
+      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)]">
+        <section className="rounded-2xl bg-white p-4 shadow-sm md:p-5">
+          <div className="flex items-baseline justify-between gap-3">
+            <div>
+              <h2 className="font-bold text-brand-black">Rapport journalier</h2>
+              <p className="mt-0.5 text-xs text-brand-black/50">Pages vues et visiteurs, du plus récent au plus ancien</p>
             </div>
-          ) : (
-            <div key={i} className="h-28 animate-pulse rounded-2xl bg-white shadow-sm" />
-          )
-        )}
-      </div>
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl bg-white p-5 shadow-sm lg:col-span-2">
-          <h2 className="font-bold text-brand-black">
-            {period === "12m" ? "Évolution mensuelle" : "Évolution quotidienne"}
-          </h2>
-          <p className="mt-1 text-xs text-brand-black/50">Pages vues sur la période sélectionnée</p>
-          <div className="mt-4">
-            {loading && !data ? (
-              <div className="h-48 animate-pulse rounded-xl bg-brand-black/5" />
-            ) : (
-              <LineChart points={period === "12m" ? monthlyPoints : dailyPoints} />
-            )}
           </div>
-        </div>
+          <ul className="mt-4 max-h-[28rem] space-y-1.5 overflow-y-auto pr-1">
+            {days.map((day) => {
+              const isToday = day.date === todayKey;
+              return (
+                <li
+                  key={day.date}
+                  className={`grid grid-cols-[4.75rem_minmax(0,1fr)_auto] items-center gap-3 rounded-lg px-2 py-1.5 ${
+                    isToday ? "bg-brand-orange/10" : ""
+                  }`}
+                >
+                  <span className="text-xs font-bold tabular-nums text-brand-black">
+                    {isToday ? "Aujourd’hui" : day.label}
+                  </span>
+                  <div className="h-2 overflow-hidden rounded-full bg-brand-black/5">
+                    <div
+                      className="h-full rounded-full bg-brand-orange"
+                      style={{ width: `${Math.max(day.views > 0 ? 4 : 0, (day.views / maxDay) * 100)}%` }}
+                    />
+                  </div>
+                  <span className="text-right text-[11px] tabular-nums text-brand-black/60">
+                    {day.views.toLocaleString("fr-FR")} vues · {day.visitors.toLocaleString("fr-FR")} vis.
+                  </span>
+                </li>
+              );
+            })}
+            {!loading && days.length === 0 ? (
+              <li className="text-sm text-brand-black/45">Aucune visite sur cette période.</li>
+            ) : null}
+          </ul>
+        </section>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
-          <h2 className="font-bold text-brand-black">Sources</h2>
-          <p className="mb-4 mt-1 text-xs text-brand-black/50">D’où viennent les visiteurs</p>
-          <BarList
-            items={(data?.sources || []).map((s) => ({
-              label: s.label,
-              views: s.views,
-              pct: s.pct,
-            }))}
-            color="#2B7CFF"
-          />
-        </div>
+        <section className="rounded-2xl bg-white p-4 shadow-sm md:p-5">
+          <h2 className="font-bold text-brand-black">Provenance</h2>
+          <p className="mt-0.5 text-xs text-brand-black/50">D’où viennent les visites de la période</p>
+          <div className="mt-4">
+            <SourceList items={data?.sources || []} />
+          </div>
+          <h3 className="mb-3 mt-6 text-sm font-bold text-brand-black">Aujourd’hui</h3>
+          <SourceList items={data?.today_sources || []} />
+          {(data?.devices || []).length > 0 ? (
+            <p className="mt-5 text-xs text-brand-black/50">
+              Appareils :{" "}
+              {(data?.devices || []).map((device) => `${device.label} ${device.pct} %`).join(" · ")}
+            </p>
+          ) : null}
+        </section>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
-          <h2 className="font-bold text-brand-black">Pages les plus vues</h2>
-          <p className="mb-4 mt-1 text-xs text-brand-black/50">Top pages de la période</p>
-          <BarList
-            items={(data?.top_pages || []).map((p) => ({
-              label: p.title || p.path,
-              views: p.views,
-            }))}
-          />
-        </div>
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <section className="rounded-2xl bg-white p-4 shadow-sm md:p-5">
+          <h2 className="font-bold text-brand-black">Produits les plus consultés</h2>
+          <p className="mt-0.5 text-xs text-brand-black/50">Ouvertures de fiches produit</p>
+          <ul className="mt-4 divide-y divide-black/5">
+            {(data?.top_products || []).map((product, index) => (
+              <li key={product.slug} className="flex items-center gap-3 py-2.5">
+                <span className="w-5 shrink-0 text-xs font-bold text-brand-black/35">{index + 1}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-brand-black">{product.name}</p>
+                  <p className="truncate text-[11px] text-brand-black/40">{product.path}</p>
+                </div>
+                <p className="shrink-0 text-right text-xs tabular-nums text-brand-black/60">
+                  {product.views.toLocaleString("fr-FR")} vues
+                  <span className="block">{product.visitors.toLocaleString("fr-FR")} vis.</span>
+                </p>
+              </li>
+            ))}
+            {!loading && (data?.top_products || []).length === 0 ? (
+              <li className="py-2 text-sm text-brand-black/45">Aucune fiche produit consultée sur cette période.</li>
+            ) : null}
+          </ul>
+        </section>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
-          <h2 className="font-bold text-brand-black">Appareils</h2>
-          <p className="mb-4 mt-1 text-xs text-brand-black/50">Répartition desktop / mobile / tablette</p>
-          <BarList
-            items={(data?.devices || []).map((d) => ({
-              label: d.label,
-              views: d.views,
-              pct: d.pct,
-            }))}
-            color="#25D366"
-          />
-
-          <h3 className="mb-3 mt-8 font-bold text-brand-black">Activité récente</h3>
-          <ul className="max-h-64 space-y-2 overflow-y-auto text-sm">
-            {(data?.recent || []).map((r) => (
-              <li
-                key={r.id}
-                className="flex flex-wrap items-center justify-between gap-2 border-b border-black/5 py-2"
-              >
-                <div className="min-w-0">
-                  <p className="truncate font-medium text-brand-black">{r.title || r.path}</p>
-                  <p className="text-xs text-brand-black/45">
-                    {r.path} · {r.source || "—"} · {r.device || "—"}
+        <section className="rounded-2xl bg-white p-4 shadow-sm md:p-5">
+          <h2 className="font-bold text-brand-black">Produits les plus demandés</h2>
+          <p className="mt-0.5 text-xs text-brand-black/50">Devis envoyés et discussions ouvertes sur une fiche</p>
+          <ul className="mt-4 divide-y divide-black/5">
+            {(data?.product_requests || []).map((product) => (
+              <li key={`${product.slug}-${product.name}`} className="flex items-center gap-3 py-2.5">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-brand-black">{product.name}</p>
+                  <p className="text-[11px] text-brand-black/45">
+                    {product.quotes.toLocaleString("fr-FR")} devis · {product.chats.toLocaleString("fr-FR")} discussions
                   </p>
                 </div>
-                <span className="shrink-0 text-[11px] text-brand-black/40">
-                  {r.created_at
-                    ? new Date(r.created_at).toLocaleString("fr-FR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : ""}
-                </span>
+                <p className="shrink-0 text-sm font-extrabold tabular-nums text-brand-orange">
+                  {product.total.toLocaleString("fr-FR")}
+                </p>
+              </li>
+            ))}
+            {!loading && (data?.product_requests || []).length === 0 ? (
+              <li className="py-2 text-sm text-brand-black/45">
+                Aucune demande sur cette période. Un devis ou une discussion sur une fiche apparaîtra ici.
+              </li>
+            ) : null}
+          </ul>
+        </section>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <section className="rounded-2xl bg-white p-4 shadow-sm md:p-5">
+          <h2 className="font-bold text-brand-black">Pages les plus vues</h2>
+          <p className="mb-4 mt-0.5 text-xs text-brand-black/50">Toutes les pages, pas seulement les produits</p>
+          <Meter
+            empty="Aucune page vue sur cette période."
+            items={(data?.top_pages || []).slice(0, 8).map((page) => ({
+              label: page.title?.split("|")[0]?.trim() || page.path,
+              value: page.views,
+            }))}
+          />
+        </section>
+
+        <section className="rounded-2xl bg-white p-4 shadow-sm md:p-5">
+          <h2 className="font-bold text-brand-black">Dernières visites</h2>
+          <p className="mb-3 mt-0.5 text-xs text-brand-black/50">Page, provenance et appareil</p>
+          <ul className="max-h-80 space-y-2 overflow-y-auto">
+            {(data?.recent || []).map((row) => (
+              <li key={row.id} className="flex items-start justify-between gap-3 border-b border-black/5 py-2">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-brand-black">
+                    {row.title?.split("|")[0]?.trim() || row.path}
+                  </p>
+                  <p className="truncate text-[11px] text-brand-black/40">{row.path}</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-[11px] font-semibold text-brand-black">{row.source || "direct"}</p>
+                  <p className="text-[11px] text-brand-black/40">
+                    {row.device || "—"}
+                    {row.created_at
+                      ? ` · ${new Date(row.created_at).toLocaleString("fr-FR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}`
+                      : ""}
+                  </p>
+                </div>
               </li>
             ))}
             {!loading && (data?.recent || []).length === 0 ? (
-              <li className="text-brand-black/45">Pas encore de hits enregistrés.</li>
+              <li className="text-sm text-brand-black/45">Pas encore de visite enregistrée.</li>
             ) : null}
           </ul>
-        </div>
+        </section>
       </div>
     </div>
   );

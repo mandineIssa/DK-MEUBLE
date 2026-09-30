@@ -60,7 +60,9 @@ export default function AdminEntreprisesPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-brand-black">Entreprises B2B</h1>
-          <p className="text-sm text-brand-black/60">Comptes sociétés, devis groupés et factures</p>
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+            Sociétés qui achètent pour leur activité. Chaque compte peut recevoir un devis groupé et une facture.
+          </p>
         </div>
         <button
           type="button"

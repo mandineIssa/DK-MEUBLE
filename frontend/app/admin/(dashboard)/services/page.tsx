@@ -92,7 +92,9 @@ export default function AdminServicesPage() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-brand-black">Services</h1>
-          <p className="text-sm text-brand-black/60">Prestations vitrine (distinctes de À propos).</p>
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+            Installation, livraison et autres prestations affichées sur la page Services.
+          </p>
         </div>
         <div className="flex gap-2">
           <Link

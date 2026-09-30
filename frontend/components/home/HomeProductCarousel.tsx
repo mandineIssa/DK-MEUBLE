@@ -8,6 +8,7 @@ import { imageUrl } from "@/lib/api";
 import { useCart } from "@/components/CartProvider";
 import FavoriteButton from "@/components/FavoriteButton";
 import ProductQuickView from "@/components/home/ProductQuickView";
+import ProductLink from "@/components/ProductLink";
 
 export default function HomeProductCarousel({
   title,
@@ -95,7 +96,7 @@ export default function HomeProductCarousel({
               style={{ border: "1px solid var(--border-light)" }}
             >
               <div className="relative aspect-[4/3]" style={{ background: "var(--content-bg-alt)" }}>
-                <Link href={`/produits/${product.slug}`} className="relative block h-full">
+                <ProductLink href={`/produits/${product.slug}`} label={product.name} className="block h-full">
                   {cover ? (
                     <Image
                       src={imageUrl(cover.path)}
@@ -106,7 +107,7 @@ export default function HomeProductCarousel({
                       sizes="240px"
                     />
                   ) : null}
-                </Link>
+                </ProductLink>
                 {product.badge_label ? (
                   <span
                     className="absolute left-2 top-2 rounded-sm px-2 py-0.5 text-[11px] font-bold text-white"
@@ -126,13 +127,14 @@ export default function HomeProductCarousel({
                 >
                   {product.category?.name}
                 </p>
-                <Link
+                <ProductLink
                   href={`/produits/${product.slug}`}
+                  label={product.name}
                   className="mt-0.5 line-clamp-2 text-sm font-bold"
                   style={{ color: "var(--text-primary)" }}
                 >
                   {product.name}
-                </Link>
+                </ProductLink>
                 <div className="mt-1 flex flex-wrap items-baseline gap-1.5">
                   <p className="price-current text-sm">
                     {effective != null ? `${effective.toLocaleString("fr-FR")} FCFA` : "Sur devis"}

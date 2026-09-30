@@ -77,8 +77,7 @@ export default function AdminThemePage() {
     <div className="p-6">
       <h1 className="text-2xl font-extrabold text-brand-black">Thème du site</h1>
       <p className="mt-1 max-w-2xl text-sm text-brand-black/50">
-        Thème clair Jumia pour le header et le corps. Une seule couleur d’accent pilote boutons,
-        prix, badges et le footer sombre. Aucune couleur n’est codée en dur côté front.
+        Couleurs du site public. L’orange sert aux boutons et aux prix. Le reste du site reste clair, le pied de page reste sombre.
       </p>
       {msg ? <p className="mt-3 text-sm font-medium text-brand-orange">{msg}</p> : null}
 

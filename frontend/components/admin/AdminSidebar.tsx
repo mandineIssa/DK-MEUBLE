@@ -41,7 +41,7 @@ const links = [
   },
   {
     href: "/admin/listing",
-    label: "Listing PLP",
+    label: "Pages catégorie",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
         <path d="M4 6h16M4 12h10M4 18h14" />
@@ -51,7 +51,7 @@ const links = [
   },
   {
     href: "/admin/navigation",
-    label: "Méga-menu",
+    label: "Menu",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
         <path d="M4 6h16M4 12h10M4 18h14" />
@@ -61,7 +61,7 @@ const links = [
   },
   {
     href: "/admin/footer",
-    label: "Footer",
+    label: "Pied de page",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
         <rect x="3" y="4" width="18" height="16" rx="2" />
@@ -91,7 +91,7 @@ const links = [
   },
   {
     href: "/admin/showrooms",
-    label: "Showrooms",
+    label: "Magasins",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
         <path d="M3 21h18M5 21V8l7-4 7 4v13" />
@@ -181,7 +181,7 @@ const links = [
   },
   {
     href: "/admin/devis-b2b",
-    label: "Devis B2B",
+    label: "Devis entreprises",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
         <path d="M8 7h8M8 11h8M8 15h5" />

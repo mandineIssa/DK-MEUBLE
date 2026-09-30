@@ -77,7 +77,9 @@ export default function AdminDevisB2bPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-brand-black">Devis groupés B2B</h1>
-          <p className="text-sm text-brand-black/60">Plusieurs lignes produits par devis entreprise</p>
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-brand-black/60">
+            Un devis entreprise regroupe plusieurs produits. Une fois accepté, vous pouvez en tirer une facture.
+          </p>
         </div>
         <button
           type="button"

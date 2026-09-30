@@ -49,7 +49,7 @@ export default function AdminLoginPage() {
         </div>
 
         <p className="mt-6 text-sm text-brand-black/70">
-          Connectez-vous pour gérer produits, devis et messages.
+          Espace réservé à l’équipe. Produits, commandes, devis et messages du site se gèrent ici.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">

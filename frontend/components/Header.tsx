@@ -13,6 +13,9 @@ import { useCartCount } from "@/components/CartProvider";
 import CategoryMegaMenu from "@/components/CategoryMegaMenu";
 import { formatSnPhone } from "@/lib/phone";
 import NotificationBell from "@/components/NotificationBell";
+import ProductLink from "@/components/ProductLink";
+import { useProductInquiry } from "@/components/ProductInquiry";
+import { productWhatsAppMessage, WHATSAPP_GENERAL_MESSAGE } from "@/lib/whatsappMessage";
 
 function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -133,8 +136,9 @@ export default function Header() {
   }, [q]);
 
   const accountHref = loggedIn ? "/compte" : "/compte/connexion";
+  const { product: inquiry, origin } = useProductInquiry();
   const waHref = useWaLink(
-    "Bonjour DK HOMETECH, je suis intéressé par un produit et j'aimerais avoir plus d'informations."
+    inquiry ? productWhatsAppMessage(inquiry, origin) : WHATSAPP_GENERAL_MESSAGE
   );
   const primaryHrefs = new Set(PRIMARY_NAV.map((l) => l.href));
   const extraLinks = navLinks.filter((l) => !primaryHrefs.has(l.href) && l.href !== "/categories");
@@ -201,13 +205,14 @@ export default function Header() {
               <ul className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-md border bg-white text-sm shadow-lg" style={{ borderColor: "var(--border-light)" }}>
                 {suggestions.map((p) => (
                   <li key={p.id}>
-                    <Link
+                    <ProductLink
                       href={`/produits/${p.slug}`}
+                      label={p.name}
                       className="block px-4 py-2 hover:bg-black/5"
-                      onClick={() => setSuggestions([])}
+                      onNavigate={() => setSuggestions([])}
                     >
                       {p.name}
-                    </Link>
+                    </ProductLink>
                   </li>
                 ))}
               </ul>
@@ -357,9 +362,14 @@ export default function Header() {
             <ul className="absolute left-3 right-3 top-full z-50 overflow-hidden rounded-md border bg-white text-sm shadow-lg sm:hidden" style={{ borderColor: "var(--border-light)" }}>
               {suggestions.map((p) => (
                 <li key={p.id}>
-                  <Link href={`/produits/${p.slug}`} className="block px-4 py-2" onClick={() => setSuggestions([])}>
+                  <ProductLink
+                    href={`/produits/${p.slug}`}
+                    label={p.name}
+                    className="block px-4 py-2"
+                    onNavigate={() => setSuggestions([])}
+                  >
                     {p.name}
-                  </Link>
+                  </ProductLink>
                 </li>
               ))}
             </ul>
