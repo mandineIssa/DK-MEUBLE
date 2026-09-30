@@ -160,6 +160,87 @@ class AiClient
         return null;
     }
 
+    /** Mots français décrivant le type visible. Aucune marque ni modèle n'est demandé. */
+    public function look(string $absolutePath): ?string
+    {
+        if (! $this->configured() || ! is_readable($absolutePath)) {
+            return null;
+        }
+
+        $binary = (string) file_get_contents($absolutePath);
+        if ($binary === '') {
+            return null;
+        }
+        $binary = $this->shrinkImage($binary);
+        $data = 'data:image/jpeg;base64,'.base64_encode($binary);
+        $system = 'Tu aides une boutique de meubles. Tu ne cites que le type d\'objet visible.';
+        $user = 'Réponds par 1 à 3 mots français séparés par des virgules : le type de meuble ou d\'appareil (chaise, table, canapé, lit, armoire, réfrigérateur, téléviseur, bureau, matelas). Pas de marque, pas de modèle, pas de phrase. Si le type n\'est pas reconnaissable, réponds AUCUN.';
+
+        $started = microtime(true);
+        try {
+            $response = Http::timeout($this->timeout())
+                ->withToken($this->apiKey())
+                ->acceptJson()
+                ->post($this->baseUrl().'/chat/completions', [
+                    'model' => $this->model(),
+                    'temperature' => 0,
+                    'messages' => [
+                        ['role' => 'system', 'content' => $system],
+                        ['role' => 'user', 'content' => [[
+                            'type' => 'text',
+                            'text' => $user,
+                        ], [
+                            'type' => 'image_url',
+                            'image_url' => ['url' => $data],
+                        ]]],
+                    ],
+                ]);
+        } catch (\Throwable $e) {
+            $this->log('vision', 'error', $this->ms($started), mb_substr($e->getMessage(), 0, 180));
+
+            return null;
+        }
+
+        if (! $response->successful()) {
+            $this->log('vision', 'error', $this->ms($started), 'HTTP '.$response->status());
+
+            return null;
+        }
+
+        $text = trim((string) data_get($response->json(), 'choices.0.message.content', ''));
+        $this->log('vision', $text !== '' ? 'ok' : 'empty', $this->ms($started), $text === '' ? 'Réponse vide' : null);
+
+        return $text !== '' ? $text : null;
+    }
+
+    private function shrinkImage(string $binary): string
+    {
+        if (! function_exists('imagecreatefromstring')) {
+            return $binary;
+        }
+        $img = @imagecreatefromstring($binary);
+        if (! $img) {
+            return $binary;
+        }
+        $w = imagesx($img);
+        $h = imagesy($img);
+        $max = 768;
+        $scale = ($w > $max || $h > $max) ? $max / max($w, $h) : 1;
+        $nw = max(1, (int) round($w * $scale));
+        $nh = max(1, (int) round($h * $scale));
+        $dst = imagecreatetruecolor($nw, $nh);
+        $white = imagecolorallocate($dst, 255, 255, 255);
+        imagefilledrectangle($dst, 0, 0, $nw, $nh, $white);
+        imagecopyresampled($dst, $img, 0, 0, 0, 0, $nw, $nh, $w, $h);
+        ob_start();
+        imagejpeg($dst, null, 75);
+        $jpeg = ob_get_clean();
+        imagedestroy($img);
+        imagedestroy($dst);
+
+        return is_string($jpeg) && $jpeg !== '' ? $jpeg : $binary;
+    }
+
     private function apiKey(): string
     {
         return trim((string) config('ai.api_key'));

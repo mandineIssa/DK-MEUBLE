@@ -476,7 +476,7 @@ async function request<T>(
 ): Promise<T> {
   const { headers: optHeaders, cache, ...rest } = options || {};
   const isBrowser = typeof window !== "undefined";
-  const useBff = isBrowser && path.startsWith("/api/quotes") && options?.method === "POST";
+  const useBff = isBrowser && path.startsWith("/api/");
   const url = useBff
     ? `/api/bff/${path.replace(/^\/api\//, "")}`
     : `${API_URL}${path}`;
@@ -866,11 +866,19 @@ export const api = {
   async searchByImage(file: File) {
     const body = new FormData();
     body.append("image", file);
-    const res = await fetch(`${API_URL}/api/products/search-by-image`, {
-      method: "POST",
-      headers: { Accept: "application/json" },
-      body,
-    });
+    let res: Response;
+    try {
+      res = await fetch(
+        typeof window !== "undefined" ? "/api/bff/products/search-by-image" : `${API_URL}/api/products/search-by-image`,
+        {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body,
+        }
+      );
+    } catch {
+      throw new Error("Connexion impossible. Vérifiez le réseau et réessayez.");
+    }
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.message || "Recherche par image impossible.");

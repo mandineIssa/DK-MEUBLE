@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\Ai\AiClient;
+use App\Services\Ai\CatalogSearch;
+use App\Services\Ai\VisualTerms;
+use App\Services\Ai\WordMatch;
 use App\Services\CategoryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -48,20 +52,17 @@ class ProductController extends Controller
             });
         }
 
-        if ($request->query('search')) {
-            $search = $request->query('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%");
-            });
-        }
-
         if ($request->query('min_price') !== null && $request->query('min_price') !== '') {
             $query->where('price', '>=', (int) $request->query('min_price'));
         }
         if ($request->query('max_price') !== null && $request->query('max_price') !== '') {
             $query->where('price', '<=', (int) $request->query('max_price'));
+        }
+
+        $search = trim((string) $request->query('search', ''));
+        $searchGroups = $search !== '' ? $this->searchGroups($search) : [];
+        if ($searchGroups !== []) {
+            return $this->respondSearch($query->latest()->get(), $searchGroups, $request);
         }
 
         match ($request->query('sort')) {
@@ -96,59 +97,61 @@ class ProductController extends Controller
         return response()->json($paginator->items());
     }
 
-    public function searchByImage(Request $request): JsonResponse
+    public function searchByImage(Request $request, CatalogSearch $catalog, VisualTerms $terms, AiClient $ai): JsonResponse
     {
         $request->validate([
             'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
-        $path = $request->file('image')->store('search-uploads', 'public');
+        $file = $request->file('image');
+        $path = $file->store('search-uploads', 'public');
         $absolute = Storage::disk('public')->path($path);
 
-        $keywords = $this->visionKeywords($absolute);
-        if ($keywords === []) {
-            $base = pathinfo($request->file('image')->getClientOriginalName(), PATHINFO_FILENAME);
-            $keywords = preg_split('/[\s_\-]+/', strtolower($base)) ?: [];
-            $keywords = array_values(array_filter($keywords, fn ($w) => strlen($w) >= 3));
-        }
-
-        $query = Product::query()->published()->with(['category', 'images', 'brand', 'promotions']);
-
-        if ($keywords !== []) {
-            $query->where(function ($q) use ($keywords) {
-                foreach ($keywords as $word) {
-                    $q->orWhere('name', 'like', "%{$word}%")
-                        ->orWhere('description', 'like', "%{$word}%");
-                }
-            });
-        }
-
-        $products = $query->latest()->limit(24)->get();
-        $scored = $products->map(function (Product $product) use ($keywords) {
-            $name = mb_strtolower($product->name.' '.($product->short_description ?? ''));
+        $labels = array_merge(
+            $this->aiImageWords($ai, $absolute),
+            $this->visionKeywords($absolute),
+            $terms->filenameWords($file->getClientOriginalName())
+        );
+        $keywords = $terms->toCatalogWords($labels);
+        $products = $catalog->productsForWords($keywords);
+        $products->each(function (Product $product) use ($keywords) {
+            $name = WordMatch::fold($product->name.' '.($product->category?->name ?? '').' '.($product->brand?->name ?? ''));
             $hits = 0;
             foreach ($keywords as $word) {
-                if ($word !== '' && str_contains($name, mb_strtolower($word))) {
+                if (WordMatch::contains($name, $word)) {
                     $hits++;
                 }
             }
             $product->setAttribute('similarity', $keywords === [] ? 0 : (int) round(($hits / max(1, count($keywords))) * 100));
-
-            return $product;
-        })->filter(fn (Product $product) => (int) $product->getAttribute('similarity') > 0)->values();
+        });
 
         return response()->json([
-            'products' => $scored->isEmpty() ? [] : $scored,
+            'products' => $products->values(),
             'keywords' => $keywords,
             'image_url' => $path,
-            'fallback' => $scored->isEmpty(),
-            'message' => $scored->isEmpty()
+            'fallback' => $products->isEmpty(),
+            'message' => $products->isEmpty()
                 ? ($keywords === []
                     ? 'La photo n\'a pas pu être rapprochée du catalogue. Aucun modèle identique n\'est affirmé.'
-                    : 'Nous n\'avons pas trouvé ce modèle exact dans le catalogue.')
-                : 'Produits proches d\'après les mots reconnus. Ce n\'est pas une preuve que le modèle est identique.',
+                    : 'Nous n\'avons pas trouvé ce type de produit dans le catalogue.')
+                : 'Produits du catalogue proches des mots reconnus : '.implode(', ', $keywords).'. Ce n\'est pas le modèle exact de la photo.',
             'similarity_note' => 'Estimation d\'après les mots reconnus, pas une identification du modèle.',
         ]);
+    }
+
+    /** @return list<string> */
+    private function aiImageWords(AiClient $ai, string $absolutePath): array
+    {
+        if (! $ai->configured() || ! is_readable($absolutePath)) {
+            return [];
+        }
+
+        $text = $ai->look($absolutePath);
+        if ($text === null || $text === '') {
+            return [];
+        }
+
+        return preg_split('/[,;\n]+/u', $text) ?: [];
     }
 
     private function visionKeywords(string $absolutePath): array
@@ -197,6 +200,81 @@ class ProductController extends Controller
         } catch (\Throwable $e) {
             return [];
         }
+    }
+
+    /**
+     * Chaque mot saisi doit apparaître en entier dans le nom, la marque, la catégorie ou le texte.
+     * Les accents et un pluriel simple sont ignorés. « confortable » ne vaut pas « table ».
+     *
+     * @param \Illuminate\Support\Collection<int, Product> $products
+     * @param list<list<string>> $groups
+     */
+    private function respondSearch($products, array $groups, Request $request): JsonResponse
+    {
+        $matched = $products->filter(function (Product $product) use ($groups) {
+            $hay = implode(' ', array_filter([
+                $product->name,
+                $product->short_description,
+                $product->description,
+                $product->sku,
+                $product->brand?->name,
+                $product->category?->name,
+            ]));
+            foreach ($groups as $forms) {
+                $hit = false;
+                foreach ($forms as $form) {
+                    if (WordMatch::contains($hay, $form)) {
+                        $hit = true;
+                        break;
+                    }
+                }
+                if (! $hit) {
+                    return false;
+                }
+            }
+
+            return true;
+        })->values();
+
+        $matched = match ($request->query('sort')) {
+            'price_asc' => $matched->sortBy('price')->values(),
+            'price_desc' => $matched->sortByDesc('price')->values(),
+            default => $matched->sortBy(fn (Product $product) => WordMatch::contains((string) $product->name, $groups[0][0]) ? 0 : 1)->values(),
+        };
+
+        $perPage = min(100, max(1, (int) $request->query('per_page', 24)));
+        $page = max(1, (int) $request->query('page', 1));
+        $total = $matched->count();
+        $items = $matched->slice(($page - 1) * $perPage, $perPage)->values();
+
+        if ($request->boolean('paginated') || $request->query('page')) {
+            return response()->json([
+                'data' => $items,
+                'meta' => [
+                    'total' => $total,
+                    'current_page' => $page,
+                    'last_page' => max(1, (int) ceil($total / $perPage)),
+                    'per_page' => $perPage,
+                ],
+            ]);
+        }
+
+        return response()->json($items);
+    }
+
+    /** @return list<list<string>> */
+    private function searchGroups(string $search): array
+    {
+        $search = str_replace(['%', '_'], '', WordMatch::fold($search));
+        $groups = [];
+        foreach (preg_split('/[^\p{L}\p{N}]+/u', $search) ?: [] as $part) {
+            $forms = WordMatch::forms((string) $part);
+            if ($forms !== []) {
+                $groups[] = $forms;
+            }
+        }
+
+        return array_slice($groups, 0, 6);
     }
 
     public function show(string $slug): JsonResponse

@@ -43,13 +43,15 @@ export default function VisualSearchResults() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-4 rounded-2xl bg-white p-4 shadow-sm">
         <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-[#eee]">
-          <Image
-            src={data.preview || data.image_url}
-            alt="Image recherchée"
-            fill
-            unoptimized
-            className="object-cover"
-          />
+          {data.preview || data.image_url ? (
+            <Image
+              src={data.preview || data.image_url}
+              alt="Image recherchée"
+              fill
+              unoptimized
+              className="object-cover"
+            />
+          ) : null}
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-bold text-brand-black">Recherche par image</p>

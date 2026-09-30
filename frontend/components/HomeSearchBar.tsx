@@ -23,25 +23,24 @@ export default function HomeSearchBar() {
     setError("");
     setLoadingImage(true);
     try {
-      const preview = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ""));
-        reader.onerror = () => reject(new Error("Lecture image impossible"));
-        reader.readAsDataURL(file);
-      });
-
+      const preview = await shrinkPreview(file);
       const result = await api.searchByImage(file);
-      sessionStorage.setItem(
-        VISUAL_SEARCH_KEY,
-        JSON.stringify({
-          preview,
-          products: result.products,
-          keywords: result.keywords,
-          image_url: result.image_url ? imageUrl(result.image_url) : preview,
-          fallback: result.fallback,
-          message: result.message,
-        })
-      );
+      const stored = {
+        preview,
+        products: result.products,
+        keywords: result.keywords,
+        image_url: result.image_url ? imageUrl(result.image_url) : preview,
+        fallback: result.fallback,
+        message: result.message,
+      };
+      try {
+        sessionStorage.setItem(VISUAL_SEARCH_KEY, JSON.stringify(stored));
+      } catch {
+        sessionStorage.setItem(
+          VISUAL_SEARCH_KEY,
+          JSON.stringify({ ...stored, preview: "", image_url: result.image_url ? imageUrl(result.image_url) : "" })
+        );
+      }
       router.push("/produits?visual=1");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Recherche image impossible.");
@@ -132,5 +131,35 @@ export default function HomeSearchBar() {
       </div>
     </section>
   );
+}
+
+function shrinkPreview(file: File): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onerror = () => resolve("");
+    reader.onload = () => {
+      const src = String(reader.result || "");
+      const img = new Image();
+      img.onerror = () => resolve("");
+      img.onload = () => {
+        const max = 480;
+        const scale = Math.min(1, max / Math.max(img.width, img.height, 1));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve("");
+          return;
+        }
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.72));
+      };
+      img.src = src;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 

@@ -38,12 +38,12 @@ async function proxy(req: NextRequest, ctx: Ctx) {
   if (req.method !== "GET" && req.method !== "HEAD") {
     const contentType = req.headers.get("content-type");
     if (contentType) headers.set("Content-Type", contentType);
-    const body = await req.text();
-    if (body) init.body = body;
+    const body = await req.arrayBuffer();
+    if (body.byteLength) init.body = body;
   }
 
   const upstream = await fetch(url, init);
-  const text = await upstream.text();
+  const bytes = new Uint8Array(await upstream.arrayBuffer());
 
   const expiredSession =
     upstream.status === 401 &&
@@ -53,7 +53,7 @@ async function proxy(req: NextRequest, ctx: Ctx) {
     ? path === "customer/logout"
       ? new NextResponse(null, { status: 204 })
       : NextResponse.json({ unread_count: 0 })
-    : new NextResponse(text || null, {
+    : new NextResponse(bytes.byteLength ? bytes : null, {
         status: upstream.status,
         headers: {
           "Content-Type": upstream.headers.get("Content-Type") || "application/json",

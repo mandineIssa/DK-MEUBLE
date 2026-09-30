@@ -259,11 +259,42 @@ class CatalogSearch
     private function query(array $parsed): Collection
     {
         $strict = $this->apply($parsed, true);
-        if ($strict->isEmpty() && ($parsed['keywords'] !== [] || $parsed['category_id'])) {
-            return $this->apply($parsed, false);
+        if ($strict->isNotEmpty()) {
+            return $strict;
+        }
+        if (($parsed['keywords'] ?? []) === [] && empty($parsed['category_id'])) {
+            return $strict;
+        }
+        $loose = $this->apply($parsed, false);
+        if ($loose->isNotEmpty() || empty($parsed['keywords']) || empty($parsed['category_id'])) {
+            return $loose;
+        }
+        $parsed['category_id'] = null;
+        $parsed['category'] = null;
+
+        return $this->apply($parsed, false);
+    }
+
+    /**
+     * Produits dont le nom, la marque ou la catégorie contient l'un des mots.
+     *
+     * @param list<string> $words
+     */
+    public function productsForWords(array $words): Collection
+    {
+        $words = array_values(array_filter(array_map(fn ($word) => trim((string) $word), $words)));
+        if ($words === []) {
+            return collect();
         }
 
-        return $strict;
+        return $this->apply([
+            'keywords' => array_slice($words, 0, 4),
+            'category_id' => null,
+            'category' => null,
+            'max_price' => null,
+            'min_price' => null,
+            'multi' => false,
+        ], false)->take(24)->values();
     }
 
     /** @param array<string, mixed> $parsed */
@@ -297,13 +328,15 @@ class CatalogSearch
             }
             $hay = $this->fold(implode(' ', array_filter([
                 $product->name,
+                $product->brand?->name,
+                $product->category?->name,
                 $product->short_description,
                 $product->description,
                 $product->sku,
             ])));
             $matched = 0;
             foreach ($keywords as $word) {
-                if (str_contains($hay, $this->fold($word))) {
+                if (WordMatch::contains($hay, (string) $word)) {
                     $matched++;
                 }
             }
@@ -312,6 +345,21 @@ class CatalogSearch
             }
 
             return $matched > 0;
+        })->sortBy(function (Product $product) use ($keywords) {
+            $name = $this->fold((string) $product->name);
+            $brand = $this->fold((string) ($product->brand?->name ?? ''));
+            $category = $this->fold((string) ($product->category?->name ?? ''));
+            $rank = 2;
+            foreach ($keywords as $word) {
+                if (WordMatch::contains($name, (string) $word)) {
+                    return 0;
+                }
+                if (WordMatch::contains($brand, (string) $word) || WordMatch::contains($category, (string) $word)) {
+                    $rank = 1;
+                }
+            }
+
+            return $rank;
         })->values();
     }
 
