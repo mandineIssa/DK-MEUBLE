@@ -1057,14 +1057,55 @@ export const adminApi = {
     }),
   deleteFooterPayment: (id: number) =>
     adminRequest(`/api/admin/footer/payments/${id}`, { method: "DELETE" }),
-  aiInsights: () => adminRequest("/api/admin/ai/insights"),
-  aiSettings: () => adminRequest("/api/admin/ai/settings"),
+  aiInsights: () =>
+    adminRequest<{
+      sales: { revenue: number; orders: number; average_basket: number; enough: boolean };
+      products: {
+        most_viewed: Array<{ path: string; views: number }>;
+        most_sold: Array<{ product_name: string; qty: number }>;
+        never_sold: number;
+        low_stock: number;
+      };
+      search: { frequent: Array<{ query: string; times: number }>; without_result: number; enough: boolean };
+      carts: { inactive_24h: number; inactive_value: number; note: string };
+      opportunities: string[];
+      errors: Array<{ kind: string; message: string | null; created_at: string }>;
+      usage: { calls: number; errors: number };
+    }>("/api/admin/ai/insights"),
+  aiSettings: () =>
+    adminRequest<{
+      enabled: boolean;
+      assistant_enabled: boolean;
+      provider: string;
+      model: string;
+      base_url: string;
+      timeout: number;
+      retries: number;
+      system_prompt: string;
+      api_key_configured: boolean;
+    }>("/api/admin/ai/settings"),
   updateAiSettings: (data: Record<string, unknown>) =>
-    adminRequest("/api/admin/ai/settings", { method: "PUT", body: JSON.stringify(data) }),
+    adminRequest<{
+      enabled: boolean;
+      assistant_enabled: boolean;
+      provider: string;
+      model: string;
+      base_url: string;
+      timeout: number;
+      retries: number;
+      system_prompt: string;
+      api_key_configured: boolean;
+    }>("/api/admin/ai/settings", { method: "PUT", body: JSON.stringify(data) }),
   describeProduct: (data: Record<string, unknown>) =>
-    adminRequest("/api/admin/ai/describe", { method: "POST", body: JSON.stringify(data) }),
+    adminRequest<{
+      short_description?: string;
+      description?: string;
+      specs?: string;
+      seo_title?: string;
+      meta_description?: string;
+    }>("/api/admin/ai/describe", { method: "POST", body: JSON.stringify(data) }),
   enhanceProductImage: (id: number) =>
-    adminRequest(`/api/admin/product-images/${id}/enhance`, {
+    adminRequest<{ message?: string }>(`/api/admin/product-images/${id}/enhance`, {
       method: "POST",
       body: JSON.stringify({ operations: ["brightness", "remove_background", "resize", "compress"] }),
     }),

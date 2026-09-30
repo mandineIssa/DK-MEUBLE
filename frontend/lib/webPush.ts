@@ -12,7 +12,7 @@ export async function maybePromptWebPush(): Promise<void> {
 
   localStorage.setItem(PROMPT_KEY, "1");
 
-  let permission = Notification.permission;
+  let permission: NotificationPermission = Notification.permission;
   if (permission === "default") {
     permission = await Notification.requestPermission();
   }
