@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { adminApi } from "@/lib/adminApi";
 import { imageUrl, type SiteSettings } from "@/lib/api";
 
@@ -639,6 +640,20 @@ export default function AdminParametresPage() {
               }
             />
           </label>
+        </section>
+
+        <section className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="font-bold text-brand-black">Assistant et fournisseur IA</h2>
+          <p className="mt-2 text-sm text-brand-black/70">
+            Le modèle, l’adresse du fournisseur, le délai, les tentatives, l’affichage de l’assistant et les consignes du magasin se règlent dans Intelligence.
+            La clé API reste uniquement dans le fichier .env du serveur (AI_API_KEY). Elle n’est pas saisie ici.
+          </p>
+          <p className="mt-3 text-sm text-brand-black/70">
+            Sur une fiche produit : « Générer la description avec l'assistant » propose un texte à relire, et « Retirer le fond » ajoute une image sans remplacer l’originale.
+          </p>
+          <Link href="/admin/intelligence" className="mt-4 inline-block text-sm font-semibold text-brand-orange">
+            Ouvrir les réglages Intelligence
+          </Link>
         </section>
 
         {error && <p className="text-sm text-red-600">{error}</p>}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { adminApi, AdminProduct } from "@/lib/adminApi";
 import { api, Category, imageUrl } from "@/lib/api";
 import AdminMultiImageGallery, { type GalleryImage } from "@/components/admin/AdminMultiImageGallery";
+import GenerateProductCopyButton from "@/components/admin/GenerateProductCopyButton";
 
 function specsToLines(specs?: Record<string, unknown> | null) {
   if (!specs) return "";
@@ -142,6 +143,8 @@ export default function AdminProductsPage() {
       is_customizable: form.get("is_customizable") === "on",
       status: (form.get("status") as "draft" | "published" | "archived") || "published",
       specs: linesToSpecs(String(form.get("specs_text") || "")),
+      meta_title: String(form.get("meta_title") || "") || null,
+      meta_description: String(form.get("meta_description") || "") || null,
     };
 
     setSaving(true);
@@ -385,6 +388,17 @@ export default function AdminProductsPage() {
               className="w-full rounded-xl border border-brand-black/15 px-3 py-2.5 text-sm"
             />
           </div>
+          <GenerateProductCopyButton />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-brand-black/70">Titre SEO</label>
+              <input name="meta_title" defaultValue={editing?.meta_title || ""} className="w-full rounded-xl border border-brand-black/15 px-3 py-2.5 text-sm" />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-brand-black/70">Meta description</label>
+              <input name="meta_description" defaultValue={editing?.meta_description || ""} className="w-full rounded-xl border border-brand-black/15 px-3 py-2.5 text-sm" />
+            </div>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm font-medium text-brand-black/70">
@@ -484,6 +498,16 @@ export default function AdminProductsPage() {
                 onReorder={async (order) => {
                   await adminApi.reorderProductImages(editing.id, order);
                   await refreshEditing(editing.id);
+                }}
+                onEnhance={async (id) => {
+                  setError("");
+                  try {
+                    const result = await adminApi.enhanceProductImage(id);
+                    if (result?.message) setError(result.message);
+                    await refreshEditing(editing.id);
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : "Amélioration impossible");
+                  }
                 }}
               />
             ) : (

@@ -7,8 +7,16 @@ import HomeBrands from "@/components/home/HomeBrands";
 import HomeActions from "@/components/home/HomeActions";
 import HomeVisit from "@/components/home/HomeVisit";
 import HomeOffers from "@/components/home/HomeOffers";
-import { api } from "@/lib/api";
+import HomeSearchBar from "@/components/HomeSearchBar";
+import HomeEquip from "@/components/home/HomeEquip";
+import HomeForYou from "@/components/home/HomeForYou";
+import HomeReviews from "@/components/home/HomeReviews";
+import { api, type HomepageSection } from "@/lib/api";
 import { buildPageMetadata, SITE_NAME } from "@/lib/seo";
+
+function isPromoCarousel(section: HomepageSection) {
+  return /promo|offre/i.test(section.title || "");
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await api.getSettings().catch(() => null);
@@ -28,74 +36,88 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [homepage, settings] = await Promise.all([
+  const [homepage, settings, promotions] = await Promise.all([
     api.getHomepage().catch(() => null),
     api.getSettings().catch(() => null),
+    api.getPromotions({ per_page: "4", sort: "ending" }).catch(() => null),
   ]);
+  const offerPromos = promotions?.data || [];
   const sections = homepage?.sections || [];
   const useAlt = settings?.theme?.use_alt_bg_sections !== false;
+  const heroes = sections.filter((section) => section.type === "hero");
+  const categories = sections.filter((section) => section.type === "category_grid");
+  const trust = sections.filter((section) => section.type === "trust_badges");
+  const brands = sections.filter((section) => section.type === "brands");
+  const carousels = sections.filter(
+    (section) => section.type === "product_carousel" && !isPromoCarousel(section)
+  );
+
+  const seenProductIds = new Set<number>();
+  for (const promo of offerPromos) {
+    const id = promo.product?.id ?? promo.product_id;
+    if (id) seenProductIds.add(id);
+  }
+  const uniqueCarousels = carousels
+    .map((section) => {
+      const products = (section.products || []).filter((product) => {
+        if (seenProductIds.has(product.id)) return false;
+        seenProductIds.add(product.id);
+        return true;
+      });
+      return { section, products };
+    })
+    .filter(({ section, products }) => products.length > 0 || Boolean(section.banner_image));
 
   let altIndex = 0;
+  const band = () => {
+    if (!useAlt) return "";
+    return altIndex++ % 2 === 0 ? "bg-[var(--content-bg-alt)]" : "bg-[var(--body-bg)]";
+  };
 
   return (
     <div className="bg-[var(--content-bg-alt)]">
-      {sections.map((section) => {
-        // Alternance blanc / gris clair pour rythmer la page (désactivable en admin)
-        const useAltBg =
-          useAlt &&
-          (section.type === "product_carousel" ||
-            section.type === "category_grid" ||
-            section.type === "brands" ||
-            section.type === "trust_badges");
-        const bgClass = useAltBg
-          ? altIndex++ % 2 === 0
-            ? "bg-[var(--content-bg-alt)]"
-            : "bg-[var(--body-bg)]"
-          : "";
+      {heroes.map((section) => (
+        <HomeHeroSlider key={section.id} slides={section.slides || []} meta={section.meta} />
+      ))}
 
-        switch (section.type) {
-          case "hero":
-            return <HomeHeroSlider key={section.id} slides={section.slides || []} meta={section.meta} />;
-          case "trust_badges":
-            return (
-              <div key={section.id} className={bgClass}>
-                <HomeTrustBadges title={section.title} items={section.items || []} />
-              </div>
-            );
-          case "category_grid":
-            return (
-              <div key={section.id} className={bgClass}>
-                <HomeCategoryGrid title={section.title} items={section.items || []} />
-              </div>
-            );
-          case "product_carousel":
-            return (
-              <div key={section.id} className={bgClass}>
-                <HomeProductCarousel
-                  title={section.title}
-                  bannerImage={section.banner_image}
-                  bannerLink={section.banner_link}
-                  products={section.products || []}
-                />
-              </div>
-            );
-          case "brands":
-            return (
-              <div key={section.id} className={bgClass}>
-                <HomeBrands title={section.title} brands={section.brands || []} />
-              </div>
-            );
-          // newsletter + socials : gérés uniquement dans le Footer (évite le doublon)
-          case "newsletter":
-          case "socials":
-            return null;
-          default:
-            return null;
-        }
-      })}
-      <HomeOffers />
-      <HomeVisit />
+      <HomeSearchBar />
+
+      {categories.map((section) => (
+        <div key={section.id} className={band()}>
+          <HomeCategoryGrid title={section.title} items={section.items || []} />
+        </div>
+      ))}
+
+      {trust.map((section) => (
+        <div key={section.id} className={band()}>
+          <HomeTrustBadges title={section.title} items={section.items || []} />
+        </div>
+      ))}
+
+      <HomeOffers promos={offerPromos} settings={settings} />
+
+      {uniqueCarousels.map(({ section, products }) => (
+        <div key={section.id} className={band()}>
+          <HomeProductCarousel
+            title={section.title}
+            bannerImage={section.banner_image}
+            bannerLink={section.banner_link}
+            products={products}
+          />
+        </div>
+      ))}
+
+      {brands.map((section) => (
+        <div key={section.id} className={band()}>
+          <HomeBrands title={section.title} brands={section.brands || []} />
+        </div>
+      ))}
+
+      <HomeForYou />
+      <HomeEquip />
+      <HomeVisit excludeProductIds={[...seenProductIds]} showReasons={trust.every((section) => !(section.items || []).length)} />
       <HomeActions />
+      <HomeReviews />
     </div>
   );
 }

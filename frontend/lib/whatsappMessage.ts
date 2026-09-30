@@ -34,29 +34,23 @@ export function formatWhatsAppPrice(price: number): string {
   return `${price.toLocaleString("fr-FR")} FCFA`;
 }
 
-/** Message prérempli depuis une fiche produit. Les champs absents sont omis. */
-export function productWhatsAppMessage(product: WhatsAppProduct, origin = ""): string {
-  const name = clean(product.name);
-  const lines = [
-    "Bonjour DK HOMETECH 👋",
-    "",
-    "Je suis intéressé par le produit suivant :",
-    "",
-    `🛍️ Produit : ${name || "ce produit"}`,
-  ];
-
+/** Message prérempli depuis une fiche produit. L'envoi reste manuel dans WhatsApp. */
+export function productWhatsAppMessage(product: WhatsAppProduct & { quantity?: number | null }, origin = ""): string {
+  const name = clean(product.name) || "un produit";
+  let intro = `Bonjour DK HOMETECH, je suis intéressé par ${name}`;
   const reference = clean(product.sku);
-  if (reference) lines.push(`🔖 Référence : ${reference}`);
-
+  if (reference) intro += `, référence ${reference}`;
   if (typeof product.price === "number" && Number.isFinite(product.price)) {
-    lines.push(`💰 Prix : ${formatWhatsAppPrice(product.price)}`);
+    intro += `, affiché à ${formatWhatsAppPrice(product.price)}`;
   }
+  intro += ".";
 
-  lines.push("", "Est-il disponible ?", "Pouvez-vous m'indiquer les conditions de livraison ?");
-
+  const lines = [intro, "Je voudrais connaître sa disponibilité, sa garantie et les conditions de livraison."];
+  if (typeof product.quantity === "number" && product.quantity > 1) {
+    lines.push(`Quantité souhaitée : ${product.quantity}.`);
+  }
   const url = productPublicUrl(product.slug, origin);
-  if (url) lines.push("", `🔗 ${url}`);
+  if (url) lines.push(url);
 
-  lines.push("", "Merci.");
   return lines.join("\n");
 }

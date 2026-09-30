@@ -11,6 +11,29 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class ReviewController extends Controller
 {
+    public function recent(): JsonResponse
+    {
+        $reviews = ProductReview::query()
+            ->approved()
+            ->whereHas('product', fn ($query) => $query->published())
+            ->with('product:id,name,slug')
+            ->latest()
+            ->limit(6)
+            ->get(['id', 'product_id', 'author_name', 'rating', 'title', 'body', 'created_at']);
+
+        return response()->json([
+            'reviews' => $reviews->map(fn (ProductReview $review) => [
+                'id' => $review->id,
+                'author_name' => $review->author_name,
+                'rating' => $review->rating,
+                'title' => $review->title,
+                'body' => $review->body,
+                'product_name' => $review->product?->name,
+                'product_slug' => $review->product?->slug,
+            ])->values(),
+        ]);
+    }
+
     public function index(string $slug): JsonResponse
     {
         $product = Product::query()->published()->where('slug', $slug)->firstOrFail();

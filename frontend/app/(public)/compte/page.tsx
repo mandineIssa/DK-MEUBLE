@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
+import ProductLink from "@/components/ProductLink";
 import { useRouter } from "next/navigation";
 import {
   clearCustomerToken,
@@ -313,9 +314,9 @@ export default function ComptePage() {
             <ul className="mt-4 space-y-2">
               {wishlist.map((p) => (
                 <li key={p.id} className="flex justify-between rounded-xl bg-[#f5f5f5] p-3 text-sm">
-                  <Link href={`/produits/${p.slug}`} className="font-semibold hover:text-brand-orange">
+                  <ProductLink href={`/produits/${p.slug}`} label={p.name} className="font-semibold hover:text-brand-orange">
                     {p.name}
-                  </Link>
+                  </ProductLink>
                   <button
                     type="button"
                     className="text-xs text-red-600"

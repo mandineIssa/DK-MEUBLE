@@ -160,53 +160,62 @@ export function siteFromSettings(settings: SiteSettings): SiteInfo {
   };
 }
 
+function mapsEmbedFromQuery(query: string, zoom = 15): string {
+  const z = Number.isFinite(zoom) ? Math.min(21, Math.max(1, Math.round(zoom))) : 15;
+  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&hl=fr&z=${z}&output=embed`;
+}
+
 /**
  * Convertit une saisie admin (URL Maps, iframe HTML, adresse) en URL
  * embarquable dans une iframe. google.com seul est refusé par Google (X-Frame-Options).
  */
 export function normalizeMapsEmbedUrl(raw: string): string | null {
-  let v = String(raw || "").trim();
+  let v = String(raw || "").trim().replace(/&amp;/g, "&");
   if (!v) return null;
 
   const iframeSrc = v.match(/src=["']([^"']+)["']/i);
   if (iframeSrc?.[1]) v = iframeSrc[1].trim();
 
   if (!/^https?:\/\//i.test(v) && !/^\/\//.test(v)) {
-    // Texte d’adresse → recherche Maps embarquée
-    return `https://www.google.com/maps?q=${encodeURIComponent(v)}&output=embed`;
+    return mapsEmbedFromQuery(v);
   }
   if (/^\/\//.test(v)) v = `https:${v}`;
 
+  let u: URL;
   try {
-    const u = new URL(v);
-    const host = u.hostname.toLowerCase();
-    const isGoogle =
-      host === "google.com" ||
-      host.endsWith(".google.com") ||
-      host === "maps.google.com" ||
-      host === "goo.gl" ||
-      host.endsWith(".goo.gl");
-
-    // Accueil Google / page non Maps → non embarquable
-    if (isGoogle && !/maps/i.test(u.pathname + u.search + u.hostname)) {
-      return null;
-    }
-    if (host === "google.com" || host === "www.google.com") {
-      if (u.pathname === "/" || u.pathname === "") return null;
-    }
-
-    // Déjà un embed officiel
-    if (/\/maps\/embed/i.test(u.pathname) || u.searchParams.get("output") === "embed") {
-      return u.toString();
-    }
-
-    // Lien Maps / partage → version embed
-    if (isGoogle || /maps/i.test(u.pathname)) {
-      return `https://www.google.com/maps?q=${encodeURIComponent(v)}&output=embed`;
-    }
+    u = new URL(v);
   } catch {
     return null;
   }
+
+  const host = u.hostname.toLowerCase();
+  const isGoogle =
+    host === "google.com" ||
+    host.endsWith(".google.com") ||
+    host === "maps.google.com" ||
+    host === "goo.gl" ||
+    host.endsWith(".goo.gl");
+
+  if ((host === "google.com" || host === "www.google.com") && (u.pathname === "/" || u.pathname === "")) {
+    return null;
+  }
+  if (isGoogle && !/maps/i.test(`${u.hostname}${u.pathname}`)) {
+    return null;
+  }
+  if (!isGoogle && !/maps/i.test(u.pathname)) return null;
+
+  if (/\/maps\/embed/i.test(u.pathname)) return u.toString();
+
+  const at = u.pathname.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)(?:,(\d+(?:\.\d+)?)z)?/);
+  if (at) return mapsEmbedFromQuery(`${at[1]},${at[2]}`, at[3] ? Number(at[3]) : 15);
+
+  const place = `${u.pathname}${u.search}`.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+  if (place) return mapsEmbedFromQuery(`${place[1]},${place[2]}`);
+
+  const query = u.searchParams.get("q") || u.searchParams.get("query") || u.searchParams.get("ll");
+  if (query && !/^https?:/i.test(query)) return mapsEmbedFromQuery(query);
+
+  if (u.searchParams.get("output") === "embed") return u.toString();
 
   return null;
 }

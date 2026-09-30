@@ -58,6 +58,8 @@ use App\Http\Controllers\Api\Admin\WishlistAdminController;
 use App\Http\Controllers\Api\FooterController;
 use App\Http\Controllers\Api\Admin\FooterAdminController as AdminFooterController;
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Api\Admin\AiAdminController;
+use App\Http\Controllers\Api\AiController;
 use Illuminate\Support\Facades\Route;
 
 // --- Routes publiques ---
@@ -81,6 +83,7 @@ Route::get('/products', [ProductController::class, 'index']);
 Route::post('/products/search-by-image', [ProductController::class, 'searchByImage'])
     ->middleware('throttle:10,1');
 Route::get('/products/{slug}', [ProductController::class, 'show']);
+Route::get('/reviews/recent', [ReviewController::class, 'recent']);
 Route::get('/products/{slug}/reviews', [ReviewController::class, 'index']);
 Route::post('/products/{slug}/reviews', [ReviewController::class, 'store'])
     ->middleware('throttle:10,1');
@@ -93,6 +96,16 @@ Route::get('/pages/{pageKey}', [PageController::class, 'show']);
 Route::get('/realizations', [RealizationController::class, 'index']);
 Route::get('/promotions', [PromotionController::class, 'index']);
 Route::get('/promotions/{id}', [PromotionController::class, 'show']);
+
+Route::get('/ai/status', [AiController::class, 'status']);
+Route::post('/ai/search', [AiController::class, 'search'])->middleware('throttle:30,1');
+Route::post('/ai/chat', [AiController::class, 'chat'])->middleware('throttle:20,1');
+Route::post('/ai/compare', [AiController::class, 'compare'])->middleware('throttle:20,1');
+Route::post('/ai/plan', [AiController::class, 'plan'])->middleware('throttle:15,1');
+Route::post('/ai/plan/pdf', [AiController::class, 'planPdf'])->middleware('throttle:10,1');
+Route::get('/ai/recommendations/{slug}', [AiController::class, 'recommendations'])->middleware('throttle:60,1');
+Route::post('/ai/for-you', [AiController::class, 'forYou'])->middleware('throttle:30,1');
+Route::post('/ai/cart-suggestions', [AiController::class, 'cartSuggestions'])->middleware('throttle:30,1');
 
 Route::get('/cart', [CartController::class, 'show']);
 Route::post('/cart', [CartController::class, 'add']);
@@ -165,6 +178,11 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/dashboard/stats', [AdminDashboardController::class, 'stats']);
+    Route::get('/ai/insights', [AiAdminController::class, 'insights']);
+    Route::get('/ai/settings', [AiAdminController::class, 'settings']);
+    Route::put('/ai/settings', [AiAdminController::class, 'updateSettings']);
+    Route::post('/ai/describe', [AiAdminController::class, 'describe']);
+    Route::post('/product-images/{image}/enhance', [AiAdminController::class, 'enhanceImage']);
 
     Route::post('/categories/seed-suggested', [AdminCategoryController::class, 'seedSuggested']);
     Route::patch('/categories/reorder', [AdminCategoryController::class, 'reorder']);

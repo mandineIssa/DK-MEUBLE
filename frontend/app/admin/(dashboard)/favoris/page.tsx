@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
+import ProductLink from "@/components/ProductLink";
 import { adminApi } from "@/lib/adminApi";
 
 type WishlistRow = {
@@ -101,13 +102,13 @@ export default function AdminFavorisPage() {
                     {r.product ? (
                       <>
                         <p className="font-medium">{r.product.name}</p>
-                        <Link
+                        <ProductLink
                           href={`/produits/${r.product.slug}`}
-                          target="_blank"
+                          label={r.product.name}
                           className="text-xs text-brand-orange"
                         >
                           Voir fiche
-                        </Link>
+                        </ProductLink>
                       </>
                     ) : (
                       "—"

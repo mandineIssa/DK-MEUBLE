@@ -63,6 +63,8 @@ export type AdminProduct = {
   is_clearance?: boolean;
   stock_quantity?: number | null;
   specs?: Record<string, unknown> | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
   is_customizable: boolean;
   status: "draft" | "published" | "archived";
   images?: { id: number; path: string; order: number; role?: string | null; label?: string | null }[];
@@ -1055,6 +1057,17 @@ export const adminApi = {
     }),
   deleteFooterPayment: (id: number) =>
     adminRequest(`/api/admin/footer/payments/${id}`, { method: "DELETE" }),
+  aiInsights: () => adminRequest("/api/admin/ai/insights"),
+  aiSettings: () => adminRequest("/api/admin/ai/settings"),
+  updateAiSettings: (data: Record<string, unknown>) =>
+    adminRequest("/api/admin/ai/settings", { method: "PUT", body: JSON.stringify(data) }),
+  describeProduct: (data: Record<string, unknown>) =>
+    adminRequest("/api/admin/ai/describe", { method: "POST", body: JSON.stringify(data) }),
+  enhanceProductImage: (id: number) =>
+    adminRequest(`/api/admin/product-images/${id}/enhance`, {
+      method: "POST",
+      body: JSON.stringify({ operations: ["brightness", "remove_background", "resize", "compress"] }),
+    }),
 };
 
 export type AdminNotificationTemplate = {

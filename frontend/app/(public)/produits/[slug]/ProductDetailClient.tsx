@@ -15,7 +15,9 @@ import ProductReviews from "@/components/ProductReviews";
 import FavoriteButton from "@/components/FavoriteButton";
 import ReportContentModal from "@/components/ReportContentModal";
 import ProductChatButton from "@/components/ProductChatButton";
-import ProductCard from "@/components/ProductCard";
+import StockBadge from "@/components/StockBadge";
+import ProductRecommendations from "@/components/ProductRecommendations";
+import { rememberViewed } from "@/lib/viewedProducts";
 
 export default function ProductDetailClient({
   product,
@@ -44,7 +46,7 @@ export default function ProductDetailClient({
   const inquiryPrice = product.effective_price ?? product.price;
   const waHref = useWaLink(
     productWhatsAppMessage(
-      { name: product.name, sku: product.sku, price: inquiryPrice, slug: product.slug },
+      { name: product.name, sku: product.sku, price: inquiryPrice, slug: product.slug, quantity: qty },
       origin
     )
   );
@@ -56,6 +58,7 @@ export default function ProductDetailClient({
       price: inquiryPrice,
       slug: product.slug,
     });
+    rememberViewed(product.slug);
     return () => setProduct(null);
   }, [setProduct, product.name, product.sku, product.slug, inquiryPrice]);
   const cover = images[activeIdx] || images[0];
@@ -176,11 +179,7 @@ export default function ProductDetailClient({
               ) : (
                 <span className="text-brand-black/55">Avis sur nos services</span>
               )}
-              {stockKnown ? (
-                <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${inStock ? "bg-green-100 text-green-800" : "bg-red-100 text-red-700"}`}>
-                  {inStock ? "En stock" : "Rupture"}
-                </span>
-              ) : null}
+              <StockBadge quantity={product.stock_quantity} customizable={product.is_customizable} />
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <p className="text-2xl font-extrabold text-brand-orange">{priceLabel}</p>
@@ -450,16 +449,7 @@ export default function ProductDetailClient({
         </div>
 
         <section id="similaires" className="mx-auto mt-10 max-w-7xl">
-          <h2 className="text-xl font-extrabold">Vous pourriez également aimer</h2>
-          {similar.length > 0 ? (
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {similar.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
-          ) : (
-            <p className="mt-3 text-sm text-brand-black/60">Aucun autre produit à proposer pour le moment.</p>
-          )}
+          <ProductRecommendations slug={product.slug} outOfStock={stockKnown && !inStock} />
         </section>
       </div>
       {effective != null ? (

@@ -4,12 +4,12 @@ import { useMemo, useState } from "react";
 import type { Showroom } from "@/lib/api";
 
 function mapsEmbedUrl(s: Showroom): string | null {
-  if (s.latitude != null && s.longitude != null) {
-    return `https://www.google.com/maps?q=${s.latitude},${s.longitude}&z=15&output=embed`;
-  }
-  const q = [s.address, s.city].filter(Boolean).join(", ");
-  if (!q) return null;
-  return `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
+  const query =
+    s.latitude != null && s.longitude != null
+      ? `${s.latitude},${s.longitude}`
+      : [s.address, s.city].filter(Boolean).join(", ");
+  if (!query) return null;
+  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&hl=fr&z=15&output=embed`;
 }
 
 function mapsLink(s: Showroom): string | null {

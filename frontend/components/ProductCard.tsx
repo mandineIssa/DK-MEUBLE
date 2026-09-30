@@ -9,6 +9,7 @@ import ProductContactActions from "@/components/ProductContactActions";
 import FavoriteButton from "@/components/FavoriteButton";
 import { useCompare } from "@/components/CompareProvider";
 import ProductLink from "@/components/ProductLink";
+import StockBadge from "@/components/StockBadge";
 
 export default function ProductCard({ product }: { product: Product }) {
   const cover = product.images?.[0];
@@ -63,11 +64,9 @@ export default function ProductCard({ product }: { product: Product }) {
               Photo à venir
             </div>
           )}
-          {product.stock_quantity != null && product.stock_quantity > 0 && product.stock_quantity <= 3 ? (
-            <span className="absolute bottom-3 left-3 rounded-sm bg-brand-black px-2 py-1 text-[11px] font-bold text-white">
-              Stock limité
-            </span>
-          ) : null}
+          <span className="absolute bottom-3 left-3 z-10">
+            <StockBadge quantity={product.stock_quantity} customizable={product.is_customizable} />
+          </span>
           {product.badge_label && (
             <span
               className="absolute left-3 top-3 rounded-sm px-2.5 py-1 text-xs font-bold text-white"

@@ -124,21 +124,30 @@ class ProductController extends Controller
         }
 
         $products = $query->latest()->limit(24)->get();
+        $scored = $products->map(function (Product $product) use ($keywords) {
+            $name = mb_strtolower($product->name.' '.($product->short_description ?? ''));
+            $hits = 0;
+            foreach ($keywords as $word) {
+                if ($word !== '' && str_contains($name, mb_strtolower($word))) {
+                    $hits++;
+                }
+            }
+            $product->setAttribute('similarity', $keywords === [] ? 0 : (int) round(($hits / max(1, count($keywords))) * 100));
 
-        if ($products->isEmpty()) {
-            $products = Product::query()
-                ->published()
-                ->with(['category', 'images', 'brand', 'promotions'])
-                ->latest()
-                ->limit(12)
-                ->get();
-        }
+            return $product;
+        })->filter(fn (Product $product) => (int) $product->getAttribute('similarity') > 0)->values();
 
         return response()->json([
-            'products' => $products,
+            'products' => $scored->isEmpty() ? [] : $scored,
             'keywords' => $keywords,
             'image_url' => $path,
-            'fallback' => $keywords === [],
+            'fallback' => $scored->isEmpty(),
+            'message' => $scored->isEmpty()
+                ? ($keywords === []
+                    ? 'La photo n\'a pas pu être rapprochée du catalogue. Aucun modèle identique n\'est affirmé.'
+                    : 'Nous n\'avons pas trouvé ce modèle exact dans le catalogue.')
+                : 'Produits proches d\'après les mots reconnus. Ce n\'est pas une preuve que le modèle est identique.',
+            'similarity_note' => 'Estimation d\'après les mots reconnus, pas une identification du modèle.',
         ]);
     }
 

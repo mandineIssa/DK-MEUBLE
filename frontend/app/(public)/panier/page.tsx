@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { cartApi, CartSummary } from "@/lib/cartApi";
 import { imageUrl } from "@/lib/api";
+import CartSuggestions from "@/components/CartSuggestions";
+import ProductLink from "@/components/ProductLink";
 
 export default function PanierPage() {
   const [cart, setCart] = useState<CartSummary | null>(null);
@@ -64,9 +66,9 @@ export default function PanierPage() {
                 </div>
                 <div className="min-w-0">
                   <div className="flex min-w-0 items-start justify-between gap-3">
-                    <Link href={`/produits/${item.slug}`} className="min-w-0 break-words font-bold leading-snug hover:text-brand-orange">
+                    <ProductLink href={`/produits/${item.slug}`} label={item.name} className="min-w-0 break-words font-bold leading-snug hover:text-brand-orange">
                       {item.name}
-                    </Link>
+                    </ProductLink>
                     <p className="shrink-0 text-right text-sm font-bold leading-tight">{money(item.subtotal)}</p>
                   </div>
                   <p className="mt-1 text-sm font-semibold text-brand-orange">{money(item.unit_price)}</p>
@@ -119,6 +121,7 @@ export default function PanierPage() {
           </>
         )}
       </div>
+      {cart.items.length > 0 ? <div className="mx-auto max-w-6xl px-4 pb-8 md:px-6"><CartSuggestions productIds={cart.items.map((item) => item.product_id)} /></div> : null}
       {cart.items.length > 0 ? (
         <div className="fixed inset-x-0 z-30 border-t bg-white px-4 py-3 shadow-[0_-6px_20px_rgba(0,0,0,0.06)] md:hidden bottom-[calc(3.75rem+env(safe-area-inset-bottom,0px)+var(--vv-bottom,0px))]">
           <div className="mx-auto flex min-w-0 max-w-lg items-center gap-3">

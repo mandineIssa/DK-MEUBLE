@@ -23,6 +23,8 @@ const STATIC_PATHS: Array<{
   { path: "/entreprises", changeFrequency: "monthly", priority: 0.7 },
   { path: "/recherche", changeFrequency: "weekly", priority: 0.6 },
   { path: "/assistant", changeFrequency: "monthly", priority: 0.6 },
+  { path: "/equipement", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/suivi", changeFrequency: "monthly", priority: 0.5 },
   { path: "/comparer", changeFrequency: "monthly", priority: 0.4 },
   { path: "/comment-commander", changeFrequency: "monthly", priority: 0.7 },
   { path: "/livraison", changeFrequency: "monthly", priority: 0.7 },

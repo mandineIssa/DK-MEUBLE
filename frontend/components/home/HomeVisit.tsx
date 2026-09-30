@@ -2,6 +2,7 @@ import Link from "next/link";
 import { api, imageUrl, type Category } from "@/lib/api";
 import { homepageBlocks } from "@/lib/homepageBlocks";
 import { formatSnPhone } from "@/lib/phone";
+import { normalizeMapsEmbedUrl } from "@/lib/site";
 import HomeProductCarousel from "@/components/home/HomeProductCarousel";
 
 function flatten(nodes: Category[]): Category[] {
@@ -35,15 +36,23 @@ function storeVideo(url: string): { kind: "file" | "iframe"; src: string } {
   return { kind: "file", src: raw };
 }
 
-export default async function HomeVisit() {
+export default async function HomeVisit({
+  excludeProductIds = [],
+  showReasons = true,
+}: {
+  excludeProductIds?: number[];
+  showReasons?: boolean;
+}) {
+  const excluded = new Set(excludeProductIds);
   const [settings, showrooms, services, categories, latest, furnitureHits] = await Promise.all([
     api.getSettings().catch(() => null),
     api.getShowrooms().catch(() => []),
     api.getServices().catch(() => null),
     api.getCategories().catch(() => null),
-    api.getProducts({ per_page: "8" }).catch(() => []),
+    api.getProducts({ per_page: "12" }).catch(() => []),
     api.getProducts({ search: "meuble", per_page: "4" }).catch(() => []),
   ]);
+  const freshLatest = latest.filter((product) => !excluded.has(product.id)).slice(0, 8);
 
   const contact = settings?.contact;
   const copy = homepageBlocks(settings);
@@ -53,8 +62,7 @@ export default async function HomeVisit() {
   const hours = contact?.hours || showroom?.opening_hours || "";
   const mapQuery = [address, showroom?.city].filter(Boolean).join(" ");
   const mapHref = mapQuery ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}` : "";
-  const embed = String(contact?.maps_embed || "").trim();
-  const embedSrc = embed.startsWith("http") ? embed : embed.match(/src="([^"]+)"/)?.[1] || "";
+  const embedSrc = normalizeMapsEmbedUrl(String(contact?.maps_embed || "")) || "";
 
   const allCategories = flatten(categories?.tree || []);
   const furniture = findByName(allCategories, /meuble|armoire|salon|chambre/i);
@@ -94,11 +102,11 @@ export default async function HomeVisit() {
         </section>
       ) : null}
 
-      {latest.length > 0 && copy.latestTitle ? (
-        <HomeProductCarousel title={copy.latestTitle} products={latest} bannerLink="/produits" />
+      {freshLatest.length > 0 && copy.latestTitle ? (
+        <HomeProductCarousel title={copy.latestTitle} products={freshLatest} bannerLink="/produits" />
       ) : null}
 
-      {copy.reasons.length > 0 ? (
+      {showReasons && copy.reasons.length > 0 ? (
         <section className="mx-auto max-w-7xl px-4 py-8 md:px-6">
           {copy.reasonsTitle ? (
             <h2 className="text-2xl font-extrabold text-brand-black md:text-3xl">{copy.reasonsTitle}</h2>

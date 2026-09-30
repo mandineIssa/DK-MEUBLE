@@ -35,6 +35,7 @@ type Props = {
   onUpload: (files: File[], meta: { role?: string; label?: string }) => Promise<void> | void;
   onUpdate?: (id: number, data: { role?: string | null; label?: string | null }) => Promise<void> | void;
   onDelete?: (id: number) => Promise<void> | void;
+  onEnhance?: (id: number) => Promise<void> | void;
   onReorder?: (orderedIds: number[]) => Promise<void> | void;
   title?: string;
   hint?: string;
@@ -46,6 +47,7 @@ export default function AdminMultiImageGallery({
   onUpload,
   onUpdate,
   onDelete,
+  onEnhance,
   onReorder,
   title = "Photos",
   hint = "Ajoute plusieurs photos (ex. devant, arrière, côté). La première sert de couverture.",
@@ -146,6 +148,23 @@ export default function AdminMultiImageGallery({
                         ↓
                       </button>
                     </>
+                  ) : null}
+                  {onEnhance ? (
+                    <button
+                      type="button"
+                      className="font-semibold text-brand-orange"
+                      disabled={busyId === img.id}
+                      onClick={async () => {
+                        setBusyId(img.id);
+                        try {
+                          await onEnhance(img.id);
+                        } finally {
+                          setBusyId(null);
+                        }
+                      }}
+                    >
+                      Retirer le fond
+                    </button>
                   ) : null}
                   {onDelete ? (
                     <button

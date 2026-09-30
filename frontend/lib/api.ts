@@ -145,6 +145,16 @@ export type Product = {
   showrooms?: Showroom[];
 };
 
+export type PublicReview = {
+  id: number;
+  author_name: string;
+  rating: number;
+  title?: string | null;
+  body: string;
+  product_name?: string | null;
+  product_slug?: string | null;
+};
+
 export type QuotePayload = {
   product_id?: number;
   name: string;
@@ -833,6 +843,9 @@ export const api = {
 
   getRealizations: () => request<Realization[]>("/api/realizations"),
 
+  getRecentReviews: () =>
+    request<{ reviews: PublicReview[] }>("/api/reviews/recent", { cache: "no-store" }),
+
   getPromotions: (params?: {
     category?: string;
     sort?: string;
@@ -867,6 +880,7 @@ export const api = {
       keywords: string[];
       image_url: string;
       fallback: boolean;
+      message?: string;
     }>;
   },
 

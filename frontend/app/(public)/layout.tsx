@@ -4,6 +4,7 @@ import CallButton from "@/components/CallButton";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import AiAssistant from "@/components/AiAssistant";
 import PromoPopupLoader from "@/components/PromoPopup";
 import VisualViewportPin from "@/components/VisualViewportPin";
 import VisitTracker from "@/components/VisitTracker";
@@ -43,6 +44,7 @@ export default async function PublicLayout({ children }: { children: React.React
           <BottomNav />
           <PromoPopupLoader />
           <WhatsAppButton />
+          <AiAssistant />
           <CallButton />
         </ProductInquiryProvider>
         </CompareProvider>

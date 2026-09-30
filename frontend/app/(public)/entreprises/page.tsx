@@ -35,6 +35,23 @@ export default function EntreprisesPage() {
             ))}
           </ul>
           <p className="mt-6 text-sm text-[#5c6570]">
+            Choisissez un secteur pour construire une liste à partir du catalogue, puis générez une estimation PDF.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {[
+              ["hotel", "Hôtel"],
+              ["restaurant", "Restaurant"],
+              ["ecole", "École"],
+              ["entreprise", "Entreprise"],
+              ["administration", "Administration"],
+              ["commerce", "Commerce"],
+            ].map(([slug, label]) => (
+              <Link key={slug} href={`/equipement?mode=secteur&secteur=${slug}`} className="rounded-full bg-white px-4 py-2 text-sm font-bold text-brand-black">
+                {label}
+              </Link>
+            ))}
+          </div>
+          <p className="mt-6 text-sm text-[#5c6570]">
             Le devis reprend le formulaire déjà utilisé sur la boutique. Aucun tarif n’est affiché ici tant qu’il n’est pas confirmé sur une fiche produit.
           </p>
           <Link href="/contact" className="mt-4 inline-flex text-sm font-bold text-brand-orange">

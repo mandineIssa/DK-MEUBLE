@@ -1,13 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api, imageUrl, type Product } from "@/lib/api";
+import { aiApi } from "@/lib/ai";
+import ProductLink from "@/components/ProductLink";
 import { useCompare } from "@/components/CompareProvider";
 
 export default function ComparerPage() {
   const { items, remove, clear } = useCompare();
   const [products, setProducts] = useState<Product[]>([]);
+  const [analysis, setAnalysis] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,9 +65,9 @@ export default function ComparerPage() {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={imageUrl(p.images[0].path)} alt="" className="mb-2 h-24 w-24 rounded-lg object-cover" />
                       ) : null}
-                      <Link href={`/produits/${p.slug}`} className="font-bold text-brand-black hover:text-brand-orange">
+                      <ProductLink href={`/produits/${p.slug}`} label={p.name} className="font-bold text-brand-black hover:text-brand-orange">
                         {p.name}
-                      </Link>
+                      </ProductLink>
                       <button type="button" className="mt-2 block text-xs text-brand-black/50" onClick={() => remove(p.id)}>
                         Retirer
                       </button>
@@ -89,6 +92,22 @@ export default function ComparerPage() {
           <button type="button" onClick={clear} className="mt-4 text-sm font-semibold text-brand-black/60">
             Vider la comparaison
           </button>
+          {products.length >= 2 ? (
+            <div className="mt-4">
+              <button
+                type="button"
+                disabled={analyzing}
+                onClick={() => {
+                  setAnalyzing(true);
+                  aiApi.compare(products.map((product) => product.slug)).then((result) => setAnalysis(result.analysis)).catch(() => setAnalysis("Analyse indisponible.")).finally(() => setAnalyzing(false));
+                }}
+                className="rounded-full bg-brand-black px-4 py-2 text-sm font-bold text-white"
+              >
+                {analyzing ? "Analyse…" : "Analyser avec l'assistant"}
+              </button>
+              {analysis ? <p className="mt-3 whitespace-pre-line text-sm text-brand-black/80">{analysis}</p> : null}
+            </div>
+          ) : null}
         </>
       )}
     </div>

@@ -51,6 +51,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/customer/push-subscriptions',
             'api/customer/product-chats',
             'api/customer/product-chats/*',
+            'api/ai/*',
         ]);
 
         $middleware->alias([

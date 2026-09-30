@@ -13,6 +13,7 @@ type Stored = {
   keywords: string[];
   image_url: string;
   fallback: boolean;
+  message?: string;
 };
 
 export default function VisualSearchResults() {
@@ -53,9 +54,10 @@ export default function VisualSearchResults() {
         <div className="min-w-0 flex-1">
           <p className="font-bold text-brand-black">Recherche par image</p>
           <p className="mt-1 text-sm text-brand-black/60">
-            {data.keywords?.length
-              ? `Mots-clés détectés : ${data.keywords.slice(0, 6).join(", ")}`
-              : "Produits suggérés à partir de votre photo."}
+            {data.message
+              || (data.keywords?.length
+                ? `Mots reconnus : ${data.keywords.slice(0, 6).join(", ")}. Ce n'est pas une identification du modèle.`
+                : "Aucun modèle identique n'est affirmé.")}
           </p>
         </div>
         <Link

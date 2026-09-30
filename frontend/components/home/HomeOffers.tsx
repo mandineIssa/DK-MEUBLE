@@ -1,16 +1,17 @@
 import Link from "next/link";
-import { api, imageUrl } from "@/lib/api";
+import { imageUrl, type Promotion, type SiteSettings } from "@/lib/api";
 import { homepageBlocks } from "@/lib/homepageBlocks";
 import PromoCountdown from "@/components/PromoCountdown";
 import ProductLink from "@/components/ProductLink";
 
-export default async function HomeOffers() {
-  const [result, settings] = await Promise.all([
-    api.getPromotions({ per_page: "4", sort: "ending" }).catch(() => null),
-    api.getSettings().catch(() => null),
-  ]);
+export default function HomeOffers({
+  promos = [],
+  settings = null,
+}: {
+  promos?: Promotion[];
+  settings?: SiteSettings | null;
+}) {
   const copy = homepageBlocks(settings);
-  const promos = result?.data || [];
   if (!promos.length) return null;
 
   const soonest = promos

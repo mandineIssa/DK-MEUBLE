@@ -15,7 +15,7 @@ export default function HomeSearchBar() {
   function onSubmit(e: FormEvent) {
     e.preventDefault();
     const term = q.trim();
-    router.push(term ? `/produits?search=${encodeURIComponent(term)}` : "/produits");
+    router.push(term ? `/recherche?q=${encodeURIComponent(term)}` : "/produits");
   }
 
   async function onImagePicked(file: File | undefined) {
@@ -39,6 +39,7 @@ export default function HomeSearchBar() {
           keywords: result.keywords,
           image_url: result.image_url ? imageUrl(result.image_url) : preview,
           fallback: result.fallback,
+          message: result.message,
         })
       );
       router.push("/produits?visual=1");
@@ -77,6 +78,32 @@ export default function HomeSearchBar() {
             className="min-w-0 flex-1 bg-transparent py-2 text-sm text-brand-black outline-none placeholder:text-brand-black/40"
             aria-label="Rechercher un produit"
           />
+          <button
+            type="button"
+            aria-label="Recherche vocale"
+            onClick={() => {
+              type Recognition = { lang: string; start: () => void; onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null };
+              const Ctor = (window as unknown as { SpeechRecognition?: new () => Recognition; webkitSpeechRecognition?: new () => Recognition }).SpeechRecognition
+                || (window as unknown as { webkitSpeechRecognition?: new () => Recognition }).webkitSpeechRecognition;
+              if (!Ctor) {
+                setError("La reconnaissance vocale n'est pas disponible sur ce navigateur. Saisissez votre recherche.");
+                return;
+              }
+              const recognition = new Ctor();
+              recognition.lang = "fr-FR";
+              recognition.onresult = (event) => {
+                const transcript = event.results?.[0]?.[0]?.transcript || "";
+                if (transcript) router.push(`/recherche?q=${encodeURIComponent(transcript)}`);
+              };
+              recognition.start();
+            }}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-black/10 text-brand-black"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+              <rect x="9" y="3" width="6" height="11" rx="3" />
+              <path d="M6 11a6 6 0 0 0 12 0M12 17v4" />
+            </svg>
+          </button>
           <input
             ref={fileRef}
             type="file"

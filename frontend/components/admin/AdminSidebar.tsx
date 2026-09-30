@@ -19,6 +19,16 @@ const links = [
     ),
   },
   {
+    href: "/admin/intelligence",
+    label: "Intelligence",
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+        <circle cx="12" cy="12" r="4" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/produits",
     label: "Produits",
     icon: (
