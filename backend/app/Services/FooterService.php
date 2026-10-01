@@ -328,15 +328,24 @@ class FooterService
         return ['seeded' => true, 'columns' => count($defs)];
     }
 
+    protected function withoutLocalhost(string $url): string
+    {
+        if (preg_match('#^https?://(?:localhost|127\.0\.0\.1)(?::\d+)?(/storage/.+)$#i', $url, $match) === 1) {
+            return $match[1];
+        }
+
+        return $url;
+    }
+
     protected function publicUrl(?string $path): ?string
     {
         if (! $path) {
             return null;
         }
         if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-            return $path;
+            return $this->withoutLocalhost($path);
         }
 
-        return Storage::disk('public')->url($path);
+        return $this->withoutLocalhost(Storage::disk('public')->url($path));
     }
 }

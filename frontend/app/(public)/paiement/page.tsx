@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo";
-import { api } from "@/lib/api";
+import { api, imageUrl } from "@/lib/api";
 import { getSite, waLink } from "@/lib/site";
 import ReturnsFaq from "@/components/returns/ReturnsFaq";
 
@@ -157,7 +157,7 @@ export default async function PaiementPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     key={p.id}
-                    src={p.logo_url}
+                    src={imageUrl(p.logo_url)}
                     alt={p.name}
                     className="h-8 w-auto object-contain"
                   />

@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { CSSProperties, FormEvent, useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { api, imageUrl } from "@/lib/api";
 import { formatSnPhone } from "@/lib/phone";
 import SiteBrand from "@/components/SiteBrand";
 
@@ -438,15 +437,12 @@ export default function Footer() {
                 <div className="flex flex-wrap items-center gap-4">
                   {payments.map((p) =>
                     p.logo_url ? (
-                      <div key={p.id} className="relative h-8 w-14">
-                        <Image
-                          src={p.logo_url}
-                          alt={p.name}
-                          fill
-                          className="object-contain"
-                          sizes="56px"
-                        />
-                      </div>
+                      <img
+                        key={p.id}
+                        src={imageUrl(p.logo_url)}
+                        alt={p.name}
+                        className="h-8 w-auto max-w-[4.5rem] object-contain"
+                      />
                     ) : (
                       <span key={p.id} className="text-xs" style={{ color: "var(--footer-text-muted)" }}>
                         {p.name}

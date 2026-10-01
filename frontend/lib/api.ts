@@ -906,8 +906,10 @@ export const api = {
 };
 
 export function imageUrl(path: string | null | undefined) {
-  const raw = String(path || "").trim();
+  let raw = String(path || "").trim();
   if (!raw) return "";
+  const local = raw.match(/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(\/.*)$/i);
+  if (local) raw = local[1];
   if (/^https?:\/\//i.test(raw)) return raw;
   if (raw.startsWith("//")) return `https:${raw}`;
   if (raw.startsWith("/storage/")) return `${API_URL}${raw}`;
