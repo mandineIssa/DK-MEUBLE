@@ -674,6 +674,26 @@ export const adminApi = {
     adminRequest(`/api/admin/promotions/${id}`, { method: "DELETE" }),
   getPromotionSettings: () =>
     adminRequest<PromoSettings>("/api/admin/promotions/settings"),
+  uploadPromotionBanner: async (file: File) => {
+    const body = new FormData();
+    body.append("image", file);
+    const res = await fetch(`${API_URL}/api/admin/promotions/banner`, {
+      method: "POST",
+      credentials: "omit",
+      headers: authHeaders(),
+      body,
+    });
+    if (res.status === 401) {
+      redirectToLogin();
+      throw new Error("Session expirée, veuillez vous reconnecter.");
+    }
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const first = data.errors?.image?.[0];
+      throw new Error(first || data.message || "Échec de l'envoi de l'image.");
+    }
+    return res.json() as Promise<{ path: string; url: string; settings: PromoSettings }>;
+  },
   updatePromotionSettings: (data: Partial<PromoSettings>) =>
     adminRequest<PromoSettings>("/api/admin/promotions/settings", {
       method: "PUT",

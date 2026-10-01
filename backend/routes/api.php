@@ -259,6 +259,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
     Route::get('/promotions/settings', [AdminPromotionController::class, 'settings']);
     Route::put('/promotions/settings', [AdminPromotionController::class, 'updateSettings']);
+    Route::post('/promotions/banner', [AdminPromotionController::class, 'uploadBanner']);
     Route::get('/promotions', [AdminPromotionController::class, 'index']);
     Route::post('/promotions', [AdminPromotionController::class, 'store']);
     Route::put('/promotions/{promotion}', [AdminPromotionController::class, 'update']);

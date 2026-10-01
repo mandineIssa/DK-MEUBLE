@@ -8,6 +8,8 @@ use App\Models\Promotion;
 use App\Services\PromotionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class PromotionController extends Controller
 {
@@ -117,7 +119,33 @@ class PromotionController extends Controller
             'show_countdown' => ['sometimes', 'boolean'],
         ]);
 
+        if (array_key_exists('banner_image', $data)) {
+            $image = trim((string) $data['banner_image'], " \t\n\r\0\x0B\"'");
+            if ($image !== '' && (str_contains($image, '\\') || preg_match('/^[a-zA-Z]:/', $image) === 1)) {
+                throw ValidationException::withMessages([
+                    'banner_image' => 'Utilisez le bouton « Ajouter l’image ». Un chemin de votre ordinateur ne s’affiche pas sur le site.',
+                ]);
+            }
+            $data['banner_image'] = $image;
+        }
+
         return response()->json($service->updateSettings($data));
+    }
+
+    public function uploadBanner(Request $request, PromotionService $service): JsonResponse
+    {
+        $request->validate([
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ]);
+
+        $path = $request->file('image')->store('promotions', 'public');
+        $settings = $service->updateSettings(['banner_image' => $path]);
+
+        return response()->json([
+            'path' => $path,
+            'url' => Storage::disk('public')->url($path),
+            'settings' => $settings,
+        ]);
     }
 
     public function audits(Promotion $promotion): JsonResponse

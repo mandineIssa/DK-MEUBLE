@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { adminApi, PromoSettings } from "@/lib/adminApi";
+import { imageUrl } from "@/lib/api";
 
 export default function AdminPromoSettingsPage() {
   const [form, setForm] = useState<PromoSettings | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     adminApi
@@ -31,6 +33,22 @@ export default function AdminPromoSettingsPage() {
       setError(err instanceof Error ? err.message : "Échec");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function onBannerFile(file: File | undefined) {
+    if (!file) return;
+    setUploading(true);
+    setError("");
+    setMessage("");
+    try {
+      const result = await adminApi.uploadPromotionBanner(file);
+      setForm(result.settings);
+      setMessage("Image envoyée sur le serveur. Elle apparaît sur la page Promotions.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de l'envoi de l'image.");
+    } finally {
+      setUploading(false);
     }
   }
 
@@ -182,7 +200,6 @@ export default function AdminPromoSettingsPage() {
               ["banner_subtitle", "Sous-titre"],
               ["banner_button_label", "Texte du bouton"],
               ["banner_button_href", "Lien du bouton"],
-              ["banner_image", "Image produit du bandeau (URL ou chemin storage)"],
             ] as const
           ).map(([key, label]) => (
             <label key={key} className="block text-sm">
@@ -194,6 +211,34 @@ export default function AdminPromoSettingsPage() {
               />
             </label>
           ))}
+
+          <div className="rounded-xl border border-brand-black/10 p-4">
+            <p className="text-sm text-brand-black/60">Image du bandeau</p>
+            <p className="mt-1 text-xs text-brand-black/50">
+              Choisissez le fichier. Il est enregistré sur le serveur. Un chemin du type C:\Users\… ne peut pas s’afficher.
+            </p>
+            {form.banner_image ? (
+              <img
+                src={imageUrl(form.banner_image)}
+                alt="Aperçu du bandeau"
+                className="mt-3 h-36 max-w-full rounded-lg bg-[#f6f6f6] object-contain"
+              />
+            ) : null}
+            <label className="mt-3 inline-flex cursor-pointer rounded-full bg-brand-orange px-4 py-2 text-sm font-semibold text-white">
+              {uploading ? "Envoi…" : "Ajouter l’image"}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                disabled={uploading}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  onBannerFile(file);
+                }}
+              />
+            </label>
+          </div>
 
           <label className="block text-sm">
             <span className="text-brand-black/60">Texte légal (bas de page publique)</span>
