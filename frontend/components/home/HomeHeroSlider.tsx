@@ -13,7 +13,6 @@ type HeroCopy = {
   secondaryLabel: string;
   secondaryHref: string;
   categoriesLabel: string;
-  intervalMs: number;
 };
 
 type Frame = {
@@ -29,7 +28,6 @@ function text(value: unknown) {
 }
 
 function heroCopyFromMeta(meta?: Record<string, unknown> | null): HeroCopy {
-  const seconds = Number(meta?.interval_seconds);
   return {
     headline: text(meta?.headline),
     subhead: text(meta?.subhead),
@@ -38,7 +36,6 @@ function heroCopyFromMeta(meta?: Record<string, unknown> | null): HeroCopy {
     secondaryLabel: text(meta?.secondary_label),
     secondaryHref: text(meta?.secondary_href),
     categoriesLabel: text(meta?.categories_label),
-    intervalMs: Number.isFinite(seconds) && seconds >= 2 ? seconds * 1000 : 5000,
   };
 }
 
@@ -76,12 +73,6 @@ export default function HomeHeroSlider({
   useEffect(() => {
     setIndex(0);
   }, [frames.length]);
-
-  useEffect(() => {
-    if (frames.length < 2) return;
-    const id = window.setInterval(() => setIndex((i) => (i + 1) % frames.length), copy.intervalMs);
-    return () => window.clearInterval(id);
-  }, [frames.length, copy.intervalMs]);
 
   const frame = frames[index] || frames[0];
   const headline = copy.headline;

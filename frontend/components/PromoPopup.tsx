@@ -16,7 +16,6 @@ export type PromoSlide = {
 
 const STORAGE_KEY = "dk_promo_popup_closed";
 const APPEAR_DELAY_MS = 3000;
-const SLIDE_INTERVAL_MS = 4000;
 
 function money(value: number) {
   return `${value.toLocaleString("fr-FR")} FCFA`;
@@ -58,22 +57,18 @@ function fromProduct(product: Product): PromoSlide | null {
 }
 
 type PromoPopupProps = {
-  /** Offres à faire défiler. Vide = le popup ne s’affiche pas. */
+  /** Offres affichées. Vide = le popup ne s’affiche pas. */
   products: PromoSlide[];
   /** Délai avant l’apparition, en millisecondes. */
   delayMs?: number;
-  /** Durée de chaque slide, en millisecondes. */
-  intervalMs?: number;
 };
 
 export function PromoPopup({
   products,
   delayMs = APPEAR_DELAY_MS,
-  intervalMs = SLIDE_INTERVAL_MS,
 }: PromoPopupProps) {
   const [visible, setVisible] = useState(false);
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -86,14 +81,6 @@ export function PromoPopup({
     const timer = window.setTimeout(() => setVisible(true), delayMs);
     return () => window.clearTimeout(timer);
   }, [products.length, delayMs]);
-
-  useEffect(() => {
-    if (!visible || paused || products.length < 2) return;
-    const timer = window.setInterval(() => {
-      setIndex((current) => (current + 1) % products.length);
-    }, intervalMs);
-    return () => window.clearInterval(timer);
-  }, [visible, paused, products.length, intervalMs, index]);
 
   const close = useCallback((event: MouseEvent) => {
     event.preventDefault();
@@ -117,8 +104,6 @@ export function PromoPopup({
       role="dialog"
       aria-label="Promotions en cours"
       className="fixed left-3 z-[45] w-[min(22rem,calc(100%-1.5rem))] overflow-hidden rounded-xl bg-white shadow-[0_12px_40px_rgba(0,0,0,0.22)] bottom-[calc(16rem+env(safe-area-inset-bottom,0px)+var(--vv-bottom,0px))] md:bottom-6 md:left-6"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
     >
       <div className="flex items-center gap-2 bg-brand-orange px-3 py-2 pr-10 text-white">
         <span aria-hidden className="text-base leading-none">
