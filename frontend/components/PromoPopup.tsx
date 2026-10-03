@@ -16,6 +16,7 @@ export type PromoSlide = {
 
 const STORAGE_KEY = "dk_promo_popup_closed";
 const APPEAR_DELAY_MS = 3000;
+const SLIDE_INTERVAL_MS = 4000;
 
 function money(value: number) {
   return `${value.toLocaleString("fr-FR")} FCFA`;
@@ -96,6 +97,14 @@ export function PromoPopup({
   const goTo = useCallback((next: number) => {
     setIndex(next);
   }, []);
+
+  useEffect(() => {
+    if (!visible || products.length < 2) return;
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % products.length);
+    }, SLIDE_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [visible, products.length]);
 
   if (!visible || products.length === 0) return null;
 
