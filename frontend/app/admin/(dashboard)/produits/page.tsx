@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, FormEvent, ChangeEvent } from "react";
+import { useCallback, useEffect, useState, FormEvent, ChangeEvent } from "react";
 import Image from "next/image";
 import { adminApi, AdminProduct } from "@/lib/adminApi";
 import { api, Category, imageUrl } from "@/lib/api";
@@ -42,16 +42,23 @@ export default function AdminProductsPage() {
   const [importBusy, setImportBusy] = useState(false);
   const [importMsg, setImportMsg] = useState("");
   const [importErrors, setImportErrors] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const perPage = 20;
 
-  async function load() {
+  const load = useCallback(async (targetPage = 1) => {
     setLoading(true);
     try {
-      const [prods, catsRes, brandsList] = await Promise.all([
-        adminApi.getProducts({ per_page: 100 }),
+      const [result, catsRes, brandsList] = await Promise.all([
+        adminApi.getProductsPage({ per_page: perPage, page: targetPage }),
         adminApi.getCategories().catch(() => null),
         adminApi.getBrands().catch(() => []),
       ]);
-      setProducts(prods);
+      setProducts(result.data);
+      setLastPage(result.last_page);
+      setTotal(result.total);
+      const prods = result.data;
       setBrands(brandsList);
       const flat =
         catsRes?.flat ||
@@ -77,11 +84,11 @@ export default function AdminProductsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
-    load();
-  }, []);
+    load(page);
+  }, [load, page]);
 
   function openCreate() {
     setEditing(null);
@@ -108,7 +115,7 @@ export default function AdminProductsPage() {
   }
 
   async function refreshEditing(productId: number) {
-    const list = await load();
+    const list = await load(page);
     const fresh = list.find((x) => x.id === productId) || null;
     if (fresh) setEditing(fresh);
   }
@@ -153,7 +160,7 @@ export default function AdminProductsPage() {
         await adminApi.updateProduct(editing.id, payload);
         setShowForm(false);
         setEditing(null);
-        await load();
+        await load(page);
       } else {
         const created = await adminApi.createProduct(payload);
         if (pendingFiles.length > 0) {
@@ -162,7 +169,8 @@ export default function AdminProductsPage() {
         }
         setShowForm(false);
         setEditing(null);
-        await load();
+        if (page === 1) await load(1);
+        else setPage(1);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de l'enregistrement.");
@@ -178,7 +186,8 @@ export default function AdminProductsPage() {
       setShowForm(false);
       setEditing(null);
     }
-    load();
+    if (products.length === 1 && page > 1) setPage(page - 1);
+    else await load(page);
   }
 
   async function handleImageChange(productId: number, e: ChangeEvent<HTMLInputElement>) {
@@ -188,7 +197,7 @@ export default function AdminProductsPage() {
     setError("");
     try {
       await adminApi.uploadProductImage(productId, file);
-      await load();
+      await load(page);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec de l'upload.");
     } finally {
@@ -269,7 +278,8 @@ export default function AdminProductsPage() {
                   const res = await adminApi.importProductsCsv(file);
                   setImportMsg(res.message);
                   setImportErrors(res.errors || []);
-                  await load();
+                  if (page === 1) await load(1);
+                  else setPage(1);
                 } catch (err) {
                   setError(err instanceof Error ? err.message : "Échec import");
                 } finally {
@@ -304,7 +314,7 @@ export default function AdminProductsPage() {
         <form
           key={editing?.id || "new"}
           onSubmit={handleSubmit}
-          className="mt-6 grid max-w-2xl gap-4 rounded-2xl bg-white p-6 shadow-sm"
+          className="mt-6 flex max-w-3xl flex-col gap-4 rounded-2xl bg-white p-6 shadow-sm"
         >
           <h2 className="font-bold text-brand-black">
             {editing ? "Modifier le produit" : "Nouveau produit"}
@@ -552,7 +562,7 @@ export default function AdminProductsPage() {
           <button
             type="submit"
             disabled={saving || galleryUploading}
-            className="w-fit rounded-full bg-brand-black px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60"
+            className="inline-flex h-11 w-fit shrink-0 items-center justify-center self-start rounded-full bg-brand-black px-5 text-sm font-bold text-white disabled:opacity-60"
           >
             {saving ? "Enregistrement…" : "Enregistrer"}
           </button>
@@ -560,9 +570,20 @@ export default function AdminProductsPage() {
       )}
 
       <div className="mt-6 overflow-x-auto rounded-2xl bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/5 px-4 py-3">
+          <p className="text-sm font-semibold text-brand-black">
+            {total} produit{total > 1 ? "s" : ""}
+          </p>
+          {lastPage > 1 ? (
+            <p className="text-sm text-brand-black/60">
+              Page {page} sur {lastPage}
+            </p>
+          ) : null}
+        </div>
         <table className="w-full text-left text-sm">
           <thead className="bg-brand-black text-white">
             <tr>
+              <th className="px-4 py-3 font-semibold">N°</th>
               <th className="px-4 py-3 font-semibold">Photo</th>
               <th className="px-4 py-3 font-semibold">Nom</th>
               <th className="px-4 py-3 font-semibold">Prix</th>
@@ -573,22 +594,24 @@ export default function AdminProductsPage() {
           <tbody>
             {loading && (
               <tr>
-                <td className="px-4 py-6 text-brand-black/50" colSpan={5}>
+                <td className="px-4 py-6 text-brand-black/50" colSpan={6}>
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading && products.length === 0 && (
               <tr>
-                <td className="px-4 py-6 text-brand-black/50" colSpan={5}>
+                <td className="px-4 py-6 text-brand-black/50" colSpan={6}>
                   Aucun produit pour le moment.
                 </td>
               </tr>
             )}
-            {products.map((p) => {
+            {products.map((p, index) => {
               const cover = p.images?.[0];
+              const number = (page - 1) * perPage + index + 1;
               return (
                 <tr key={p.id} className="border-t border-black/5">
+                  <td className="px-4 py-3 font-semibold text-brand-black/50">{number}</td>
                   <td className="px-4 py-3">
                     <div className="relative h-14 w-14 overflow-hidden rounded-lg bg-[#eee]">
                       {cover ? (
@@ -653,6 +676,46 @@ export default function AdminProductsPage() {
             })}
           </tbody>
         </table>
+        {lastPage > 1 ? (
+          <nav className="flex flex-wrap items-center justify-center gap-2 border-t border-black/5 px-4 py-4" aria-label="Pages des produits">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              className="rounded-full border border-brand-black/15 px-3 py-1.5 text-sm font-semibold disabled:opacity-40"
+            >
+              Précédent
+            </button>
+            {Array.from({ length: lastPage }, (_, i) => i + 1)
+              .filter((n) => n === 1 || n === lastPage || Math.abs(n - page) <= 2)
+              .map((n, i, list) => {
+                const prev = list[i - 1];
+                return (
+                  <span key={n} className="flex items-center gap-2">
+                    {prev && n - prev > 1 ? <span className="px-1 text-brand-black/40">…</span> : null}
+                    <button
+                      type="button"
+                      onClick={() => setPage(n)}
+                      aria-current={n === page ? "page" : undefined}
+                      className={`inline-flex h-9 min-w-9 items-center justify-center rounded-full px-2 text-sm font-bold ${
+                        n === page ? "bg-brand-orange text-white" : "bg-brand-black/5 text-brand-black"
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  </span>
+                );
+              })}
+            <button
+              type="button"
+              disabled={page >= lastPage}
+              onClick={() => setPage((current) => Math.min(lastPage, current + 1))}
+              className="rounded-full border border-brand-black/15 px-3 py-1.5 text-sm font-semibold disabled:opacity-40"
+            >
+              Suivant
+            </button>
+          </nav>
+        ) : null}
       </div>
     </div>
   );

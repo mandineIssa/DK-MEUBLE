@@ -34,13 +34,6 @@ Voir **[MISE_EN_LIGNE.md](./MISE_EN_LIGNE.md)** (contacts, DNS, HTTPS, tests, s�
 - SMS : driver `log` en local (code dans `storage/logs/laravel.log`) ; `twilio` en prod
 - OAuth Google/Facebook : configurer les clés dans `.env` (Socialite)
 
-```bash
-# Backend + frontend déjà démarrés
-./scripts/smoke-test.sh
-# Windows :
-powershell -ExecutionPolicy Bypass -File scripts/smoke-test.ps1
-```
-
 ### Frontend
 
 ```bash

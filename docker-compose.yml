@@ -68,6 +68,11 @@ services:
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@dkhometech.sn}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-password}
       - FILESYSTEM_DISK=public
+      - SMS_DRIVER=${SMS_DRIVER:-log}
+      - ORANGE_SMS_CLIENT_ID=${ORANGE_SMS_CLIENT_ID:-}
+      - ORANGE_SMS_CLIENT_SECRET=${ORANGE_SMS_CLIENT_SECRET:-}
+      - ORANGE_SMS_SENDER=${ORANGE_SMS_SENDER:-2210000}
+      - ORANGE_SMS_SENDER_NAME=${ORANGE_SMS_SENDER_NAME:-}
     expose:
       - "8080"
     volumes:

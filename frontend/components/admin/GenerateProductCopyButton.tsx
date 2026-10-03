@@ -40,7 +40,7 @@ export default function GenerateProductCopyButton() {
   }
 
   return (
-    <div className="md:col-span-2">
+    <div>
       <button
         type="button"
         disabled={busy}

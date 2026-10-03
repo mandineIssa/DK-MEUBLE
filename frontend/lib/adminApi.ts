@@ -222,6 +222,40 @@ export const adminApi = {
     );
     return Array.isArray(res) ? res : res.data || [];
   },
+
+  getProductsPage: async (params?: { per_page?: number; q?: string; page?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.per_page) qs.set("per_page", String(params.per_page));
+    if (params?.q) qs.set("q", params.q);
+    if (params?.page) qs.set("page", String(params.page));
+    const q = qs.toString();
+    const res = await adminRequest<
+      AdminProduct[] | {
+        data: AdminProduct[];
+        current_page?: number;
+        last_page?: number;
+        per_page?: number;
+        total?: number;
+      }
+    >(`/api/admin/products${q ? `?${q}` : ""}`);
+    if (Array.isArray(res)) {
+      return {
+        data: res,
+        current_page: 1,
+        last_page: 1,
+        per_page: res.length,
+        total: res.length,
+      };
+    }
+    const data = res.data || [];
+    return {
+      data,
+      current_page: res.current_page || 1,
+      last_page: res.last_page || 1,
+      per_page: res.per_page || data.length,
+      total: res.total ?? data.length,
+    };
+  },
   getDashboardStats: () =>
     adminRequest<{
       products: number;

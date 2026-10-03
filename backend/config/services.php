@@ -55,7 +55,16 @@ return [
     ],
 
     'sms' => [
-        'driver' => env('SMS_DRIVER', 'log'), // log | twilio
+        'driver' => env('SMS_DRIVER', 'log'), // log | orange | twilio
+    ],
+
+    'orange_sms' => [
+        'client_id' => env('ORANGE_SMS_CLIENT_ID'),
+        'client_secret' => env('ORANGE_SMS_CLIENT_SECRET'),
+        'sender' => env('ORANGE_SMS_SENDER', '2210000'),
+        'sender_name' => env('ORANGE_SMS_SENDER_NAME'),
+        'token_url' => env('ORANGE_SMS_TOKEN_URL', 'https://api.orange.com/oauth/v3/token'),
+        'base_url' => env('ORANGE_SMS_BASE_URL', 'https://api.orange.com/smsmessaging/v1'),
     ],
 
 ];
