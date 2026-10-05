@@ -12,6 +12,7 @@ const SECTIONS: Array<{ href: string; title: string; hint: string }> = [
   { href: "/admin/marques", title: "Marques", hint: "Marques des fiches produit" },
   { href: "/admin/showrooms", title: "Magasins", hint: "Points de retrait et visite" },
   { href: "/admin/commandes/reglages", title: "Commandes", hint: "Règles du tunnel d’achat" },
+  { href: "/admin/paniers", title: "Paniers", hint: "Articles ajoutés avant commande" },
   { href: "/admin/commandes", title: "Commandes", hint: "Achats à préparer et livrer" },
   { href: "/admin/livraison", title: "Livraison", hint: "Frais et délais par zone" },
   { href: "/admin/realisations", title: "Réalisations", hint: "Photos de chantiers" },

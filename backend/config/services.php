@@ -55,7 +55,13 @@ return [
     ],
 
     'sms' => [
-        'driver' => env('SMS_DRIVER', 'log'), // log | orange | twilio
+        'driver' => env('SMS_DRIVER', 'log'), // log | infobip | orange | twilio
+    ],
+
+    'infobip' => [
+        'base_url' => env('INFOBIP_BASE_URL'),
+        'api_key' => env('INFOBIP_API_KEY'),
+        'sender' => env('INFOBIP_SENDER'),
     ],
 
     'orange_sms' => [

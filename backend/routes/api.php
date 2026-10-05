@@ -54,6 +54,7 @@ use App\Http\Controllers\Api\NavigationController;
 use App\Http\Controllers\Api\Admin\NavigationController as AdminNavigationController;
 use App\Http\Controllers\Api\Admin\NotificationAdminController;
 use App\Http\Controllers\Api\Admin\ProductChatAdminController;
+use App\Http\Controllers\Api\Admin\CartAdminController;
 use App\Http\Controllers\Api\Admin\WishlistAdminController;
 use App\Http\Controllers\Api\FooterController;
 use App\Http\Controllers\Api\Admin\FooterAdminController as AdminFooterController;
@@ -237,6 +238,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::patch('/customers/{customer}', [AdminCustomerController::class, 'update']);
     Route::delete('/customers/{customer}', [AdminCustomerController::class, 'destroy']);
     Route::get('/wishlists', [WishlistAdminController::class, 'index']);
+    Route::get('/carts', [CartAdminController::class, 'index']);
 
     Route::apiResource('companies', AdminCompanyController::class);
     Route::post('/companies/{company}/customers', [AdminCompanyController::class, 'attachCustomer']);

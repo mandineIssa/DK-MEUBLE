@@ -48,6 +48,27 @@ export type AdminCustomer = {
   }>;
 };
 
+export type AdminCart = {
+  id: number;
+  status: "active" | "waiting";
+  updated_at: string | null;
+  created_at: string | null;
+  items_count: number;
+  quantity: number;
+  subtotal: number;
+  customer: { id: number; name: string | null; phone: string | null; email: string | null } | null;
+  items: Array<{
+    product_id: number;
+    name: string;
+    slug: string | null;
+    quantity: number;
+    unit_price: number;
+    line_total: number;
+    image: string | null;
+    available: boolean;
+  }>;
+};
+
 export type AdminProduct = {
   id: number;
   category_id: number;
@@ -262,6 +283,7 @@ export const adminApi = {
       products_published: number;
       quotes_new: number;
       messages_new: number;
+      open_carts?: number;
     }>("/api/admin/dashboard/stats"),
   createProduct: (data: Partial<AdminProduct>) =>
     adminRequest<AdminProduct>("/api/admin/products", {
@@ -410,6 +432,22 @@ export const adminApi = {
   getCustomers: (search?: string) => {
     const qs = search ? `?search=${encodeURIComponent(search)}` : "";
     return adminRequest<AdminCustomer[]>(`/api/admin/customers${qs}`);
+  },
+  getCarts: (params?: { search?: string; status?: "all" | "active" | "waiting"; page?: number; per_page?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.search) qs.set("search", params.search);
+    if (params?.status && params.status !== "all") qs.set("status", params.status);
+    if (params?.page) qs.set("page", String(params.page));
+    if (params?.per_page) qs.set("per_page", String(params.per_page));
+    const q = qs.toString();
+    return adminRequest<{
+      data: AdminCart[];
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+      summary: { carts: number; active: number; waiting: number; items: number; value: number };
+    }>(`/api/admin/carts${q ? `?${q}` : ""}`);
   },
   getWishlists: (search?: string) => {
     const qs = new URLSearchParams();

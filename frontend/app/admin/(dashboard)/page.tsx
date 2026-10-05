@@ -5,7 +5,7 @@ import Link from "next/link";
 import { adminApi, type VisitsStats } from "@/lib/adminApi";
 
 export default function AdminDashboardPage() {
-  const [stats, setStats] = useState({ products: 0, quotes: 0, messages: 0, visits: 0 });
+  const [stats, setStats] = useState({ products: 0, quotes: 0, messages: 0, visits: 0, carts: 0 });
   const [visits, setVisits] = useState<VisitsStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -16,6 +16,7 @@ export default function AdminDashboardPage() {
         products_published: 0,
         quotes_new: 0,
         messages_new: 0,
+        open_carts: 0,
       })),
       adminApi.getVisitsStats("12m").catch(() => null),
     ]).then(([dash, visitStats]) => {
@@ -25,6 +26,7 @@ export default function AdminDashboardPage() {
         quotes: dash.quotes_new,
         messages: dash.messages_new,
         visits: visitStats?.summary.this_month ?? visitStats?.summary.pageviews ?? 0,
+        carts: dash.open_carts ?? 0,
       });
       setLoading(false);
     });
@@ -50,6 +52,7 @@ export default function AdminDashboardPage() {
     { label: "Devis en attente", value: stats.quotes, href: "/admin/devis", hint: "Demandes pas encore traitées" },
     { label: "Messages non lus", value: stats.messages, href: "/admin/messages", hint: "Écrits depuis la page Contact" },
     { label: "Visites ce mois", value: stats.visits, href: "/admin/visites", hint: "Pages vues depuis le 1er du mois" },
+    { label: "Paniers en cours", value: stats.carts, href: "/admin/paniers", hint: "Visiteurs qui ont ajouté un produit" },
   ];
 
   return (

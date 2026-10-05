@@ -109,6 +109,17 @@ const links = [
     ),
   },
   {
+    href: "/admin/paniers",
+    label: "Paniers",
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <circle cx="9" cy="20" r="1" />
+        <circle cx="17" cy="20" r="1" />
+        <path d="M3 4h2l2.2 11h11.3l2-7H7" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/commandes",
     label: "Commandes",
     icon: (

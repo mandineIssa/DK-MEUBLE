@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { CSSProperties, FormEvent, useEffect, useState } from "react";
 import { api, imageUrl } from "@/lib/api";
-import { formatSnPhone } from "@/lib/phone";
+import { formatSnPhones } from "@/lib/phone";
 import SiteBrand from "@/components/SiteBrand";
 
 type FooterPayload = Awaited<ReturnType<typeof api.getFooter>>;
@@ -114,10 +114,7 @@ export default function Footer() {
   const payments = data?.payments || [];
   const brands = data?.brands || [];
   const colCount = Math.min(5, Math.max(3, s?.columns_count || 4));
-  const phones = String(s?.company_phones || "")
-    .split(/[,;|\n]/)
-    .map((p) => p.trim())
-    .filter(Boolean);
+  const phones = formatSnPhones(String(s?.company_phones || ""));
 
   const style = themeStyle(s?.theme);
 
@@ -389,21 +386,18 @@ export default function Footer() {
                 ) : null}
                 {phones.length > 0 ? (
                   <li>
-                    <span style={{ color: "var(--footer-text-muted)" }}>Téléphone : </span>
-                    {phones.map((p, i) => {
-                      const formatted = formatSnPhone(p);
-                      return (
-                        <span key={p}>
-                          {i > 0 ? ", " : ""}
-                          <a
-                            href={`tel:${formatted.tel}`}
-                            className="hover:text-[var(--footer-link-hover)]"
-                          >
-                            {formatted.display}
-                          </a>
-                        </span>
-                      );
-                    })}
+                    <span style={{ color: "var(--footer-text-muted)" }}>Téléphone</span>
+                    <span className="mt-1 flex flex-col gap-0.5">
+                      {phones.map((formatted) => (
+                        <a
+                          key={formatted.tel}
+                          href={`tel:${formatted.tel}`}
+                          className="block hover:text-[var(--footer-link-hover)]"
+                        >
+                          {formatted.display}
+                        </a>
+                      ))}
+                    </span>
                   </li>
                 ) : null}
               </ul>

@@ -31,8 +31,15 @@ Voir **[MISE_EN_LIGNE.md](./MISE_EN_LIGNE.md)** (contacts, DNS, HTTPS, tests, s�
 ## Compte client (V2)
 
 - Connexion OTP : `/compte/connexion` → `/compte/verification` → `/compte`
-- SMS : driver `log` en local (code dans `storage/logs/laravel.log`) ; `twilio` en prod
+- SMS : driver `log` en local (code dans `storage/logs/laravel.log`) ; `infobip` en prod (`INFOBIP_BASE_URL`, `INFOBIP_API_KEY`, `INFOBIP_SENDER`)
 - OAuth Google/Facebook : configurer les clés dans `.env` (Socialite)
+
+```bash
+# Backend + frontend déjà démarrés
+./scripts/smoke-test.sh
+# Windows :
+powershell -ExecutionPolicy Bypass -File scripts/smoke-test.ps1
+```
 
 ### Frontend
 

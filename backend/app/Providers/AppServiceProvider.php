@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Sms\InfobipSmsSender;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\OrangeSmsSender;
 use App\Services\Sms\SmsSender;
@@ -15,6 +16,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SmsSender::class, function () {
             return match (config('services.sms.driver', 'log')) {
                 'orange' => new OrangeSmsSender(),
+                'infobip' => new InfobipSmsSender(),
                 'twilio' => new TwilioSmsSender(),
                 default => new LogSmsSender(),
             };

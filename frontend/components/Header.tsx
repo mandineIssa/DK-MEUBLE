@@ -11,7 +11,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import SiteBrand from "@/components/SiteBrand";
 import { useCartCount } from "@/components/CartProvider";
 import CategoryMegaMenu from "@/components/CategoryMegaMenu";
-import { formatSnPhone } from "@/lib/phone";
+import { formatSnPhones } from "@/lib/phone";
 import NotificationBell from "@/components/NotificationBell";
 import ProductLink from "@/components/ProductLink";
 import { useProductInquiry } from "@/components/ProductInquiry";
@@ -142,7 +142,9 @@ export default function Header() {
   );
   const primaryHrefs = new Set(PRIMARY_NAV.map((l) => l.href));
   const extraLinks = navLinks.filter((l) => !primaryHrefs.has(l.href) && l.href !== "/categories");
-  const phones = site.phones?.length ? site.phones : site.phoneDisplay ? [site.phoneDisplay] : [];
+  const phones = formatSnPhones(
+    site.phones?.length ? site.phones.join("\n") : site.phoneDisplay || site.phoneTel || ""
+  ).slice(0, 2);
 
   function onSearch(e: FormEvent) {
     e.preventDefault();
@@ -409,22 +411,19 @@ export default function Header() {
           </nav>
 
           <div
-            className="shrink-0 py-2 text-right text-[11px] font-semibold leading-tight xl:text-xs"
+            className="min-w-max shrink-0 py-2 pl-2 text-right text-[11px] font-semibold leading-tight xl:text-xs"
             style={{ color: "var(--text-secondary)" }}
           >
             {phones.length ? (
-              phones.slice(0, 2).map((phone) => {
-                const formatted = formatSnPhone(phone);
-                return (
-                  <a
-                    key={phone}
-                    href={`tel:${formatted.tel}`}
-                    className="block hover:text-[var(--accent-primary)]"
-                  >
-                    {formatted.display}
-                  </a>
-                );
-              })
+              phones.map((phone) => (
+                <a
+                  key={phone.tel}
+                  href={`tel:${phone.tel}`}
+                  className="block whitespace-nowrap hover:text-[var(--accent-primary)]"
+                >
+                  {phone.display}
+                </a>
+              ))
             ) : (
               <span className="opacity-50">Tél. à configurer</span>
             )}
@@ -477,12 +476,12 @@ export default function Header() {
               </Link>
               {phones.map((phone) => (
                 <a
-                  key={phone}
-                  href={`tel:${phone.replace(/\s/g, "")}`}
-                  className="block rounded-lg px-3 py-3 text-sm font-semibold"
+                  key={phone.tel}
+                  href={`tel:${phone.tel}`}
+                  className="block whitespace-nowrap rounded-lg px-3 py-3 text-sm font-semibold"
                   style={{ color: "var(--accent-primary)" }}
                 >
-                  {phone}
+                  {phone.display}
                 </a>
               ))}
             </nav>

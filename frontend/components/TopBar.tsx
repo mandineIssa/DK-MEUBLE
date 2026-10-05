@@ -1,32 +1,28 @@
 "use client";
 
 import { useSite } from "@/components/SiteProvider";
-import { formatSnPhone } from "@/lib/phone";
+import { formatSnPhones } from "@/lib/phone";
 
 export default function TopBar() {
   const site = useSite();
   if (!site.topbarEnabled) return null;
 
   const items = [site.topbarText1, site.topbarText2].filter(Boolean);
-  const raw = site.topbarPhone || site.phones?.[0] || site.phoneDisplay || site.phoneTel || "";
-  const phone = site.topbarShowPhone && raw ? formatSnPhone(raw) : null;
-  if (!items.length && !phone?.display) return null;
+  const raw = site.topbarPhone || site.phones.join("\n") || site.phoneDisplay || site.phoneTel || "";
+  const bannerPhones = site.topbarShowPhone ? formatSnPhones(raw) : [];
+  if (!items.length && bannerPhones.length === 0) return null;
 
   const parts = [
     ...items.map((text) => ({ key: text, node: <span>{text}</span> })),
-    ...(phone?.display
-      ? [
-          {
-            key: "phone",
-            node: (
-              <a href={`tel:${phone.tel}`} className="text-brand-orange hover:underline">
-                {site.topbarPhoneLabel ? `${site.topbarPhoneLabel} : ` : ""}
-                {phone.display}
-              </a>
-            ),
-          },
-        ]
-      : []),
+    ...bannerPhones.map((phone, index) => ({
+      key: phone.tel,
+      node: (
+        <a href={`tel:${phone.tel}`} className="whitespace-nowrap text-brand-orange hover:underline">
+          {index === 0 && site.topbarPhoneLabel ? `${site.topbarPhoneLabel} : ` : ""}
+          {phone.display}
+        </a>
+      ),
+    })),
   ];
 
   return (

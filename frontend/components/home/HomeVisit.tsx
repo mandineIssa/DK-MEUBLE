@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { api, imageUrl, type Category } from "@/lib/api";
 import { homepageBlocks } from "@/lib/homepageBlocks";
-import { formatSnPhone } from "@/lib/phone";
+import { formatSnPhones } from "@/lib/phone";
 import { normalizeMapsEmbedUrl } from "@/lib/site";
 import HomeProductCarousel from "@/components/home/HomeProductCarousel";
 
@@ -56,7 +56,7 @@ export default async function HomeVisit({
 
   const contact = settings?.contact;
   const copy = homepageBlocks(settings);
-  const phone = formatSnPhone(contact?.phone_display || contact?.phone_tel || "");
+  const phones = formatSnPhones(contact?.phones || contact?.phone_display || contact?.phone_tel || "");
   const showroom = showrooms[0];
   const address = contact?.address || showroom?.address || "";
   const hours = contact?.hours || showroom?.opening_hours || "";
@@ -181,12 +181,16 @@ export default async function HomeVisit({
           <ul className="mt-3 space-y-2 text-sm text-brand-black/80">
             {address ? <li>Adresse : {address}{showroom?.city ? `, ${showroom.city}` : ""}</li> : null}
             {hours ? <li>Horaires : {hours}</li> : null}
-            {phone.display ? (
+            {phones.length > 0 ? (
               <li>
-                Téléphone :{" "}
-                <a href={`tel:${phone.tel}`} className="font-bold text-brand-orange">
-                  {phone.display}
-                </a>
+                <span>Téléphone</span>
+                <span className="mt-0.5 flex flex-col">
+                  {phones.map((phone) => (
+                    <a key={phone.tel} href={`tel:${phone.tel}`} className="font-bold text-brand-orange">
+                      {phone.display}
+                    </a>
+                  ))}
+                </span>
               </li>
             ) : null}
             {contact?.email ? <li>E-mail : {contact.email}</li> : null}

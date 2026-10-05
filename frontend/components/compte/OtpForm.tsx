@@ -1,9 +1,10 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { customerApi } from "@/lib/customerApi";
+import OtpDigits from "@/components/compte/OtpDigits";
 
 type Channel = "phone" | "email";
 
@@ -17,7 +18,6 @@ export default function OtpForm() {
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(60);
   const [debugCode, setDebugCode] = useState("");
-  const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     const ch = (sessionStorage.getItem("dk_otp_channel") || "phone") as Channel;
@@ -44,20 +44,6 @@ export default function OtpForm() {
     const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
     return () => clearTimeout(t);
   }, [cooldown]);
-
-  function setDigit(index: number, value: string) {
-    const v = value.replace(/\D/g, "").slice(-1);
-    const next = [...digits];
-    next[index] = v;
-    setDigits(next);
-    if (v && index < 5) inputs.current[index + 1]?.focus();
-  }
-
-  function onKeyDown(index: number, key: string) {
-    if (key === "Backspace" && !digits[index] && index > 0) {
-      inputs.current[index - 1]?.focus();
-    }
-  }
 
   function clearSession() {
     sessionStorage.removeItem("dk_otp_phone");
@@ -94,14 +80,18 @@ export default function OtpForm() {
     if (cooldown > 0) return;
     setError("");
     try {
-      if (channel === "email") {
-        await customerApi.requestOtp({ email });
+      const res = channel === "email"
+        ? await customerApi.requestOtp({ email })
+        : await customerApi.requestOtp({ phone });
+      if (res.debug_code) {
+        sessionStorage.setItem("dk_otp_debug", res.debug_code);
+        setDebugCode(res.debug_code);
       } else {
-        await customerApi.requestOtp({ phone });
+        sessionStorage.removeItem("dk_otp_debug");
+        setDebugCode("");
       }
       setCooldown(60);
       setDigits(["", "", "", "", "", ""]);
-      inputs.current[0]?.focus();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec du renvoi.");
     }
@@ -124,22 +114,8 @@ export default function OtpForm() {
           </p>
         </div>
 
-        <div className="flex justify-between gap-2">
-          {digits.map((d, i) => (
-            <input
-              key={i}
-              ref={(el) => {
-                inputs.current[i] = el;
-              }}
-              value={d}
-              onChange={(e) => setDigit(i, e.target.value)}
-              onKeyDown={(e) => onKeyDown(i, e.key)}
-              inputMode="numeric"
-              maxLength={1}
-              className="h-12 w-10 rounded-xl border border-brand-black/15 text-center text-lg font-bold outline-none focus:border-brand-orange sm:h-14 sm:w-12"
-            />
-          ))}
-        </div>
+        <OtpDigits digits={digits} onChange={setDigits} />
+        <p className="text-center text-xs text-brand-black/45">Copiez le code reçu, puis collez-le ici.</p>
 
         {debugCode ? (
           <p className="rounded-xl bg-[#f7f7f7] px-3 py-2 text-xs text-brand-black/70">

@@ -4,11 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSite, useWaLink } from "@/components/SiteProvider";
 import { productWhatsAppMessage } from "@/lib/whatsappMessage";
-
-function telHref(num: string) {
-  const digits = num.replace(/\D/g, "");
-  return digits ? `tel:${digits}` : "#";
-}
+import { formatSnPhones } from "@/lib/phone";
 
 type Props = {
   productId: number;
@@ -36,7 +32,7 @@ export default function ProductContactActions({
   const wa = useWaLink(productWhatsAppMessage({ name: productName, sku, price, slug }, origin));
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const phones = site.phones ?? [];
+  const phones = formatSnPhones((site.phones ?? []).join("\n") || site.phoneDisplay || "");
 
   useEffect(() => {
     if (!open) return;
@@ -61,13 +57,13 @@ export default function ProductContactActions({
           {open && (
             <div className="absolute bottom-[calc(100%+10px)] left-1/2 z-30 min-w-[9.5rem] -translate-x-1/2 rounded-lg bg-white px-3 py-2.5 text-center shadow-lg ring-1 ring-black/10">
               <ul className="space-y-1.5">
-                {phones.map((num) => (
-                  <li key={num}>
+                {phones.map((phone) => (
+                  <li key={phone.tel}>
                     <a
-                      href={telHref(num)}
-                      className="block text-sm font-semibold text-[#c45c26] hover:underline"
+                      href={`tel:${phone.tel}`}
+                      className="block whitespace-nowrap text-sm font-semibold text-[#c45c26] hover:underline"
                     >
-                      {num.replace(/\s/g, "")}
+                      {phone.display}
                     </a>
                   </li>
                 ))}

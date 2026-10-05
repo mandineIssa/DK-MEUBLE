@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { customerApi } from "@/lib/customerApi";
+import OtpDigits from "@/components/compte/OtpDigits";
 
 const countries = [
   { code: "221", label: "SN +221" },
@@ -30,7 +31,6 @@ export default function AuthRequiredModal({
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     if (!open) {
@@ -88,14 +88,6 @@ export default function AuthRequiredModal({
     } finally {
       setLoading(false);
     }
-  }
-
-  function setDigit(index: number, value: string) {
-    const v = value.replace(/\D/g, "").slice(-1);
-    const next = [...digits];
-    next[index] = v;
-    setDigits(next);
-    if (v && index < 5) inputs.current[index + 1]?.focus();
   }
 
   return (
@@ -177,22 +169,7 @@ export default function AuthRequiredModal({
             <p className="text-sm text-brand-black/60">
               Code envoyé au <span className="font-semibold">+{phone}</span>
             </p>
-            <div className="flex justify-between gap-2">
-              {digits.map((d, i) => (
-                <input
-                  key={i}
-                  ref={(el) => {
-                    inputs.current[i] = el;
-                  }}
-                  value={d}
-                  onChange={(e) => setDigit(i, e.target.value)}
-                  inputMode="numeric"
-                  maxLength={1}
-                  className="h-11 w-10 rounded-lg border border-brand-black/15 text-center text-lg font-bold outline-none focus:border-brand-orange"
-                  aria-label={`Chiffre ${i + 1}`}
-                />
-              ))}
-            </div>
+            <OtpDigits digits={digits} onChange={setDigits} />
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
             <button
               type="submit"

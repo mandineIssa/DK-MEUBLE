@@ -69,6 +69,7 @@ class CartService
                 'quantity' => max(1, $qty),
             ]);
         }
+        $cart->touch();
 
         return $cart->fresh()->load(['items.product.images', 'items.product.brand', 'items.product.promotions']);
     }
@@ -81,6 +82,7 @@ class CartService
         } else {
             $item->update(['quantity' => $qty]);
         }
+        $cart->touch();
 
         return $cart->fresh()->load(['items.product.images', 'items.product.brand', 'items.product.promotions']);
     }
@@ -88,6 +90,7 @@ class CartService
     public function removeItem(Cart $cart, int $productId): Cart
     {
         $cart->items()->where('product_id', $productId)->delete();
+        $cart->touch();
 
         return $cart->fresh()->load(['items.product.images', 'items.product.brand', 'items.product.promotions']);
     }

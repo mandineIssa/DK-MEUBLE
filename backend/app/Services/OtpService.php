@@ -23,7 +23,7 @@ class OtpService
                 "DK HOMETECH : votre code est {$plain}. Valable 5 minutes."
             );
         } catch (\Throwable $e) {
-            if (! app()->environment('local')) {
+            if (! app()->environment('local') || config('services.sms.driver') !== 'log') {
                 throw $e;
             }
             report($e);
@@ -42,20 +42,12 @@ class OtpService
 
         // En log/array : pas d’envoi réel (le code est renvoyé en debug par le contrôleur).
         if (! in_array($mailer, ['log', 'array'], true)) {
-            try {
-                Mail::raw(
-                    "Bonjour,\n\nVotre code de connexion {$fromName} est : {$plain}\n\nValable 5 minutes.\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.",
-                    function ($message) use ($email, $fromName) {
-                        $message->to($email)->subject("{$fromName} — code de connexion");
-                    }
-                );
-            } catch (\Throwable $e) {
-                if (! app()->environment('local')) {
-                    throw $e;
+            Mail::raw(
+                "Bonjour,\n\nVotre code de connexion {$fromName} est : {$plain}\n\nValable 5 minutes.\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.",
+                function ($message) use ($email, $fromName) {
+                    $message->to($email)->subject("{$fromName} — code de connexion");
                 }
-                // Local + SMTP mal configuré : on laisse quand même tester via debug_code.
-                report($e);
-            }
+            );
         }
 
         return $plain;

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use App\Models\ContactMessage;
 use App\Models\Product;
 use App\Models\Quote;
@@ -17,6 +18,7 @@ class DashboardController extends Controller
             'products_published' => Product::query()->where('status', 'published')->count(),
             'quotes_new' => Quote::query()->where('status', 'new')->count(),
             'messages_new' => ContactMessage::query()->where('status', 'new')->count(),
+            'open_carts' => Cart::query()->whereHas('items')->count(),
         ]);
     }
 }

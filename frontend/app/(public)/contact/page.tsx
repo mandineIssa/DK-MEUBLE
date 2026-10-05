@@ -4,6 +4,7 @@ import { buildPageMetadata } from "@/lib/seo";
 import ContactForm from "@/components/ContactForm";
 import { api } from "@/lib/api";
 import { getSite, socialsFromSite, waLink } from "@/lib/site";
+import { formatSnPhones } from "@/lib/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -38,14 +39,6 @@ function formatHours(raw: string): string {
   return t;
 }
 
-function formatPhoneDisplay(raw: string): string {
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length === 9) {
-    return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 7)} ${digits.slice(7)}`;
-  }
-  return raw.trim();
-}
-
 export default async function ContactPage() {
   const [site, page] = await Promise.all([
     getSite(),
@@ -72,10 +65,12 @@ export default async function ContactPage() {
     "Bonjour, je souhaite vous contacter depuis le site DK HOMETECH.",
     site.whatsapp
   );
-  const phoneHref = site.phoneTel ? `tel:${site.phoneTel}` : null;
+  const phones = formatSnPhones(
+    site.phones.length ? site.phones.join("\n") : site.phoneDisplay || site.phoneTel || ""
+  );
+  const phoneHref = phones[0] ? `tel:${phones[0].tel}` : null;
   const addressDisplay = formatAddress(site.address);
   const hoursDisplay = formatHours(site.hours);
-  const phoneDisplay = formatPhoneDisplay(site.phoneDisplay || site.phoneTel || "");
   const mapsSearchHref = site.address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.address)}`
     : null;
@@ -169,7 +164,13 @@ export default async function ContactPage() {
                   </svg>
                   <span className="text-lg font-extrabold leading-tight">Appeler</span>
                   <span className="text-sm text-white/90">
-                    {phoneDisplay || "Nous joindre par téléphone"}
+                    {phones.length
+                      ? phones.map((phone) => (
+                          <span key={phone.tel} className="block whitespace-nowrap">
+                            {phone.display}
+                          </span>
+                        ))
+                      : "Nous joindre par téléphone"}
                   </span>
                 </a>
               ) : (
@@ -291,14 +292,19 @@ export default async function ContactPage() {
                     <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
                       Téléphone
                     </p>
-                    {phoneHref ? (
-                      <a
-                        href={phoneHref}
-                        className="mt-0.5 block font-semibold hover:underline"
-                        style={{ color: "var(--text-primary)" }}
-                      >
-                        {phoneDisplay}
-                      </a>
+                    {phones.length ? (
+                      <span className="mt-0.5 flex flex-col">
+                        {phones.map((phone) => (
+                          <a
+                            key={phone.tel}
+                            href={`tel:${phone.tel}`}
+                            className="block whitespace-nowrap font-semibold hover:underline"
+                            style={{ color: "var(--text-primary)" }}
+                          >
+                            {phone.display}
+                          </a>
+                        ))}
+                      </span>
                     ) : (
                       <p className="mt-0.5 font-semibold" style={{ color: "var(--text-secondary)" }}>
                         À renseigner

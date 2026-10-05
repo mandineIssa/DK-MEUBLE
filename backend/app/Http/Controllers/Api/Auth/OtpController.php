@@ -48,7 +48,7 @@ class OtpController extends Controller
             'email' => $email,
         ];
 
-        if (app()->environment('local') && config('app.debug')) {
+        if (app()->environment('local') && config('app.debug') && in_array(config('mail.default'), ['log', 'array'], true)) {
             $payload['debug_code'] = $plain;
         }
 
@@ -66,7 +66,7 @@ class OtpController extends Controller
             'phone' => $phone,
         ];
 
-        if (app()->environment('local') && config('app.debug')) {
+        if (app()->environment('local') && config('app.debug') && config('services.sms.driver') === 'log') {
             $payload['debug_code'] = $plain;
         }
 
