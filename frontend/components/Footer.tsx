@@ -385,14 +385,16 @@ export default function Footer() {
                   </li>
                 ) : null}
                 {phones.length > 0 ? (
-                  <li>
-                    <span style={{ color: "var(--footer-text-muted)" }}>Téléphone</span>
-                    <span className="mt-1 flex flex-col gap-0.5">
+                  <li className="flex items-start gap-1">
+                    <span className="shrink-0" style={{ color: "var(--footer-text-muted)" }}>
+                      Téléphone :
+                    </span>
+                    <span className="flex flex-col">
                       {phones.map((formatted) => (
                         <a
                           key={formatted.tel}
                           href={`tel:${formatted.tel}`}
-                          className="block hover:text-[var(--footer-link-hover)]"
+                          className="block whitespace-nowrap hover:text-[var(--footer-link-hover)]"
                         >
                           {formatted.display}
                         </a>
