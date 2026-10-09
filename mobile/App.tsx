@@ -1,0 +1,82 @@
+import { Ionicons } from "@expo/vector-icons";
+import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import AccountScreen from "./src/screens/AccountScreen";
+import { ContactScreen, OrdersScreen, TrackScreen, WishlistScreen } from "./src/screens/AccountExtraScreens";
+import CartScreen from "./src/screens/CartScreen";
+import { CatalogScreen, CategoryScreen } from "./src/screens/CatalogScreen";
+import CategoriesScreen from "./src/screens/CategoriesScreen";
+import CheckoutScreen from "./src/screens/CheckoutScreen";
+import HomeScreen from "./src/screens/HomeScreen";
+import ProductScreen from "./src/screens/ProductScreen";
+import SearchScreen, { MenuScreen } from "./src/screens/SearchScreen";
+import { AppState, useCart } from "./src/store";
+import { colors } from "./src/theme";
+import type { RootParamList } from "./src/ui";
+
+const Stack = createNativeStackNavigator<RootParamList>();
+const Tab = createBottomTabNavigator();
+
+function Tabs() {
+  const { cart } = useCart();
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: colors.red,
+        tabBarInactiveTintColor: "#8A8F98",
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
+        tabBarStyle: { height: 64, paddingBottom: 8, paddingTop: 6, borderTopColor: colors.line },
+        tabBarIcon: ({ color, size }) => {
+          const icon =
+            route.name === "Accueil"
+              ? "home"
+              : route.name === "Catégories"
+                ? "grid"
+                : route.name === "Panier"
+                  ? "cart"
+                  : "person";
+          return <Ionicons name={icon} size={size} color={color} />;
+        },
+      })}
+    >
+      <Tab.Screen name="Accueil" component={HomeScreen} />
+      <Tab.Screen name="Catégories" component={CategoriesScreen} />
+      <Tab.Screen name="Panier" component={CartScreen} options={{ tabBarBadge: cart.items_count > 0 ? cart.items_count : undefined }} />
+      <Tab.Screen name="Compte" component={AccountScreen} />
+    </Tab.Navigator>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <AppState>
+        <NavigationContainer
+          theme={{
+            ...DefaultTheme,
+            colors: { ...DefaultTheme.colors, background: colors.bg, primary: colors.navy },
+          }}
+        >
+          <StatusBar style="dark" />
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Tabs" component={Tabs} />
+            <Stack.Screen name="Product" component={ProductScreen} />
+            <Stack.Screen name="Category" component={CategoryScreen} />
+            <Stack.Screen name="Catalog" component={CatalogScreen} />
+            <Stack.Screen name="Search" component={SearchScreen} />
+            <Stack.Screen name="Checkout" component={CheckoutScreen} />
+            <Stack.Screen name="Menu" component={MenuScreen} />
+            <Stack.Screen name="Wishlist" component={WishlistScreen} />
+            <Stack.Screen name="Orders" component={OrdersScreen} />
+            <Stack.Screen name="Track" component={TrackScreen} />
+            <Stack.Screen name="Contact" component={ContactScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </AppState>
+    </SafeAreaProvider>
+  );
+}
