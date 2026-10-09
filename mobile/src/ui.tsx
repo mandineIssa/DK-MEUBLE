@@ -44,14 +44,7 @@ export function AppHeader({ onSearch }: { onSearch?: () => void }) {
   return (
     <View style={[styles.header, { paddingTop: insets.top + 6 }]}>
       <View style={styles.brandRow}>
-        <View style={styles.mark}>
-          <Ionicons name="home" size={16} color={colors.white} />
-          <Text style={styles.markText}>DK</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.brand}>DK HOMETECH</Text>
-          <Text style={styles.tag}>Meubles & Électroménager à Dakar</Text>
-        </View>
+        <Image source={require("../assets/logo.png")} style={styles.logo} resizeMode="contain" accessibilityLabel="DK HOMETECH" />
         <Pressable onPress={onSearch || (() => nav.navigate("Search"))} hitSlop={8}>
           <Ionicons name="search" size={22} color={colors.navy} />
         </Pressable>
@@ -234,17 +227,7 @@ const styles = StyleSheet.create({
   empty: { textAlign: "center", color: colors.muted, marginTop: 24, paddingHorizontal: 24 },
   header: { backgroundColor: colors.white, paddingHorizontal: 12, paddingBottom: 8 },
   brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  mark: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: colors.navy,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  markText: { color: colors.white, fontSize: 10, fontWeight: "800", marginTop: -2 },
-  brand: { color: colors.red, fontWeight: "900", fontSize: 16, letterSpacing: 0.2 },
-  tag: { color: colors.navy, fontSize: 10, marginTop: -1 },
+  logo: { height: 44, flex: 1 },
   iconBtn: { position: "relative" },
   badge: {
     position: "absolute",
