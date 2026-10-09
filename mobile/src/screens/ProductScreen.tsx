@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRoute, type RouteProp } from "@react-navigation/native";
 import { api, imageUrl, type Product, type Review } from "../api";
-import { AppHeader, PrimaryButton, ScreenLoader, type RootParamList } from "../ui";
+import { AppHeader, PrimaryButton, ScreenLoader, useAppNav, type RootParamList } from "../ui";
 import { useCart } from "../store";
 import { colors, formatFcfa } from "../theme";
 
 export default function ProductScreen() {
   const route = useRoute<RouteProp<RootParamList, "Product">>();
+  const nav = useAppNav();
   const { add } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<{ average: number; count: number; reviews: Review[] } | null>(null);
@@ -47,7 +48,11 @@ export default function ProductScreen() {
         <View style={styles.gallery}>{cover ? <Image source={{ uri: cover }} style={styles.image} /> : null}</View>
         {product.badge_label ? <Text style={styles.badge}>{product.badge_label}</Text> : null}
         <Text style={styles.name}>{product.name}</Text>
-        {product.brand?.name ? <Text style={styles.meta}>{product.brand.name}</Text> : null}
+        {product.brand?.name ? (
+          <Text style={styles.link} onPress={() => nav.navigate("Brand", { slug: product.brand!.slug, title: product.brand!.name })}>
+            {product.brand.name}
+          </Text>
+        ) : null}
         {reviews && reviews.count > 0 ? (
           <Text style={styles.meta}>
             {"★".repeat(Math.round(reviews.average))} {reviews.average.toFixed(1)} ({reviews.count})
@@ -89,6 +94,39 @@ export default function ProductScreen() {
           }}
         />
         {msg ? <Text style={styles.msg}>{msg}</Text> : null}
+        <Pressable onPress={() => nav.navigate("Quote", { productId: product.id })}>
+          <Text style={styles.link}>Demander un devis</Text>
+        </Pressable>
+        <View style={styles.links}>
+          <Text style={styles.link} onPress={() => nav.navigate("Info", { key: "delivery", title: "Livraison" })}>
+            Livraison
+          </Text>
+          <Text style={styles.link} onPress={() => nav.navigate("Services")}>
+            Services
+          </Text>
+          <Text style={styles.link} onPress={() => nav.navigate("Info", { key: "payment", title: "Paiement" })}>
+            Paiement
+          </Text>
+          <Text style={styles.link} onPress={() => nav.navigate("Info", { key: "returns", title: "Retours" })}>
+            Retours
+          </Text>
+        </View>
+        <Pressable
+          onPress={() => {
+            api
+              .settings()
+              .then((raw) => {
+                const contact = (raw.contact || {}) as { whatsapp?: string };
+                const num = String(contact.whatsapp || "").replace(/\D/g, "");
+                if (!num) return;
+                const text = encodeURIComponent(`Bonjour, je souhaite des informations sur ${product.name}.`);
+                Linking.openURL(`https://wa.me/${num}?text=${text}`);
+              })
+              .catch(() => undefined);
+          }}
+        >
+          <Text style={styles.link}>Écrire sur WhatsApp</Text>
+        </Pressable>
         {reviews?.reviews?.length ? (
           <View>
             <Text style={styles.blockTitle}>Avis</Text>
@@ -114,6 +152,8 @@ const styles = StyleSheet.create({
   badge: { alignSelf: "flex-start", marginTop: 10, backgroundColor: colors.red, color: colors.white, fontWeight: "800", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, overflow: "hidden" },
   name: { fontSize: 22, fontWeight: "800", color: colors.text, marginTop: 8 },
   meta: { color: colors.muted, marginTop: 4 },
+  link: { color: colors.red, fontWeight: "700", marginTop: 10, marginRight: 14 },
+  links: { flexDirection: "row", flexWrap: "wrap" },
   price: { color: colors.price, fontSize: 22, fontWeight: "900", marginTop: 8 },
   compare: { color: colors.muted, textDecorationLine: "line-through" },
   desc: { marginTop: 12, color: colors.text, lineHeight: 20 },

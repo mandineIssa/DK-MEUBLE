@@ -124,7 +124,7 @@ export function TrackScreen() {
               });
           }}
         />
-        {error ? <Text style={{ color: colors.red, marginTop: 10 }}>{error}</Text> : null}
+        {error ? <Text style={{ color: colors.danger, marginTop: 10 }}>{error}</Text> : null}
         {order ? (
           <View style={{ marginTop: 16, backgroundColor: colors.white, borderRadius: 10, padding: 12 }}>
             <Text style={{ fontWeight: "800" }}>{String(order.reference || "")}</Text>

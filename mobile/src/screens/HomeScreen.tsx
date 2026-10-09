@@ -130,7 +130,7 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: { margin: 12, borderRadius: 14, minHeight: 180, overflow: "hidden", backgroundColor: "#16325C", padding: 16, justifyContent: "flex-end" },
+  hero: { margin: 12, borderRadius: 14, minHeight: 180, overflow: "hidden", backgroundColor: colors.black, padding: 16, justifyContent: "flex-end" },
   heroShade: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(8,30,74,0.45)" },
   heroTitle: { color: colors.white, fontSize: 26, fontWeight: "900" },
   heroSub: { color: colors.white, marginTop: 4, marginBottom: 12 },

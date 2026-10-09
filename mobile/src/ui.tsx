@@ -11,7 +11,7 @@ export type RootParamList = {
   Tabs: { screen?: "Accueil" | "Catégories" | "Panier" | "Compte" } | undefined;
   Product: { slug: string };
   Category: { slug: string; title: string };
-  Catalog: { mode: "promo" | "new"; title: string };
+  Catalog: { mode: "promo" | "new" | "all" | "clearance" | "refurbished"; title: string };
   Search: { q?: string } | undefined;
   Checkout: undefined;
   Menu: undefined;
@@ -19,6 +19,14 @@ export type RootParamList = {
   Orders: undefined;
   Track: undefined;
   Contact: undefined;
+  Brands: undefined;
+  Brand: { slug: string; title: string };
+  Services: undefined;
+  Service: { slug: string; title: string };
+  Showrooms: undefined;
+  Realizations: undefined;
+  Quote: { productId?: number } | undefined;
+  Info: { key: string; title: string };
 };
 
 export function useAppNav() {
@@ -113,7 +121,7 @@ export function SubNav({ active }: { active: "home" | "cats" | "promo" | "new" }
               if (item.key === "new") nav.navigate("Catalog", { mode: "new", title: "Nouveautés" });
             }}
           >
-            <Ionicons name={item.icon} size={16} color={on ? colors.red : colors.white} />
+            <Ionicons name={item.icon} size={16} color={on ? colors.red : colors.text} />
             <Text style={[styles.subLabel, on && styles.subOn]}>{item.label}</Text>
             {on ? <View style={styles.subLine} /> : null}
           </Pressable>
@@ -256,9 +264,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   searchInput: { flex: 1, color: colors.text, fontSize: 14 },
-  sub: { flexDirection: "row", backgroundColor: colors.navy, paddingVertical: 8 },
+  sub: {
+    flexDirection: "row",
+    backgroundColor: colors.white,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+  },
   subItem: { flex: 1, alignItems: "center", gap: 2 },
-  subLabel: { color: colors.white, fontSize: 11, fontWeight: "600" },
+  subLabel: { color: colors.text, fontSize: 11, fontWeight: "600" },
   subOn: { color: colors.red, fontWeight: "800" },
   subLine: { height: 3, width: 28, backgroundColor: colors.red, borderRadius: 2, marginTop: 2 },
   sectionHead: {
@@ -310,7 +324,7 @@ const styles = StyleSheet.create({
   compare: { color: colors.muted, textDecorationLine: "line-through", fontSize: 12 },
   addBtn: {
     marginTop: 8,
-    backgroundColor: colors.navy,
+    backgroundColor: colors.red,
     borderRadius: 8,
     height: 34,
     flexDirection: "row",
@@ -331,7 +345,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   primary: {
-    backgroundColor: colors.navy,
+    backgroundColor: colors.red,
     borderRadius: 10,
     height: 48,
     alignItems: "center",

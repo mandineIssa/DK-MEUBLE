@@ -11,14 +11,19 @@ export function CatalogScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const mode = route.params.mode;
     const load =
-      route.params.mode === "promo"
+      mode === "promo"
         ? api.promotions().then((res) =>
             (res.data || [])
               .map((row) => row.product)
               .filter((p): p is Product => Boolean(p))
           )
-        : api.products({});
+        : mode === "clearance"
+          ? api.products({ clearance: "1" })
+          : mode === "refurbished"
+            ? api.products({ condition: "reconditionne" })
+            : api.products({});
     load
       .then(setItems)
       .catch(() => setItems([]))

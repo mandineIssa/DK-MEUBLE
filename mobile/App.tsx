@@ -14,6 +14,16 @@ import CheckoutScreen from "./src/screens/CheckoutScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import ProductScreen from "./src/screens/ProductScreen";
 import SearchScreen, { MenuScreen } from "./src/screens/SearchScreen";
+import {
+  BrandScreen,
+  BrandsScreen,
+  InfoScreen,
+  QuoteScreen,
+  RealizationsScreen,
+  ServiceScreen,
+  ServicesScreen,
+  ShowroomsScreen,
+} from "./src/screens/ShopScreens";
 import { AppState, useCart } from "./src/store";
 import { colors } from "./src/theme";
 import type { RootParamList } from "./src/ui";
@@ -30,14 +40,14 @@ function Tabs() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.red,
-        tabBarInactiveTintColor: "#8A8F98",
+        tabBarInactiveTintColor: "rgba(255,255,255,0.7)",
         tabBarLabelStyle: { fontSize: 11, fontWeight: "700", marginBottom: 2 },
         tabBarStyle: {
           height: 58 + bottom,
           paddingBottom: bottom,
           paddingTop: 6,
-          backgroundColor: colors.white,
-          borderTopColor: colors.line,
+          backgroundColor: colors.black,
+          borderTopColor: colors.black,
         },
         tabBarIcon: ({ color, size }) => {
           const icon =
@@ -83,6 +93,14 @@ export default function App() {
             <Stack.Screen name="Orders" component={OrdersScreen} />
             <Stack.Screen name="Track" component={TrackScreen} />
             <Stack.Screen name="Contact" component={ContactScreen} />
+            <Stack.Screen name="Brands" component={BrandsScreen} />
+            <Stack.Screen name="Brand" component={BrandScreen} />
+            <Stack.Screen name="Services" component={ServicesScreen} />
+            <Stack.Screen name="Service" component={ServiceScreen} />
+            <Stack.Screen name="Showrooms" component={ShowroomsScreen} />
+            <Stack.Screen name="Realizations" component={RealizationsScreen} />
+            <Stack.Screen name="Quote" component={QuoteScreen} />
+            <Stack.Screen name="Info" component={InfoScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </AppState>

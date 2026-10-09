@@ -1,15 +1,19 @@
 export const colors = {
-  navy: "#0C2D6B",
-  navyDark: "#081E4A",
-  red: "#E10600",
-  price: "#C8102E",
+  navy: "#1A1A1A",
+  navyDark: "#141414",
+  black: "#1A1A1A",
+  red: "#F68B1E",
+  orange: "#F68B1E",
+  orangeDark: "#E07D16",
+  price: "#F68B1E",
   text: "#1A1A1A",
-  muted: "#6E7580",
-  line: "#E6E8EE",
-  bg: "#F6F7F9",
+  muted: "#6E6E6E",
+  line: "#E0E0E0",
+  bg: "#F5F5F5",
   white: "#FFFFFF",
   star: "#F5A623",
-  green: "#1B7A3A",
+  green: "#2E7D32",
+  danger: "#D32F2F",
 };
 
 export function formatFcfa(value: number | null | undefined): string {

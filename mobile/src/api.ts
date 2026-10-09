@@ -258,4 +258,49 @@ export const api = {
     }),
   wishlistRemove: (productId: number) =>
     apiFetch<unknown>(`/api/customer/wishlist/${productId}`, { method: "DELETE", auth: true }),
+  brands: () =>
+    apiFetch<Array<{ id: number; name: string; slug: string; description?: string | null; products_count?: number }>>(
+      "/api/brands"
+    ),
+  brand: (slug: string) =>
+    apiFetch<{ brand: { id: number; name: string; description?: string | null }; products: Product[] }>(
+      `/api/brands/${slug}`
+    ),
+  services: () =>
+    apiFetch<{
+      services: Array<{ id: number; title: string; slug: string; short_description?: string | null }>;
+      settings?: { intro_title?: string; intro_text?: string; request_form_enabled?: boolean };
+    }>("/api/services"),
+  service: (slug: string) =>
+    apiFetch<{
+      service: { id: number; title: string; slug: string; short_description?: string | null; full_content?: string | null };
+      settings?: { request_form_enabled?: boolean };
+    }>(`/api/services/${slug}`),
+  serviceRequest: (slug: string, payload: { customer_name: string; phone: string; email?: string; message: string }) =>
+    apiFetch<{ message: string }>(`/api/services/${slug}/request`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  showroomList: () =>
+    apiFetch<Array<{ id: number; name: string; address: string; city?: string | null; phone?: string | null; opening_hours?: string | null }>>(
+      "/api/showrooms"
+    ),
+  realizations: () =>
+    apiFetch<Array<{ id: number; title: string; description: string | null; image_url: string; tag: string | null }>>(
+      "/api/realizations"
+    ),
+  page: (key: string) => apiFetch<{ page_key: string; blocks: Record<string, unknown> }>(`/api/pages/${key}`),
+  quote: (payload: {
+    product_id?: number;
+    name: string;
+    phone: string;
+    email?: string;
+    company_name?: string;
+    quantity?: number;
+    message: string;
+  }) =>
+    apiFetch<{ message: string }>("/api/quotes", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 };
