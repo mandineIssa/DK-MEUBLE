@@ -3,6 +3,7 @@ import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import AccountScreen from "./src/screens/AccountScreen";
 import { ContactScreen, OrdersScreen, TrackScreen, WishlistScreen } from "./src/screens/AccountExtraScreens";
@@ -22,14 +23,22 @@ const Tab = createBottomTabNavigator();
 
 function Tabs() {
   const { cart } = useCart();
+  const insets = useSafeAreaInsets();
+  const bottom = Math.max(insets.bottom, 16);
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.red,
         tabBarInactiveTintColor: "#8A8F98",
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
-        tabBarStyle: { height: 64, paddingBottom: 8, paddingTop: 6, borderTopColor: colors.line },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "700", marginBottom: 2 },
+        tabBarStyle: {
+          height: 58 + bottom,
+          paddingBottom: bottom,
+          paddingTop: 6,
+          backgroundColor: colors.white,
+          borderTopColor: colors.line,
+        },
         tabBarIcon: ({ color, size }) => {
           const icon =
             route.name === "Accueil"
