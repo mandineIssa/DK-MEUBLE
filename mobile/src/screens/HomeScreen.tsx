@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { api, imageUrl, type Category, type Product } from "../api";
 import { useAppNav, AppHeader, EmptyText, ProductCard, ScreenLoader, SearchBar, SectionHead, SubNav } from "../ui";
 import { colors } from "../theme";
@@ -109,7 +110,19 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.banner}>
-          <Text style={styles.bannerText}>Livraison partout au Sénégal</Text>
+          <View style={styles.bannerRed} />
+          <View style={styles.bannerCut} />
+          <MaterialCommunityIcons name="truck-fast" size={26} color="#fff" style={styles.bannerTruck} />
+          <Text style={styles.bannerText} numberOfLines={1}>
+            Livraison partout au Sénégal
+          </Text>
+          <View style={styles.flag}>
+            <View style={styles.flagGreen} />
+            <View style={styles.flagYellow}>
+              <Text style={styles.flagStar}>★</Text>
+            </View>
+            <View style={styles.flagRed} />
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -149,6 +162,53 @@ const styles = StyleSheet.create({
   },
   whyGlyph: { color: colors.white, fontWeight: "800" },
   whyLabel: { marginTop: 6, textAlign: "center", fontSize: 11, color: colors.navy, fontWeight: "700" },
-  banner: { marginHorizontal: 12, backgroundColor: colors.red, borderRadius: 10, paddingVertical: 14, alignItems: "center" },
-  bannerText: { color: colors.white, fontWeight: "900", fontSize: 16 },
+  banner: {
+    marginTop: 4,
+    marginBottom: 16,
+    height: 44,
+    overflow: "hidden",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1B4F9C",
+  },
+  bannerRed: {
+    position: "absolute",
+    left: -20,
+    top: -12,
+    bottom: -12,
+    width: "40%",
+    backgroundColor: "#E10600",
+    transform: [{ skewX: "-22deg" }],
+  },
+  bannerCut: {
+    position: "absolute",
+    left: "30%",
+    top: -20,
+    bottom: -20,
+    width: 16,
+    backgroundColor: "#ffffff",
+    transform: [{ skewX: "-22deg" }],
+  },
+  bannerTruck: { marginLeft: 14, zIndex: 1 },
+  bannerText: {
+    flex: 1,
+    color: colors.white,
+    fontWeight: "900",
+    fontSize: 15,
+    textAlign: "center",
+    marginLeft: 18,
+    zIndex: 1,
+  },
+  flag: {
+    width: 36,
+    height: 24,
+    marginRight: 14,
+    flexDirection: "row",
+    overflow: "hidden",
+    zIndex: 1,
+  },
+  flagGreen: { flex: 1, backgroundColor: "#00853F" },
+  flagYellow: { flex: 1, backgroundColor: "#FDEF42", alignItems: "center", justifyContent: "center" },
+  flagRed: { flex: 1, backgroundColor: "#E31B23" },
+  flagStar: { color: "#00853F", fontSize: 9, lineHeight: 11, fontWeight: "900" },
 });
