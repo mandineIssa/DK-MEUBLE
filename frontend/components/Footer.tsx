@@ -6,6 +6,14 @@ import { api, imageUrl } from "@/lib/api";
 import { formatSnPhones } from "@/lib/phone";
 import SiteBrand from "@/components/SiteBrand";
 
+const ANDROID_APK = "/downloads/dk-hometech.apk";
+
+function storeUrl(url?: string | null) {
+  const value = (url || "").trim();
+  if (!value || value === "#") return null;
+  return value;
+}
+
 type FooterPayload = Awaited<ReturnType<typeof api.getFooter>>;
 
 function SocialGlyph({ platform }: { platform: string }) {
@@ -253,10 +261,18 @@ export default function Footer() {
                 <p className="mt-1 text-xs" style={{ color: "var(--footer-text-muted)" }}>
                   {s.app_block_subtitle}
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {s.app_store_url ? (
+                <div className="mt-3 flex items-center gap-3">
+                  <img
+                    src="/downloads/dk-hometech-qr.png"
+                    alt="QR code pour télécharger l'application DK HOMETECH"
+                    width={96}
+                    height={96}
+                    className="h-24 w-24 shrink-0 rounded-md bg-white p-1"
+                  />
+                  <div className="flex flex-col gap-2">
+                  {storeUrl(s.app_store_url) ? (
                     <a
-                      href={s.app_store_url}
+                      href={storeUrl(s.app_store_url) || "#"}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold transition hover:opacity-90"
@@ -268,11 +284,8 @@ export default function Footer() {
                       App Store
                     </a>
                   ) : null}
-                  {s.google_play_url ? (
                     <a
-                      href={s.google_play_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={storeUrl(s.google_play_url) || ANDROID_APK}
                       className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold transition hover:opacity-90"
                       style={{ borderColor: "var(--footer-divider)", color: "var(--footer-text-primary)" }}
                     >
@@ -281,7 +294,7 @@ export default function Footer() {
                       </svg>
                       Google Play
                     </a>
-                  ) : null}
+                  </div>
                 </div>
               </div>
             ) : null}
