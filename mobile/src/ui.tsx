@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useState } from "react";
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { imageUrl, type Product } from "./api";
@@ -8,7 +9,8 @@ import { useAuth, useCart } from "./store";
 import { colors, formatFcfa } from "./theme";
 
 export type RootParamList = {
-  Tabs: { screen?: "Accueil" | "Catégories" | "Panier" | "Compte" } | undefined;
+  Tabs: { screen?: "Accueil" | "Catégories" | "Recherche" | "Favoris" | "Compte" } | undefined;
+  Cart: undefined;
   Product: { slug: string };
   Category: { slug: string; title: string };
   Catalog: { mode: "promo" | "new" | "all" | "clearance" | "refurbished"; title: string };
@@ -53,10 +55,13 @@ export function AppHeader({ onSearch }: { onSearch?: () => void }) {
     <View style={[styles.header, { paddingTop: insets.top + 6 }]}>
       <View style={styles.brandRow}>
         <Image source={require("../assets/logo.png")} style={styles.logo} resizeMode="contain" accessibilityLabel="DK HOMETECH" />
-        <Pressable onPress={onSearch || (() => nav.navigate("Search"))} hitSlop={8}>
+        <Pressable onPress={onSearch || (() => nav.navigate("Tabs", { screen: "Recherche" }))} style={styles.iconBtn} accessibilityLabel="Rechercher">
           <Ionicons name="search" size={22} color={colors.navy} />
         </Pressable>
-        <Pressable onPress={() => nav.navigate("Tabs", { screen: "Panier" })} hitSlop={8} style={styles.iconBtn}>
+        <Pressable onPress={() => nav.navigate("Tabs", { screen: "Favoris" })} style={styles.iconBtn} accessibilityLabel="Favoris">
+          <Ionicons name="heart-outline" size={22} color={colors.navy} />
+        </Pressable>
+        <Pressable onPress={() => nav.navigate("Cart")} style={styles.iconBtn} accessibilityLabel="Panier">
           <Ionicons name="cart-outline" size={24} color={colors.navy} />
           {cart.items_count > 0 ? (
             <View style={styles.badge}>
@@ -64,7 +69,7 @@ export function AppHeader({ onSearch }: { onSearch?: () => void }) {
             </View>
           ) : null}
         </Pressable>
-        <Pressable onPress={() => nav.navigate("Menu")} hitSlop={8}>
+        <Pressable onPress={() => nav.navigate("Menu")} style={styles.iconBtn} accessibilityLabel="Ouvrir le menu">
           <Ionicons name="menu" size={26} color={colors.navy} />
         </Pressable>
       </View>
@@ -91,8 +96,15 @@ export function SearchBar({
         placeholder="Que recherchez-vous ?"
         placeholderTextColor="#9AA0A8"
         returnKeyType="search"
+        autoCapitalize="none"
+        autoCorrect={false}
         style={styles.searchInput}
       />
+      {value ? (
+        <Pressable onPress={() => onChange("")} accessibilityLabel="Effacer la recherche" hitSlop={8}>
+          <Ionicons name="close-circle" size={20} color={colors.muted} />
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -148,6 +160,7 @@ export function ProductCard({ product, wide }: { product: Product; wide?: boolea
   const nav = useAppNav();
   const { add } = useCart();
   const { customer, wishlistIds, toggleWish } = useAuth();
+  const [broken, setBroken] = useState(false);
   const cover = imageUrl(product.images?.[0]?.path);
   const price = product.effective_price ?? product.promo_price ?? product.price;
   const compare = product.compare_at_price;
@@ -158,7 +171,13 @@ export function ProductCard({ product, wide }: { product: Product; wide?: boolea
   return (
     <Pressable style={[styles.card, wide && styles.cardWide]} onPress={() => nav.navigate("Product", { slug: product.slug })}>
       <View style={styles.cardImageWrap}>
-        {cover ? <Image source={{ uri: cover }} style={styles.cardImage} /> : <View style={styles.cardImage} />}
+        {cover && !broken ? (
+          <Image source={{ uri: cover }} style={styles.cardImage} onError={() => setBroken(true)} />
+        ) : (
+          <View style={[styles.cardImage, { alignItems: "center", justifyContent: "center" }]}>
+            <Text style={{ color: colors.muted, fontSize: 11 }}>Image indisponible</Text>
+          </View>
+        )}
         {off ? (
           <View style={styles.off}>
             <Text style={styles.offText}>-{off}%</Text>
@@ -236,7 +255,7 @@ const styles = StyleSheet.create({
   header: { backgroundColor: colors.white, paddingHorizontal: 12, paddingBottom: 8 },
   brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   logo: { height: 44, flex: 1 },
-  iconBtn: { position: "relative" },
+  iconBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center", position: "relative" },
   badge: {
     position: "absolute",
     top: -6,
@@ -260,10 +279,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 12,
-    height: 42,
+    minHeight: 48,
     gap: 8,
   },
-  searchInput: { flex: 1, color: colors.text, fontSize: 14 },
+  searchInput: { flex: 1, color: colors.text, fontSize: 16, paddingVertical: 8 },
   sub: {
     flexDirection: "row",
     backgroundColor: colors.white,
@@ -312,9 +331,9 @@ const styles = StyleSheet.create({
     top: 6,
     right: 6,
     backgroundColor: colors.white,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -326,7 +345,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     backgroundColor: colors.red,
     borderRadius: 8,
-    height: 34,
+    minHeight: 44,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -343,6 +362,7 @@ const styles = StyleSheet.create({
     height: 46,
     marginBottom: 10,
     color: colors.text,
+    fontSize: 16,
   },
   primary: {
     backgroundColor: colors.red,

@@ -18,6 +18,7 @@ export default function HomeScreen() {
   const [query, setQuery] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [promos, setPromos] = useState<Product[]>([]);
   const [hero, setHero] = useState<{ title: string; subtitle: string; image: string }>({
     title: "Meubles & Électroménager",
     subtitle: "Qualité, confort et meilleurs prix à Dakar",
@@ -27,11 +28,18 @@ export default function HomeScreen() {
   useEffect(() => {
     (async () => {
       try {
-        const [cats, home, popular] = await Promise.all([
+        const [cats, home, popular, promoRes] = await Promise.all([
           api.categories().catch(() => ({ tree: [], popular: [] })),
           api.homepage().catch(() => ({} as Record<string, unknown>)),
           api.products({ per_page: "8" }).catch(() => []),
+          api.promotions().catch(() => ({ data: [] })),
         ]);
+        setPromos(
+          (promoRes.data || [])
+            .map((row) => row.product)
+            .filter((item): item is Product => Boolean(item))
+            .slice(0, 8)
+        );
         const popularCats = cats.popular?.length ? cats.popular : cats.tree || [];
         setCategories(popularCats.slice(0, 8));
         const sections = Array.isArray(home["sections"]) ? (home["sections"] as Array<Record<string, unknown>>) : [];
@@ -84,9 +92,14 @@ export default function HomeScreen() {
           <View style={styles.heroShade} />
           <Text style={styles.heroTitle}>{hero.title}</Text>
           <Text style={styles.heroSub}>{hero.subtitle}</Text>
-          <Pressable style={styles.cta} onPress={() => nav.navigate("Catalog", { mode: "new", title: "Nouveautés" })}>
-            <Text style={styles.ctaText}>Découvrir nos produits →</Text>
-          </Pressable>
+          <View style={styles.ctaRow}>
+            <Pressable style={styles.cta} onPress={() => nav.navigate("Catalog", { mode: "all", title: "Produits" })}>
+              <Text style={styles.ctaText}>Découvrir nos produits</Text>
+            </Pressable>
+            <Pressable style={styles.ctaGhost} onPress={() => nav.navigate("Catalog", { mode: "promo", title: "Promotions" })}>
+              <Text style={styles.ctaGhostText}>Voir les promotions</Text>
+            </Pressable>
+          </View>
         </View>
 
         <SectionHead title="Catégories" onSeeAll={() => nav.navigate("Tabs", { screen: "Catégories" })} />
@@ -103,6 +116,19 @@ export default function HomeScreen() {
             );
           })}
         </ScrollView>
+
+        {promos.length ? (
+          <>
+            <SectionHead title="Promotions" onSeeAll={() => nav.navigate("Catalog", { mode: "promo", title: "Promotions" })} />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 12, gap: 10 }}>
+              {promos.map((p) => (
+                <View key={p.id} style={{ width: 180 }}>
+                  <ProductCard product={p} wide />
+                </View>
+              ))}
+            </ScrollView>
+          </>
+        ) : null}
 
         <SectionHead title="Produits populaires" onSeeAll={() => nav.navigate("Catalog", { mode: "new", title: "Nouveautés" })} />
         {products.length === 0 ? <EmptyText>Aucun produit publié pour le moment.</EmptyText> : null}
@@ -134,8 +160,11 @@ const styles = StyleSheet.create({
   heroShade: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(8,30,74,0.45)" },
   heroTitle: { color: colors.white, fontSize: 26, fontWeight: "900" },
   heroSub: { color: colors.white, marginTop: 4, marginBottom: 12 },
-  cta: { alignSelf: "flex-start", backgroundColor: colors.red, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8 },
+  ctaRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  cta: { alignSelf: "flex-start", backgroundColor: colors.red, borderRadius: 20, paddingHorizontal: 14, minHeight: 44, justifyContent: "center" },
   ctaText: { color: colors.white, fontWeight: "800" },
+  ctaGhost: { alignSelf: "flex-start", borderRadius: 20, borderWidth: 1, borderColor: colors.white, paddingHorizontal: 14, minHeight: 44, justifyContent: "center" },
+  ctaGhostText: { color: colors.white, fontWeight: "800" },
   catRow: { paddingHorizontal: 12, gap: 10 },
   cat: { width: 110, backgroundColor: colors.white, borderRadius: 12, borderWidth: 1, borderColor: colors.line, overflow: "hidden" },
   catImg: { height: 78, backgroundColor: "#F3F4F6" },

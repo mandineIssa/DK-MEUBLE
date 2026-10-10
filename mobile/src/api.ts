@@ -153,8 +153,20 @@ export const api = {
   settings: () => apiFetch<Record<string, unknown>>("/api/settings"),
   categories: () =>
     apiFetch<{ tree: Category[]; popular: Category[] }>("/api/categories"),
-  category: (slug: string) =>
-    apiFetch<{ category: Category; products: Product[] }>(`/api/categories/${slug}`),
+  category: (slug: string, params: Record<string, string> = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiFetch<{
+      category: Category;
+      children?: Category[];
+      products: Product[];
+      meta?: { total?: number };
+      facets?: {
+        brands?: Array<{ name: string; slug: string; count?: number }>;
+        conditions?: Array<{ value: string; label: string; count?: number }>;
+        availability?: Array<{ value: string; label: string; count?: number }>;
+      };
+    }>(`/api/categories/${encodeURIComponent(slug)}${qs ? `?${qs}` : ""}`);
+  },
   products: async (params: Record<string, string>) => {
     const qs = new URLSearchParams({ paginated: "1", per_page: "24", ...params }).toString();
     const res = await apiFetch<Product[] | { data?: Product[] }>(`/api/products?${qs}`);

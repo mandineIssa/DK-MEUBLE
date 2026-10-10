@@ -24,7 +24,7 @@ import {
   ServicesScreen,
   ShowroomsScreen,
 } from "./src/screens/ShopScreens";
-import { AppState, useCart } from "./src/store";
+import { AppState } from "./src/store";
 import { colors } from "./src/theme";
 import type { RootParamList } from "./src/ui";
 
@@ -32,7 +32,6 @@ const Stack = createNativeStackNavigator<RootParamList>();
 const Tab = createBottomTabNavigator();
 
 function Tabs() {
-  const { cart } = useCart();
   const insets = useSafeAreaInsets();
   const bottom = Math.max(insets.bottom, 16);
   return (
@@ -55,16 +54,19 @@ function Tabs() {
               ? "home"
               : route.name === "Catégories"
                 ? "grid"
-                : route.name === "Panier"
-                  ? "cart"
-                  : "person";
+                : route.name === "Recherche"
+                  ? "search"
+                  : route.name === "Favoris"
+                    ? "heart"
+                    : "person";
           return <Ionicons name={icon} size={size} color={color} />;
         },
       })}
     >
       <Tab.Screen name="Accueil" component={HomeScreen} />
       <Tab.Screen name="Catégories" component={CategoriesScreen} />
-      <Tab.Screen name="Panier" component={CartScreen} options={{ tabBarBadge: cart.items_count > 0 ? cart.items_count : undefined }} />
+      <Tab.Screen name="Recherche" component={SearchScreen} />
+      <Tab.Screen name="Favoris" component={WishlistScreen} />
       <Tab.Screen name="Compte" component={AccountScreen} />
     </Tab.Navigator>
   );
@@ -83,6 +85,7 @@ export default function App() {
           <StatusBar style="dark" />
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Tabs" component={Tabs} />
+            <Stack.Screen name="Cart" component={CartScreen} />
             <Stack.Screen name="Product" component={ProductScreen} />
             <Stack.Screen name="Category" component={CategoryScreen} />
             <Stack.Screen name="Catalog" component={CatalogScreen} />

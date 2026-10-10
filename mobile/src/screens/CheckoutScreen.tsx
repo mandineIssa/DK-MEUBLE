@@ -102,6 +102,8 @@ function Choice({ label, on, onPress }: { label: string; on: boolean; onPress: (
         borderColor: on ? colors.navy : colors.line,
         backgroundColor: on ? "#E8EEF8" : colors.white,
         borderRadius: 10,
+        minHeight: 48,
+        justifyContent: "center",
         padding: 10,
         marginBottom: 8,
       }}

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
-import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Dimensions, Image, Linking, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRoute, type RouteProp } from "@react-navigation/native";
 import { api, imageUrl, type Product, type Review } from "../api";
-import { AppHeader, PrimaryButton, ScreenLoader, useAppNav, type RootParamList } from "../ui";
+import { AppHeader, PrimaryButton, ProductCard, ScreenLoader, useAppNav, type RootParamList } from "../ui";
 import { useCart } from "../store";
 import { colors, formatFcfa } from "../theme";
 
@@ -18,31 +19,54 @@ export default function ProductScreen() {
   const [photo, setPhoto] = useState(0);
   const [openDesc, setOpenDesc] = useState(true);
   const [openSpecs, setOpenSpecs] = useState(false);
+  const [error, setError] = useState("");
+  const [reload, setReload] = useState(0);
+  const [similar, setSimilar] = useState<Product[]>([]);
+  const insets = useSafeAreaInsets();
+  const width = Dimensions.get("window").width - 28;
+  const galleryRef = useRef<ScrollView>(null);
 
   useEffect(() => {
+    setLoading(true);
+    setError("");
     Promise.all([api.product(route.params.slug), api.reviews(route.params.slug).catch(() => null)])
       .then(([p, r]) => {
         setProduct(p);
         setReviews(r);
         setPhoto(0);
+        if (p.category?.slug) {
+          api
+            .products({ category: p.category.slug })
+            .then((rows) => setSimilar(rows.filter((item) => item.id !== p.id).slice(0, 6)))
+            .catch(() => setSimilar([]));
+        } else {
+          setSimilar([]);
+        }
       })
-      .catch(() => setProduct(null))
+      .catch(() => {
+        setProduct(null);
+        setError("Impossible de charger ce produit.");
+      })
       .finally(() => setLoading(false));
-  }, [route.params.slug]);
+  }, [route.params.slug, reload]);
 
   if (loading) return <ScreenLoader />;
   if (!product) {
     return (
       <View style={{ flex: 1 }}>
         <AppHeader />
-        <Text style={{ textAlign: "center", marginTop: 24, color: colors.muted }}>Produit introuvable.</Text>
+        <Text style={{ textAlign: "center", marginTop: 24, color: colors.muted }}>{error || "Produit introuvable."}</Text>
+        {error ? (
+          <View style={{ padding: 16 }}>
+            <PrimaryButton label="Réessayer" onPress={() => setReload((n) => n + 1)} />
+          </View>
+        ) : null}
       </View>
     );
   }
 
   const price = product.effective_price ?? product.promo_price ?? product.price;
   const images = product.images || [];
-  const cover = imageUrl(images[photo]?.path || images[0]?.path);
   const soldOut = product.stock_quantity === 0;
   const specs = product.specs && typeof product.specs === "object" ? Object.entries(product.specs).filter(([, value]) => value != null && typeof value !== "object") : [];
   const description = product.description || product.short_description || "";
@@ -50,12 +74,40 @@ export default function ProductScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <AppHeader />
-      <ScrollView contentContainerStyle={{ padding: 14, paddingBottom: 28 }}>
-        <View style={styles.gallery}>{cover ? <Image source={{ uri: cover }} style={styles.image} /> : null}</View>
+      <ScrollView contentContainerStyle={{ padding: 14, paddingBottom: 120 + insets.bottom }}>
+        <Pressable onPress={() => nav.goBack()} style={styles.back}>
+          <Text style={styles.backText}>Retour</Text>
+        </Pressable>
+        {product.category?.name ? (
+          <Text style={styles.crumb} onPress={() => nav.navigate("Category", { slug: product.category!.slug, title: product.category!.name })}>
+            {product.category.name}
+          </Text>
+        ) : null}
+        <ScrollView
+          ref={galleryRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          style={styles.gallery}
+          onMomentumScrollEnd={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
+            const index = Math.round(event.nativeEvent.contentOffset.x / Math.max(width, 1));
+            setPhoto(index);
+          }}
+        >
+          {(images.length ? images : [{ id: 0, path: "" }]).map((img) => {
+            const src = imageUrl(img.path);
+            return (
+              <View key={img.id} style={[styles.slide, { width }]}>
+                {src ? <Image source={{ uri: src }} style={styles.image} /> : <Text style={styles.meta}>Image indisponible</Text>}
+              </View>
+            );
+          })}
+        </ScrollView>
+        {images.length > 1 ? <Text style={styles.meta}>{photo + 1} / {images.length}</Text> : null}
         {images.length > 1 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginTop: 8 }}>
             {images.map((img, index) => (
-              <Pressable key={img.id} onPress={() => setPhoto(index)} style={[styles.thumb, photo === index && styles.thumbOn]}>
+              <Pressable key={img.id} onPress={() => { setPhoto(index); galleryRef.current?.scrollTo({ x: width * index, animated: true }); }} style={[styles.thumb, photo === index && styles.thumbOn]}>
                 <Image source={{ uri: imageUrl(img.path) }} style={styles.thumbImg} />
               </Pressable>
             ))}
@@ -74,6 +126,7 @@ export default function ProductScreen() {
           </Text>
         ) : null}
         <Text style={styles.price}>{formatFcfa(price)}</Text>
+        {product.stock_quantity === 0 ? <Text style={styles.meta}>Rupture de stock</Text> : product.stock_quantity != null && product.stock_quantity > 0 ? <Text style={styles.meta}>En stock</Text> : null}
         {product.compare_at_price && price != null && product.compare_at_price > price ? (
           <Text style={styles.compare}>{formatFcfa(product.compare_at_price)}</Text>
         ) : null}
@@ -100,24 +153,6 @@ export default function ProductScreen() {
               : null}
           </View>
         ) : null}
-        <View style={styles.qtyRow}>
-          <Pressable style={styles.qtyBtn} onPress={() => setQty((q) => Math.max(1, q - 1))}>
-            <Text style={styles.qtyTxt}>−</Text>
-          </Pressable>
-          <Text style={styles.qty}>{qty}</Text>
-          <Pressable style={styles.qtyBtn} onPress={() => setQty((q) => Math.min(99, q + 1))}>
-            <Text style={styles.qtyTxt}>+</Text>
-          </Pressable>
-        </View>
-        <PrimaryButton
-          label={soldOut ? "Rupture de stock" : "Ajouter au panier"}
-          onPress={() => {
-            if (soldOut) return;
-            add(product.id, qty)
-              .then(() => setMsg("Ajouté au panier."))
-              .catch((e: Error) => setMsg(e.message));
-          }}
-        />
         {msg ? <Text style={styles.msg}>{msg}</Text> : null}
         <Pressable onPress={() => nav.navigate("Quote", { productId: product.id })}>
           <Text style={styles.link}>Demander un devis</Text>
@@ -166,13 +201,51 @@ export default function ProductScreen() {
             ))}
           </View>
         ) : null}
+        {similar.length ? (
+          <View>
+            <Text style={styles.blockTitle}>Produits similaires</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 8 }}>
+              {similar.map((item) => (
+                <View key={item.id} style={{ width: 180 }}>
+                  <ProductCard product={item} wide />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        ) : null}
       </ScrollView>
+      <View style={[styles.buyBar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
+        <View style={styles.qtyRow}>
+          <Pressable style={styles.qtyBtn} onPress={() => setQty((q) => Math.max(1, q - 1))} accessibilityLabel="Diminuer la quantité">
+            <Text style={styles.qtyTxt}>−</Text>
+          </Pressable>
+          <Text style={styles.qty}>{qty}</Text>
+          <Pressable style={styles.qtyBtn} onPress={() => setQty((q) => Math.min(99, q + 1))} accessibilityLabel="Augmenter la quantité">
+            <Text style={styles.qtyTxt}>+</Text>
+          </Pressable>
+        </View>
+        <View style={{ flex: 1 }}>
+          <PrimaryButton
+            label={soldOut ? "Rupture de stock" : "Ajouter au panier"}
+            onPress={() => {
+              if (soldOut) return;
+              add(product.id, qty)
+                .then(() => setMsg("Ajouté au panier."))
+                .catch((e: Error) => setMsg(e.message));
+            }}
+          />
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  gallery: { height: 240, backgroundColor: colors.white, borderRadius: 12, overflow: "hidden" },
+  back: { alignSelf: "flex-start", minHeight: 44, justifyContent: "center" },
+  backText: { color: colors.navy, fontWeight: "800" },
+  crumb: { color: colors.muted, marginBottom: 8 },
+  gallery: { height: 240, backgroundColor: colors.white, borderRadius: 12 },
+  slide: { height: 240, alignItems: "center", justifyContent: "center", backgroundColor: colors.white },
   image: { width: "100%", height: "100%", resizeMode: "contain" },
   thumb: { width: 56, height: 56, borderRadius: 8, overflow: "hidden", borderWidth: 2, borderColor: "transparent" },
   thumbOn: { borderColor: colors.red },
@@ -187,8 +260,22 @@ const styles = StyleSheet.create({
   desc: { marginTop: 12, color: colors.text, lineHeight: 20 },
   box: { marginTop: 12, backgroundColor: colors.white, borderRadius: 10, padding: 10 },
   spec: { marginBottom: 4, color: colors.text },
-  qtyRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 16 },
-  qtyBtn: { width: 36, height: 36, borderRadius: 8, backgroundColor: colors.navy, alignItems: "center", justifyContent: "center" },
+  qtyRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  qtyBtn: { width: 44, height: 44, borderRadius: 8, backgroundColor: colors.navy, alignItems: "center", justifyContent: "center" },
+  buyBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    backgroundColor: colors.white,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+  },
   qtyTxt: { color: colors.white, fontSize: 18, fontWeight: "800" },
   qty: { fontSize: 18, fontWeight: "800", minWidth: 24, textAlign: "center" },
   msg: { marginTop: 10, color: colors.green, fontWeight: "700" },
