@@ -38,6 +38,7 @@ export default function ProductDetailClient({
   const [activeIdx, setActiveIdx] = useState(0);
   const [reportOpen, setReportOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [touchX, setTouchX] = useState<number | null>(null);
   const { addToCart } = useCart();
   const compareList = useCompare();
   const router = useRouter();
@@ -99,7 +100,7 @@ export default function ProductDetailClient({
 
   return (
     <div className="bg-[#ececec]">
-      <div className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-10">
+      <div className="mx-auto max-w-7xl px-4 pb-28 pt-6 md:px-6 md:py-10">
         <nav className="flex flex-wrap gap-1 text-xs text-brand-black/50">
           <Link href="/">Accueil</Link>
           <span>/</span>
@@ -114,13 +115,23 @@ export default function ProductDetailClient({
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.15fr)_280px]">
           <div>
-            <div className="relative min-h-[280px] aspect-square overflow-hidden rounded-2xl bg-white">
+            <div
+              className="relative aspect-square min-h-[280px] overflow-hidden rounded-2xl bg-white"
+              onTouchStart={(event) => setTouchX(event.changedTouches[0]?.clientX ?? null)}
+              onTouchEnd={(event) => {
+                if (touchX == null || images.length < 2) return;
+                const dx = (event.changedTouches[0]?.clientX ?? touchX) - touchX;
+                if (dx > 40) setActiveIdx((index) => Math.max(0, index - 1));
+                if (dx < -40) setActiveIdx((index) => Math.min(images.length - 1, index + 1));
+                setTouchX(null);
+              }}
+            >
               {cover ? (
                 <Image
                   src={imageUrl(cover.path)}
                   alt={cover.label || product.name}
                   fill
-                  className="object-cover"
+                  className="object-contain"
                   priority
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
@@ -168,7 +179,7 @@ export default function ProductDetailClient({
               {product.brand?.name ? `${product.brand.name} · ` : ""}
               {product.category?.name}
             </p>
-            <h1 className="mt-1 text-3xl font-extrabold text-brand-black">{product.name}</h1>
+            <h1 className="mt-1 text-2xl font-extrabold text-brand-black sm:text-3xl">{product.name}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
               {reviewCount > 0 ? (
                 <>
@@ -216,11 +227,11 @@ export default function ProductDetailClient({
               <FavoriteButton productId={product.id} variant="labeled" />
               <ProductChatButton productId={product.id} productName={product.name} />
               <div className="flex items-center gap-2 rounded-full border bg-white px-2">
-                <button type="button" className="h-9 w-9" onClick={() => setQty((q) => Math.max(1, q - 1))}>
+                <button type="button" className="h-11 w-11 text-lg" aria-label="Diminuer la quantité" onClick={() => setQty((q) => Math.max(1, q - 1))}>
                   −
                 </button>
                 <span className="w-6 text-center text-sm font-bold">{qty}</span>
-                <button type="button" className="h-9 w-9" onClick={() => setQty((q) => q + 1)}>
+                <button type="button" className="h-11 w-11 text-lg" aria-label="Augmenter la quantité" onClick={() => setQty((q) => q + 1)}>
                   +
                 </button>
               </div>
@@ -229,14 +240,14 @@ export default function ProductDetailClient({
                   <button
                     type="button"
                     onClick={() => onAdd(false)}
-                    className="rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white"
+                    className="hidden rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white md:inline-flex"
                   >
                     Ajouter au panier
                   </button>
                   <button
                     type="button"
                     onClick={() => onAdd(true)}
-                    className="rounded-full border border-brand-black/15 px-5 py-2.5 text-sm font-semibold"
+                    className="hidden rounded-full border border-brand-black/15 px-5 py-2.5 text-sm font-semibold md:inline-flex"
                   >
                     Acheter maintenant
                   </button>
@@ -418,17 +429,17 @@ export default function ProductDetailClient({
 
           <div className={`mt-6 grid gap-6 ${description && shownSpecs.length > 0 ? "lg:grid-cols-2" : ""}`}>
             {description ? (
-              <div id="description">
-                <h2 className="mb-2 font-bold text-brand-black">Description</h2>
-                <p className="whitespace-pre-line text-sm leading-relaxed text-brand-black/75">{description}</p>
-              </div>
+              <details id="description" open className="rounded-2xl border border-black/5 p-4">
+                <summary className="cursor-pointer font-bold text-brand-black">Description</summary>
+                <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-brand-black/75">{description}</p>
+              </details>
             ) : (
               <div id="description" />
             )}
 
             {shownSpecs.length > 0 ? (
-              <div id="caracteristiques" className="rounded-2xl border border-black/5 p-4">
-                <h2 className="mb-3 font-bold text-brand-black">Caractéristiques techniques</h2>
+              <details id="caracteristiques" open className="rounded-2xl border border-black/5 p-4">
+                <summary className="mb-3 cursor-pointer font-bold text-brand-black">Caractéristiques techniques</summary>
                 <dl className="divide-y divide-black/5 text-sm">
                   {shownSpecs.map(([key, value]) => (
                     <div key={key} className="grid grid-cols-[1fr_auto] gap-3 py-2">
@@ -437,7 +448,7 @@ export default function ProductDetailClient({
                     </div>
                   ))}
                 </dl>
-              </div>
+              </details>
             ) : (
               <div id="caracteristiques" />
             )}

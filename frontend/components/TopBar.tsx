@@ -27,11 +27,11 @@ export default function TopBar() {
 
   return (
     <div className="bg-brand-black text-white">
-      <p className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center text-xs font-semibold md:text-sm">
+      <p className="mx-auto flex max-w-7xl flex-nowrap items-center justify-start gap-x-3 overflow-x-auto px-4 py-1.5 text-xs font-semibold whitespace-nowrap sm:justify-center sm:py-2 md:text-sm">
         {parts.map((part, index) => (
           <span key={`${part.key}-${index}`} className="contents">
             {index > 0 ? (
-              <span className="hidden text-white/40 sm:inline" aria-hidden>
+              <span className="text-white/40" aria-hidden>
                 •
               </span>
             ) : null}

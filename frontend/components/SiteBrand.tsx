@@ -33,10 +33,12 @@ function BrandName({
 export default function SiteBrand({
   compact = false,
   variant = "light",
+  showName = true,
 }: {
   compact?: boolean;
   /** light = header clair (texte sombre) ; dark = fond sombre (footer / ancien header) */
   variant?: "light" | "dark";
+  showName?: boolean;
 }) {
   const site = useSite();
   const logoSrc = site.logoUrl ? imageUrl(site.logoUrl) : "";
@@ -45,19 +47,14 @@ export default function SiteBrand({
   return (
     <span className="flex min-w-0 items-center gap-2">
       {logoSrc ? (
-        <span
-          className="relative shrink-0 overflow-hidden rounded-full bg-white"
-          style={{ width: size, height: size }}
-        >
-          <Image
-            src={logoSrc}
-            alt={site.name}
-            width={size}
-            height={size}
-            className="h-full w-full object-cover"
-            unoptimized
-          />
-        </span>
+        <Image
+          src={logoSrc}
+          alt={site.name}
+          width={220}
+          height={56}
+          className="h-10 w-auto max-w-[9.5rem] object-contain object-left sm:h-11 sm:max-w-[12rem]"
+          unoptimized
+        />
       ) : (
         <span
           className="flex items-center justify-center rounded-full text-white"
@@ -72,7 +69,9 @@ export default function SiteBrand({
           </svg>
         </span>
       )}
-      <BrandName name={site.name} className={`min-w-0 truncate ${compact ? "text-base" : "text-lg"}`} variant={variant} />
+      {showName || !logoSrc ? (
+        <BrandName name={site.name} className={`min-w-0 truncate ${compact ? "text-base" : "text-lg"}`} variant={variant} />
+      ) : null}
     </span>
   );
 }

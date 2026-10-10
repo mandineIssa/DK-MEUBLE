@@ -68,10 +68,17 @@ function RechercheResults() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Je cherche un réfrigérateur à moins de 400000 FCFA"
-          className="min-w-0 flex-1 rounded-full border bg-white px-4 py-3 text-sm"
+          placeholder="Nom, marque ou référence"
+          enterKeyHint="search"
+          type="search"
+          className="min-w-0 flex-1 rounded-full border bg-white px-4 py-3 text-base"
           aria-label="Rechercher un produit"
         />
+        {q ? (
+          <button type="button" aria-label="Effacer la recherche" className="rounded-full border bg-white px-3 text-lg" onClick={() => { setQ(""); setProducts(null); setNote(""); }}>
+            ×
+          </button>
+        ) : null}
         <button type="button" onClick={listen} aria-label="Recherche vocale" className="rounded-full border bg-white px-4 text-sm font-bold">
           Micro
         </button>
@@ -82,8 +89,11 @@ function RechercheResults() {
       {voiceError ? <p className="mt-3 text-sm text-red-700">{voiceError}</p> : null}
       {busy ? <p className="mt-6 text-sm">Recherche dans le catalogue…</p> : null}
       {note ? <p className="mt-4 text-sm text-brand-black/70">{note}</p> : null}
+      {products && products.length === 0 && !busy ? (
+        <p className="mt-6 text-sm text-brand-black/70">Aucun produit ne correspond à cette recherche.</p>
+      ) : null}
       {products && products.length > 0 ? (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-6 grid grid-cols-2 gap-3 max-[339px]:grid-cols-1 xl:grid-cols-3">
           {products.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}

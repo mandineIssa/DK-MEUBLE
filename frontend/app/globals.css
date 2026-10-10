@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  overflow-x: clip;
+}
+
 :root {
   /* Thème clair Jumia — header & corps (surchargeable via Admin → Thème) */
   --header-bg: #ffffff;

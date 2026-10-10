@@ -65,6 +65,8 @@ export default function Header() {
 
   useEffect(() => {
     hasCustomerSession().then(setLoggedIn).catch(() => setLoggedIn(false));
+    setMobileOpen(false);
+    setSuggestions([]);
   }, [pathname]);
 
   useEffect(() => {
@@ -176,8 +178,8 @@ export default function Header() {
             compact ? "py-1.5" : "py-3 md:py-3.5"
           }`}
         >
-          <Link href="/" className="min-w-0 shrink" onClick={() => setMobileOpen(false)}>
-            <SiteBrand compact={compact} variant="light" />
+          <Link href="/" className="min-w-0 shrink" aria-label={site.name || "DK HOMETECH"} onClick={() => setMobileOpen(false)}>
+            <SiteBrand compact={compact} variant="light" showName={false} />
           </Link>
 
           <form
@@ -241,7 +243,7 @@ export default function Header() {
 
             <Link
               href={loggedIn ? "/compte#favoris" : "/compte/connexion"}
-              className={iconBtn}
+              className={`${iconBtn} hidden sm:inline-flex`}
               aria-label="Favoris"
               title="Favoris"
             >
@@ -253,7 +255,7 @@ export default function Header() {
 
             <Link
               href={accountHref}
-              className={`${iconBtn} ${compact ? "px-2" : ""}`}
+              className={`${iconBtn} hidden sm:inline-flex ${compact ? "px-2" : ""}`}
               aria-label={loggedIn ? "Mon compte" : "Connexion"}
               title={loggedIn ? "Mon compte" : "Se connecter"}
             >
@@ -281,7 +283,7 @@ export default function Header() {
             </Link>
 
             {waHref ? (
-              <a href={waHref} target="_blank" rel="noopener noreferrer" className={iconBtn} aria-label="WhatsApp">
+              <a href={waHref} target="_blank" rel="noopener noreferrer" className={`${iconBtn} hidden sm:inline-flex`} aria-label="WhatsApp">
                 <svg viewBox="0 0 24 24" className="h-6 w-6 text-whatsapp" fill="currentColor">
                   <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.39 1.26 4.81L2 22l5.42-1.42a9.9 9.9 0 0 0 4.62 1.17h.01c5.46 0 9.9-4.45 9.9-9.91C21.95 6.45 17.5 2 12.04 2Z" />
                 </svg>
@@ -349,9 +351,23 @@ export default function Header() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Rechercher un produit…"
+              enterKeyHint="search"
               className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)]"
               aria-label="Rechercher un produit"
             />
+            {q ? (
+              <button
+                type="button"
+                className="px-2 text-lg text-[var(--text-secondary)]"
+                aria-label="Effacer la recherche"
+                onClick={() => {
+                  setQ("");
+                  setSuggestions([]);
+                }}
+              >
+                ×
+              </button>
+            ) : null}
             <button
               type="submit"
               className="shrink-0 px-4 text-[11px] font-bold uppercase text-white"
@@ -439,10 +455,33 @@ export default function Header() {
             borderColor: "var(--border-light)",
           }}
         >
-          <div className="space-y-3 px-4 py-4">
-            <CategoryMegaMenu variant="nav" />
+          <div className="max-h-[70vh] space-y-3 overflow-y-auto px-4 py-4">
             <nav className="space-y-1">
-              {navLinks.map((link) => (
+              {[
+                { label: "Accueil", href: "/" },
+                { label: "Produits", href: "/produits" },
+                { label: "Catégories", href: "/categories" },
+                { label: "Promotions", href: "/promotions" },
+                { label: "Services", href: "/services" },
+                { label: "Entreprises", href: "/entreprises" },
+                { label: "Reconditionné", href: "/reconditionne" },
+                { label: "Déstockage", href: "/destockage" },
+                { label: "Contact", href: "/contact" },
+                ...navLinks.filter(
+                  (link) =>
+                    ![
+                      "/",
+                      "/produits",
+                      "/categories",
+                      "/promotions",
+                      "/services",
+                      "/entreprises",
+                      "/reconditionne",
+                      "/destockage",
+                      "/contact",
+                    ].includes(link.href)
+                ),
+              ].map((link) => (
                 <Link
                   key={link.href + link.label}
                   href={link.href}
@@ -467,13 +506,6 @@ export default function Header() {
               >
                 Showrooms
               </Link>
-              <Link
-                href="/contact"
-                onClick={() => setMobileOpen(false)}
-                className="block rounded-lg px-3 py-3 text-sm font-semibold text-[var(--text-primary)] sm:hidden"
-              >
-                Aide / Contact
-              </Link>
               {phones.map((phone) => (
                 <a
                   key={phone.tel}
@@ -485,6 +517,7 @@ export default function Header() {
                 </a>
               ))}
             </nav>
+            <CategoryMegaMenu variant="drawer" onNavigate={() => setMobileOpen(false)} />
           </div>
         </div>
       ) : null}

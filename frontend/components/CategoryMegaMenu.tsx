@@ -6,8 +6,10 @@ import { api, type NavigationPayload, type NavigationSection } from "@/lib/api";
 
 export default function CategoryMegaMenu({
   variant = "button",
+  onNavigate,
 }: {
-  variant?: "button" | "nav";
+  variant?: "button" | "nav" | "drawer";
+  onNavigate?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<NavigationPayload | null>(null);
@@ -45,6 +47,53 @@ export default function CategoryMegaMenu({
 
   function close() {
     setOpen(false);
+    onNavigate?.();
+  }
+
+  if (variant === "drawer") {
+    return (
+      <div>
+        <p className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-[var(--text-secondary)]">Catégories</p>
+        {loading ? <p className="px-3 py-2 text-sm text-brand-black/50">Chargement des catégories…</p> : null}
+        {!loading && sections.length === 0 ? (
+          <Link href="/categories" onClick={close} className="block rounded-lg px-3 py-3 text-sm font-semibold">
+            Voir les catégories
+          </Link>
+        ) : null}
+        {sections.map((section) => (
+          <details key={section.id} className="border-b border-black/5">
+            <summary className="cursor-pointer list-none px-3 py-3 text-sm font-semibold uppercase [&::-webkit-details-marker]:hidden">
+              {section.label}
+            </summary>
+            <div className="space-y-1 pb-2 pl-3">
+              {section.href ? (
+                <Link href={section.href} onClick={close} className="block rounded-lg px-3 py-2 text-sm font-semibold text-brand-orange">
+                  Tout voir
+                </Link>
+              ) : null}
+              {section.items.map((item) => (
+                <div key={item.id}>
+                  {item.href ? (
+                    <Link href={item.href} onClick={close} className="block rounded-lg px-3 py-2 text-sm">
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <p className="px-3 py-2 text-sm font-semibold">{item.label}</p>
+                  )}
+                  {item.children?.map((child) =>
+                    child.href ? (
+                      <Link key={child.id} href={child.href} onClick={close} className="block rounded-lg px-6 py-2 text-sm text-brand-black/70">
+                        {child.label}
+                      </Link>
+                    ) : null
+                  )}
+                </div>
+              ))}
+            </div>
+          </details>
+        ))}
+      </div>
+    );
   }
 
   return (

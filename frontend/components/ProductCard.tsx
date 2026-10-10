@@ -53,7 +53,7 @@ export default function ProductCard({ product }: { product: Product }) {
               src={imageUrl(cover.path)}
               alt={product.name}
               fill
-              className="object-cover transition duration-500 group-hover:scale-105"
+              className="object-contain transition duration-500 group-hover:scale-105"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
@@ -88,7 +88,7 @@ export default function ProductCard({ product }: { product: Product }) {
               {product.brand.name}
             </p>
           )}
-          <p className="font-bold" style={{ color: "var(--text-primary)" }}>
+          <p className="line-clamp-2 font-bold" style={{ color: "var(--text-primary)" }}>
             {product.name}
           </p>
           <div className="mt-1 flex flex-wrap items-baseline gap-2">
@@ -114,7 +114,7 @@ export default function ProductCard({ product }: { product: Product }) {
               type="button"
               disabled={busy}
               onClick={() => onAdd(false)}
-              className="btn-accent rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-60"
+              className="btn-accent min-h-10 rounded-full px-3 py-2 text-xs font-semibold disabled:opacity-60"
             >
               {busy ? "…" : "Panier"}
             </button>

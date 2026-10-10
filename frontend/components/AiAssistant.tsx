@@ -66,11 +66,18 @@ export default function AiAssistant() {
   }
 
   if (!visible) return null;
+  const onProduct = /^\/produits\/[^/]+/.test(pathname);
 
   return (
-    <div className="fixed right-4 z-40 bottom-[calc(13.5rem+env(safe-area-inset-bottom,0px)+var(--vv-bottom,0px))] md:bottom-24 md:right-6">
+    <div
+      className={`fixed right-4 z-40 md:bottom-24 md:right-6 ${
+        onProduct
+          ? "bottom-[calc(17rem+env(safe-area-inset-bottom,0px)+var(--vv-bottom,0px))]"
+          : "bottom-[calc(13.5rem+env(safe-area-inset-bottom,0px)+var(--vv-bottom,0px))]"
+      }`}
+    >
       {open ? (
-        <div className="mb-3 flex max-h-[70vh] w-[min(100vw-2rem,22rem)] flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
+        <div className="mb-3 flex max-h-[min(70vh,24rem)] w-[min(100vw-2rem,22rem)] flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
           <div className="bg-brand-black px-4 py-3 text-white">
             <p className="text-sm font-bold">Assistant DK HOMETECH</p>
             <p className="text-xs text-white/70">Réponses à partir du catalogue. Le message n'est pas envoyé tout seul.</p>
@@ -108,7 +115,7 @@ export default function AiAssistant() {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Votre question"
-              className="min-w-0 flex-1 rounded-full border px-3 py-2 text-sm"
+              className="min-w-0 flex-1 rounded-full border px-3 py-2 text-base"
               aria-label="Message à l'assistant"
             />
             <button type="submit" disabled={busy} className="rounded-full bg-brand-orange px-3 text-sm font-bold text-white disabled:opacity-60">
@@ -122,7 +129,8 @@ export default function AiAssistant() {
         onClick={() => setOpen((value) => !value)}
         className="rounded-full bg-brand-black px-4 py-3 text-sm font-bold text-white shadow-lg"
       >
-        Assistant DK HOMETECH
+        <span className="md:hidden">Assistant</span>
+        <span className="hidden md:inline">Assistant DK HOMETECH</span>
       </button>
     </div>
   );

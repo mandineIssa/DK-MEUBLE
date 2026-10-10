@@ -72,7 +72,7 @@ export default function BottomNav() {
             <li key={item.href} className="flex-1">
               <Link
                 href={item.href}
-                className={`flex flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-medium ${
+                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[10px] font-medium ${
                   active ? "text-brand-orange" : "text-white/70"
                 }`}
               >

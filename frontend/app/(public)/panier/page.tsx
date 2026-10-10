@@ -75,7 +75,8 @@ export default function PanierPage() {
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <button
                       type="button"
-                      className="h-8 w-8 rounded-full border"
+                      className="h-11 w-11 rounded-full border"
+                      aria-label="Diminuer la quantité"
                       onClick={() => setQty(item.product_id, item.quantity - 1)}
                     >
                       −
@@ -83,7 +84,8 @@ export default function PanierPage() {
                     <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
                     <button
                       type="button"
-                      className="h-8 w-8 rounded-full border"
+                      className="h-11 w-11 rounded-full border"
+                      aria-label="Augmenter la quantité"
                       onClick={() => setQty(item.product_id, item.quantity + 1)}
                     >
                       +

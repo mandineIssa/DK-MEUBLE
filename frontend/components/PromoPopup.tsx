@@ -112,7 +112,7 @@ export function PromoPopup({
     <aside
       role="dialog"
       aria-label="Promotions en cours"
-      className="fixed left-3 z-[45] w-[min(22rem,calc(100%-1.5rem))] overflow-hidden rounded-xl bg-white shadow-[0_12px_40px_rgba(0,0,0,0.22)] bottom-[calc(16rem+env(safe-area-inset-bottom,0px)+var(--vv-bottom,0px))] md:bottom-6 md:left-6"
+      className="fixed left-3 z-[45] w-[min(18rem,calc(100%-1.5rem))] overflow-hidden rounded-xl bg-white shadow-[0_12px_40px_rgba(0,0,0,0.22)] bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px)+var(--vv-bottom,0px))] md:bottom-6 md:left-6 md:w-[min(22rem,calc(100%-1.5rem))]"
     >
       <div className="flex items-center gap-2 bg-brand-orange px-3 py-2 pr-10 text-white">
         <span aria-hidden className="text-base leading-none">
@@ -130,7 +130,7 @@ export function PromoPopup({
         ×
       </button>
 
-      <div className="relative h-[248px] sm:h-[268px]">
+      <div className="relative h-[168px] sm:h-[268px]">
         {products.map((product, slideIndex) => (
           <div
             key={product.lien}
@@ -148,7 +148,7 @@ export function PromoPopup({
             }`}
             aria-hidden={slideIndex !== index}
           >
-            <div className="relative h-[140px] shrink-0 bg-[#f4f4f4] sm:h-[152px]">
+            <div className="relative h-20 shrink-0 bg-[#f4f4f4] sm:h-[152px]">
               {product.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={product.image} alt="" className="h-full w-full object-cover" />

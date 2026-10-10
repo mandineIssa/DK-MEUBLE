@@ -82,7 +82,7 @@ export default function HomeHeroSlider({
   return (
     <section className="bg-white">
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-6">
-        <div className="relative min-h-[460px] overflow-hidden rounded-3xl bg-[#f3f1ec]">
+        <div className="relative min-h-[280px] overflow-hidden rounded-3xl bg-[#f3f1ec] sm:min-h-[380px] lg:min-h-[460px]">
           {frame ? (
             <Image
               src={frame.image}
@@ -95,7 +95,7 @@ export default function HomeHeroSlider({
           ) : null}
           <div className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-black/45 to-transparent" />
 
-          <div className="relative grid min-h-[460px] gap-4 p-4 md:p-6 lg:grid-cols-[230px_1fr]">
+          <div className="relative grid min-h-[280px] gap-4 p-4 sm:min-h-[380px] md:p-6 lg:min-h-[460px] lg:grid-cols-[230px_1fr]">
             <aside className="hidden self-start rounded-2xl bg-white p-3 text-[#1a1a1a] shadow-lg lg:block">
               {copy.categoriesLabel ? (
                 <Link href="/categories" className="mb-2 block rounded-lg px-2 py-2 text-sm font-bold text-brand-orange">
@@ -119,7 +119,7 @@ export default function HomeHeroSlider({
                   {frame.label}
                 </p>
               ) : null}
-              {headline ? <h1 className="text-4xl font-extrabold leading-tight md:text-5xl">{headline}</h1> : null}
+              {headline ? <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl md:text-5xl">{headline}</h1> : null}
               {subhead ? <p className="mt-3 text-lg font-semibold">{subhead}</p> : null}
               {copy.body ? <p className="mt-3 max-w-md text-sm leading-relaxed text-white md:text-base">{copy.body}</p> : null}
               <div className="mt-8 flex flex-wrap gap-3 [text-shadow:none]">

@@ -72,7 +72,7 @@ export default function LoginForm() {
   }
 
   const inputClass =
-    "w-full rounded-xl border border-brand-black/15 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-orange";
+    "w-full rounded-xl border border-brand-black/15 bg-white px-3 py-3 text-base outline-none focus:border-brand-orange";
 
   const oauthBtnClass =
     "flex w-full items-center justify-center gap-2 rounded-full border border-brand-black/15 py-2.5 text-sm font-semibold text-brand-black hover:bg-[#f7f7f7]";
@@ -96,6 +96,9 @@ export default function LoginForm() {
             value={loginInput}
             onChange={(e) => setLoginInput(e.target.value)}
             autoComplete="username"
+            autoCapitalize="none"
+            enterKeyHint="next"
+            inputMode="email"
             placeholder="exemple@email.com ou 77 000 00 00"
             className={inputClass}
             required

@@ -11,7 +11,7 @@ export default function VisualViewportPin() {
     const sync = () => {
       const viewport = window.visualViewport;
       const inset = viewport
-        ? Math.max(0, window.innerHeight - viewport.offsetTop - viewport.height)
+        ? Math.min(96, Math.max(0, window.innerHeight - viewport.offsetTop - viewport.height))
         : 0;
       root.style.setProperty("--vv-bottom", `${Math.round(inset)}px`);
     };

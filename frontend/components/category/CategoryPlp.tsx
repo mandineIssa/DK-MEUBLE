@@ -201,12 +201,12 @@ export default function CategoryPlp({
 
   const gridClass =
     view === "grid_2"
-      ? "grid gap-4 sm:grid-cols-2"
+      ? "grid grid-cols-2 gap-3 max-[339px]:grid-cols-1"
       : view === "grid_4"
-        ? "grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        ? "grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4"
         : view === "list"
           ? "flex flex-col gap-3"
-          : "grid gap-4 sm:grid-cols-2 xl:grid-cols-3";
+          : "grid grid-cols-2 gap-3 max-[339px]:grid-cols-1 xl:grid-cols-3";
 
   const facets = data.facets;
   const bounds = data.price_bounds || { min: 0, max: 0 };
