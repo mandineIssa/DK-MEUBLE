@@ -58,6 +58,21 @@ export default function HomeScreen() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <AppHeader />
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+        <View style={styles.banner}>
+          <View style={styles.bannerRed} />
+          <View style={styles.bannerCut} />
+          <MaterialCommunityIcons name="truck-fast" size={22} color="#fff" style={styles.bannerTruck} />
+          <Text style={styles.bannerText} numberOfLines={1}>
+            Livraison partout au Sénégal
+          </Text>
+          <View style={styles.flag}>
+            <View style={styles.flagGreen} />
+            <View style={styles.flagYellow}>
+              <Text style={styles.flagStar}>★</Text>
+            </View>
+            <View style={styles.flagRed} />
+          </View>
+        </View>
         <SearchBar
           value={query}
           onChange={setQuery}
@@ -109,21 +124,6 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        <View style={styles.banner}>
-          <View style={styles.bannerRed} />
-          <View style={styles.bannerCut} />
-          <MaterialCommunityIcons name="truck-fast" size={26} color="#fff" style={styles.bannerTruck} />
-          <Text style={styles.bannerText} numberOfLines={1}>
-            Livraison partout au Sénégal
-          </Text>
-          <View style={styles.flag}>
-            <View style={styles.flagGreen} />
-            <View style={styles.flagYellow}>
-              <Text style={styles.flagStar}>★</Text>
-            </View>
-            <View style={styles.flagRed} />
-          </View>
-        </View>
       </ScrollView>
     </View>
   );
@@ -163,46 +163,45 @@ const styles = StyleSheet.create({
   whyGlyph: { color: colors.white, fontWeight: "800" },
   whyLabel: { marginTop: 6, textAlign: "center", fontSize: 11, color: colors.navy, fontWeight: "700" },
   banner: {
-    marginTop: 4,
-    marginBottom: 16,
     height: 44,
     overflow: "hidden",
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1B4F9C",
+    backgroundColor: "#1B4F9A",
   },
   bannerRed: {
     position: "absolute",
-    left: -20,
-    top: -12,
-    bottom: -12,
-    width: "40%",
+    left: "-8%",
+    top: -16,
+    bottom: -16,
+    width: "42%",
     backgroundColor: "#E10600",
-    transform: [{ skewX: "-22deg" }],
+    transform: [{ skewX: "-24deg" }],
   },
   bannerCut: {
     position: "absolute",
-    left: "30%",
+    left: "31%",
     top: -20,
     bottom: -20,
-    width: 16,
+    width: 10,
     backgroundColor: "#ffffff",
-    transform: [{ skewX: "-22deg" }],
+    transform: [{ skewX: "-24deg" }],
   },
-  bannerTruck: { marginLeft: 14, zIndex: 1 },
+  bannerTruck: { position: "absolute", left: 12, zIndex: 1 },
   bannerText: {
     flex: 1,
     color: colors.white,
     fontWeight: "900",
-    fontSize: 15,
+    fontSize: 13,
     textAlign: "center",
-    marginLeft: 18,
+    marginLeft: "34%",
+    marginRight: 52,
     zIndex: 1,
   },
   flag: {
-    width: 36,
-    height: 24,
-    marginRight: 14,
+    width: 32,
+    height: 18,
+    marginRight: 12,
     flexDirection: "row",
     overflow: "hidden",
     zIndex: 1,
