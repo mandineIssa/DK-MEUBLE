@@ -20,6 +20,7 @@ class OrderService
         private SmsSender $sms,
         private NotificationService $notifications,
         private OrderReceiptService $receipts,
+        private ActivityAlertService $activityAlerts,
     ) {}
 
     public function checkout(Cart $cart, array $data, ?int $customerId = null): Order
@@ -158,6 +159,14 @@ class OrderService
             '/admin/commandes',
             ['in_app', 'email'],
         );
+
+        $this->activityAlerts->notify('order_placed', [
+            'customer_name' => $order->customer_name,
+            'customer_email' => $order->email,
+            'customer_phone' => $order->phone,
+            'order_number' => $order->reference,
+            'order_total' => number_format((float) $order->total, 0, ',', ' '),
+        ]);
 
         return $order->load(['items', 'showroom', 'deliveryZone', 'statusLogs']);
     }

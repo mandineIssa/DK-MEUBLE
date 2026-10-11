@@ -30,7 +30,12 @@ class NotificationSettings
             'chat_auto_reply_enabled' => true,
             'chat_greeting_reply' => 'Bonjour {{customer_name}} ! Merci pour votre intérêt pour {{product_name}}. Comment pouvons-nous vous aider ?',
             'chat_price_reply' => '{{product_name}} est à {{product_price}}. Souhaitez-vous plus d’infos ou un devis ?',
+            'activity_alert_emails' => '',
+            'activity_alert_phones' => '',
+            'activity_whatsapp_from' => env('INFOBIP_WHATSAPP_FROM', ''),
             'types_enabled' => [
+                'account_created' => true,
+                'cart_added' => true,
                 'order_placed' => true,
                 'order_status' => true,
                 'chat_message' => true,

@@ -79,6 +79,9 @@ export default function AdminNotificationsPage() {
         chat_auto_reply_enabled: Boolean(settings.chat_auto_reply_enabled ?? true),
         chat_greeting_reply: String(settings.chat_greeting_reply ?? ""),
         chat_price_reply: String(settings.chat_price_reply ?? ""),
+        activity_alert_emails: String(settings.activity_alert_emails ?? ""),
+        activity_alert_phones: String(settings.activity_alert_phones ?? ""),
+        activity_whatsapp_from: String(settings.activity_whatsapp_from ?? ""),
         newsletter_frequency: settings.newsletter_frequency,
         channel_fallback: settings.channel_fallback,
         types_enabled: settings.types_enabled,
@@ -208,6 +211,80 @@ export default function AdminNotificationsPage() {
             />
             Canal Web Push activé
           </label>
+
+          <div className="rounded-xl border border-brand-black/10 bg-[#fafafa] p-4 space-y-3">
+            <p className="text-sm font-bold">Alertes d’activité boutique</p>
+            <p className="text-xs text-brand-black/70">
+              À chaque création de compte, commande ou ajout au panier, un e-mail, un SMS et un WhatsApp
+              partent vers ces destinataires. Laissez les champs vides pour ne rien envoyer.
+            </p>
+            <label className="block text-sm">
+              E-mails (un par ligne, ou séparés par une virgule)
+              <textarea
+                className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+                rows={3}
+                value={String(settings.activity_alert_emails ?? "")}
+                onChange={(e) => setSettings((s) => ({ ...s, activity_alert_emails: e.target.value }))}
+                placeholder="boutique@exemple.sn"
+              />
+            </label>
+            <label className="block text-sm">
+              Numéros SMS et WhatsApp (indicatif inclus, un par ligne)
+              <textarea
+                className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+                rows={3}
+                value={String(settings.activity_alert_phones ?? "")}
+                onChange={(e) => setSettings((s) => ({ ...s, activity_alert_phones: e.target.value }))}
+                placeholder="221771234567"
+                inputMode="tel"
+              />
+            </label>
+            <label className="block text-sm">
+              Numéro expéditeur WhatsApp Infobip
+              <input
+                className="mt-1 w-full rounded-xl border px-3 py-2"
+                value={String(settings.activity_whatsapp_from ?? "")}
+                onChange={(e) =>
+                  setSettings((s) => ({
+                    ...s,
+                    activity_whatsapp_from: e.target.value.replace(/\D/g, "").slice(0, 20),
+                  }))
+                }
+                inputMode="numeric"
+                placeholder="221771234567"
+              />
+              <span className="mt-1 block text-xs text-amber-800">
+                L’e-mail utilise la messagerie du serveur. Le SMS utilise le fournisseur déjà configuré.
+                Le WhatsApp part seulement si Infobip et ce numéro expéditeur sont actifs.
+              </span>
+            </label>
+            {(
+              [
+                ["account_created", "Alerter à la création d’un compte"],
+                ["order_placed", "Alerter à chaque commande"],
+                ["cart_added", "Alerter à chaque ajout au panier"],
+              ] as const
+            ).map(([key, label]) => (
+              <label key={key} className="flex items-center gap-2 text-sm font-medium">
+                <input
+                  type="checkbox"
+                  checked={Boolean(
+                    (settings.types_enabled as Record<string, boolean> | undefined)?.[key] ?? true
+                  )}
+                  onChange={(e) =>
+                    setSettings((s) => ({
+                      ...s,
+                      types_enabled: {
+                        ...((s.types_enabled as Record<string, boolean> | undefined) ?? {}),
+                        [key]: e.target.checked,
+                      },
+                    }))
+                  }
+                />
+                {label}
+              </label>
+            ))}
+          </div>
 
           <div className="rounded-xl border border-brand-black/10 bg-[#fafafa] p-4 space-y-3">
             <p className="text-sm font-bold">Chat produit → WhatsApp boutique</p>

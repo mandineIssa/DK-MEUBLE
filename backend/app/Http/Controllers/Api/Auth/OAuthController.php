@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Services\ActivityAlertService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -66,6 +67,11 @@ class OAuthController extends Controller
                 $idField => $socialUser->getId(),
                 'email' => $socialUser->getEmail(),
                 'name' => $socialUser->getName(),
+            ]);
+            app(ActivityAlertService::class)->notify('account_created', [
+                'customer_name' => $customer->name,
+                'customer_email' => $customer->email,
+                'customer_phone' => $customer->phone,
             ]);
         } else {
             $customer->fill([

@@ -33,6 +33,9 @@ class NotificationAdminController extends Controller
             'chat_whatsapp_number' => ['sometimes', 'nullable', 'string', 'max:40'],
             'chat_forward_to_whatsapp' => ['sometimes', 'boolean'],
             'chat_auto_reply_enabled' => ['sometimes', 'boolean'],
+            'activity_alert_emails' => ['sometimes', 'nullable', 'string', 'max:2000'],
+            'activity_alert_phones' => ['sometimes', 'nullable', 'string', 'max:2000'],
+            'activity_whatsapp_from' => ['sometimes', 'nullable', 'string', 'max:40'],
             'chat_greeting_reply' => ['sometimes', 'string', 'max:1000'],
             'chat_price_reply' => ['sometimes', 'string', 'max:1000'],
             'newsletter_frequency' => ['sometimes', 'string', 'in:daily,weekly,monthly'],
@@ -49,6 +52,14 @@ class NotificationAdminController extends Controller
                 $digits = '221'.$digits;
             }
             $data['chat_whatsapp_number'] = $digits;
+        }
+
+        if (array_key_exists('activity_whatsapp_from', $data) && is_string($data['activity_whatsapp_from'])) {
+            $digits = preg_replace('/\D+/', '', $data['activity_whatsapp_from']) ?: '';
+            if (strlen($digits) === 9 && str_starts_with($digits, '7')) {
+                $digits = '221'.$digits;
+            }
+            $data['activity_whatsapp_from'] = $digits;
         }
 
         return response()->json(NotificationSettings::update($data));

@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Models\Cart;
 use App\Models\Product;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class CartService
 {
+    public function __construct(private ActivityAlertService $activityAlerts) {}
     public function resolve(?string $token, ?int $customerId = null): Cart
     {
         $cart = null;
@@ -60,18 +62,37 @@ class CartService
         if ($product->effective_price === null) {
             abort(422, 'Ce produit est sur devis et ne peut pas être ajouté au panier.');
         }
+        $added = max(1, $qty);
         $item = $cart->items()->where('product_id', $productId)->first();
         if ($item) {
-            $item->update(['quantity' => $item->quantity + max(1, $qty)]);
+            $item->update(['quantity' => $item->quantity + $added]);
         } else {
             $cart->items()->create([
                 'product_id' => $productId,
-                'quantity' => max(1, $qty),
+                'quantity' => $added,
             ]);
         }
         $cart->touch();
+        $this->alertAdded($cart, $product, $added);
 
         return $cart->fresh()->load(['items.product.images', 'items.product.brand', 'items.product.promotions']);
+    }
+
+    private function alertAdded(Cart $cart, Product $product, int $qty): void
+    {
+        if (! Cache::add('activity-cart:'.$cart->id.':'.$product->id, 1, now()->addSeconds(90))) {
+            return;
+        }
+
+        $cart->loadMissing('customer');
+        $customer = $cart->customer;
+        $this->activityAlerts->notify('cart_added', [
+            'customer_name' => $customer?->name ?: 'Visiteur',
+            'customer_email' => $customer?->email,
+            'customer_phone' => $customer?->phone,
+            'product_name' => $product->name,
+            'quantity' => $qty,
+        ]);
     }
 
     public function updateItem(Cart $cart, int $productId, int $qty): Cart

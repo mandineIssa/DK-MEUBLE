@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Services\ActivityAlertService;
 use App\Services\OtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,7 +13,10 @@ use Illuminate\Validation\ValidationException;
 
 class PasswordAuthController extends Controller
 {
-    public function __construct(private OtpService $otp) {}
+    public function __construct(
+        private OtpService $otp,
+        private ActivityAlertService $activityAlerts,
+    ) {}
 
     public function identify(Request $request): JsonResponse
     {
@@ -68,6 +72,12 @@ class PasswordAuthController extends Controller
             'phone' => $parsed['phone'],
             'password' => $data['password'],
             'email_opt_in' => (bool) $parsed['email'],
+        ]);
+
+        $this->activityAlerts->notify('account_created', [
+            'customer_name' => $customer->name,
+            'customer_email' => $customer->email,
+            'customer_phone' => $customer->phone,
         ]);
 
         $token = $customer->createToken('customer-password')->plainTextToken;
