@@ -237,7 +237,7 @@ class HomepageService
 
     public function productsForSection(HomepageSection $section): array
     {
-        $limit = max(1, min(20, (int) ($section->products_limit ?: 8)));
+        $limit = max(24, min(48, (int) ($section->products_limit ?: 24)));
         $mode = $section->selection_mode ?: 'recent';
 
         if ($mode === 'manual') {

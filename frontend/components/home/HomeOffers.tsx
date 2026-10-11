@@ -32,13 +32,8 @@ export default function HomeOffers({
             </p>
           ) : null}
         </div>
-        {copy.offersLinkLabel ? (
-          <Link href="/promotions" className="text-sm font-bold text-brand-orange">
-            {copy.offersLinkLabel}
-          </Link>
-        ) : null}
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {promos.map((promo) => {
           const product = promo.product;
           const image = product?.images?.[0]?.path;
@@ -71,6 +66,14 @@ export default function HomeOffers({
           );
         })}
       </div>
+      {copy.offersLinkLabel ? (
+        <Link
+          href="/promotions"
+          className="mt-6 flex min-h-12 items-center justify-center rounded-full bg-brand-orange px-5 text-base font-bold text-white"
+        >
+          {copy.offersLinkLabel}
+        </Link>
+      ) : null}
     </section>
   );
 }

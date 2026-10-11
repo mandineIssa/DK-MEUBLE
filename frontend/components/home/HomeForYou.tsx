@@ -28,7 +28,7 @@ export default function HomeForYou() {
         À partir des fiches que vous avez consultées. Uniquement des produits publiés.
       </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {products.slice(0, 8).map((product) => (
+        {products.slice(0, 12).map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>

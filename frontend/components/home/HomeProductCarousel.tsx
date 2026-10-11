@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import type { Product } from "@/lib/api";
 import { imageUrl } from "@/lib/api";
 import { useCart } from "@/components/CartProvider";
@@ -21,14 +21,9 @@ export default function HomeProductCarousel({
   bannerLink?: string | null;
   products: Product[];
 }) {
-  const scroller = useRef<HTMLDivElement>(null);
   const [quick, setQuick] = useState<Product | null>(null);
   const { addToCart } = useCart();
   const [busyId, setBusyId] = useState<number | null>(null);
-
-  function scrollBy(dir: number) {
-    scroller.current?.scrollBy({ left: dir * 280, behavior: "smooth" });
-  }
 
   async function onAdd(p: Product) {
     if (p.effective_price == null && p.price == null) return;
@@ -44,34 +39,9 @@ export default function HomeProductCarousel({
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-8 md:px-6 md:py-12">
-      <div className="mb-4 flex items-end justify-between gap-3">
-        <h2 className="text-2xl font-extrabold tracking-tight text-brand-black md:text-3xl">
-          {title || "Produits"}
-        </h2>
-        <div className="flex items-center gap-2">
-          {bannerLink ? (
-            <Link href={bannerLink} className="text-sm font-semibold text-brand-orange hover:underline">
-              Voir tout
-            </Link>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => scrollBy(-1)}
-            className="hidden h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white text-brand-black md:flex"
-            aria-label="Précédent"
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            onClick={() => scrollBy(1)}
-            className="hidden h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white text-brand-black md:flex"
-            aria-label="Suivant"
-          >
-            ›
-          </button>
-        </div>
-      </div>
+      <h2 className="mb-4 text-2xl font-extrabold tracking-tight text-brand-black md:text-3xl">
+        {title || "Produits"}
+      </h2>
 
       {bannerImage ? (
         <Link href={bannerLink || "#"} className="relative mb-5 block aspect-[21/5] overflow-hidden rounded-2xl bg-[#ddd]">
@@ -79,10 +49,7 @@ export default function HomeProductCarousel({
         </Link>
       ) : null}
 
-      <div
-        ref={scroller}
-        className="flex max-w-full min-w-0 snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {products.map((product) => {
           const cover = product.images?.[0];
           const effective = product.effective_price ?? product.price;
@@ -92,7 +59,7 @@ export default function HomeProductCarousel({
           return (
             <article
               key={product.id}
-              className="w-[220px] shrink-0 snap-start overflow-hidden rounded-xl bg-[var(--body-bg)] sm:w-[240px]"
+              className="min-w-0 overflow-hidden rounded-xl bg-[var(--body-bg)]"
               style={{ border: "1px solid var(--border-light)" }}
             >
               <div className="relative aspect-[4/3]" style={{ background: "var(--content-bg-alt)" }}>
@@ -156,7 +123,7 @@ export default function HomeProductCarousel({
                       type="button"
                       disabled={busyId === product.id}
                       onClick={() => onAdd(product)}
-                      className="btn-accent flex-1 rounded-full px-2 py-1.5 text-[11px] font-semibold disabled:opacity-60"
+                      className="btn-accent min-h-11 flex-1 rounded-full px-2 py-2 text-xs font-semibold disabled:opacity-60"
                     >
                       Panier
                     </button>
@@ -174,6 +141,15 @@ export default function HomeProductCarousel({
           );
         })}
       </div>
+
+      {bannerLink ? (
+        <Link
+          href={bannerLink}
+          className="mt-6 flex min-h-12 items-center justify-center rounded-full bg-brand-orange px-5 text-base font-bold text-white"
+        >
+          Voir tout
+        </Link>
+      ) : null}
 
       {quick ? <ProductQuickView product={quick} onClose={() => setQuick(null)} /> : null}
     </section>

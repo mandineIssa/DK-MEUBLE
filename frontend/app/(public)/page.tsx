@@ -36,10 +36,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [homepage, settings, promotions] = await Promise.all([
+  const [homepage, settings, promotions, extraProducts] = await Promise.all([
     api.getHomepage().catch(() => null),
     api.getSettings().catch(() => null),
-    api.getPromotions({ per_page: "4", sort: "ending" }).catch(() => null),
+    api.getPromotions({ per_page: "12", sort: "ending" }).catch(() => null),
+    api.getProducts({ per_page: "24" }).catch(() => []),
   ]);
   const offerPromos = promotions?.data || [];
   const sections = homepage?.sections || [];
@@ -51,6 +52,14 @@ export default async function HomePage() {
   const carousels = sections.filter(
     (section) => section.type === "product_carousel" && !isPromoCarousel(section)
   );
+
+  const categorySlugs = [
+    ...new Set(carousels.map((section) => section.category?.slug).filter((slug): slug is string => Boolean(slug))),
+  ];
+  const categoryLists = await Promise.all(
+    categorySlugs.map(async (slug) => [slug, await api.getProducts({ category: slug, per_page: "24" }).catch(() => [])] as const)
+  );
+  const productsByCategory = new Map(categoryLists);
 
   const seenProductIds = new Set<number>();
   for (const promo of offerPromos) {
@@ -64,6 +73,15 @@ export default async function HomePage() {
         seenProductIds.add(product.id);
         return true;
       });
+      const pool = section.category?.slug
+        ? productsByCategory.get(section.category.slug) || extraProducts
+        : extraProducts;
+      for (const product of pool) {
+        if (products.length >= 24) break;
+        if (seenProductIds.has(product.id)) continue;
+        seenProductIds.add(product.id);
+        products.push(product);
+      }
       return { section, products };
     })
     .filter(({ section, products }) => products.length > 0 || Boolean(section.banner_image));

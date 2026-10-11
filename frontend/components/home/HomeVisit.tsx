@@ -49,10 +49,10 @@ export default async function HomeVisit({
     api.getShowrooms().catch(() => []),
     api.getServices().catch(() => null),
     api.getCategories().catch(() => null),
-    api.getProducts({ per_page: "12" }).catch(() => []),
+    api.getProducts({ per_page: "24" }).catch(() => []),
     api.getProducts({ search: "meuble", per_page: "4" }).catch(() => []),
   ]);
-  const freshLatest = latest.filter((product) => !excluded.has(product.id)).slice(0, 8);
+  const freshLatest = latest.filter((product) => !excluded.has(product.id)).slice(0, 24);
 
   const contact = settings?.contact;
   const copy = homepageBlocks(settings);
