@@ -73,14 +73,6 @@
         .total-row .amount { color: #f68b1e; font-size: 13px; text-align: right; }
         .sign-name { font-style: italic; font-size: 14px; color: #123a5f; }
         .sign-role { font-size: 9px; color: #5c7190; }
-        .auto {
-            background: #f7fafc;
-            border: 1px solid #e4ebf3;
-            border-radius: 6px;
-            padding: 8px 10px;
-            font-size: 8px;
-            color: #7a8ba3;
-        }
         .footer { background: #123a5f; color: #ffffff; }
         .footer td { padding: 6px 10px; font-size: 8px; color: #ffffff; }
         .footer .accent { height: 3px; background: #f68b1e; padding: 0; }
@@ -291,12 +283,7 @@
             <td style="width:28%; vertical-align:middle; text-align:center;">
                 <img src="{{ $icons['stamp'] }}" width="78" height="78" alt="">
             </td>
-            <td style="width:36%; vertical-align:middle;">
-                <div class="auto">
-                    Document généré automatiquement<br>
-                    — DK HOMETECH
-                </div>
-            </td>
+            <td style="width:36%;"></td>
         </tr>
     </table>
 </body>

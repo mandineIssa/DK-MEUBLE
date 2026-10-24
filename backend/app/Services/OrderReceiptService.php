@@ -276,7 +276,6 @@ class OrderReceiptService
         $lines[] = str_pad('TOTAL', 56).str_pad($fmt((int) $order->total), 14, ' ', STR_PAD_LEFT);
         $lines[] = '';
         $lines[] = 'Merci pour votre confiance. Votre commande est bien enregistree.';
-        $lines[] = 'Document genere automatiquement — '.$company;
 
         return $this->buildPdfFromLines(array_values(array_filter($lines, fn ($l) => $l !== null)));
     }

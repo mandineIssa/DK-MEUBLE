@@ -4,7 +4,9 @@ RUN apk add --no-cache \
     nginx \
     libzip-dev zip unzip git \
     icu-dev oniguruma-dev \
-    && docker-php-ext-install pdo_mysql zip intl \
+    freetype-dev libpng-dev libjpeg-turbo-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_mysql zip intl gd \
     && rm -rf /var/cache/apk/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
