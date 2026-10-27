@@ -135,7 +135,7 @@ class OrderReceiptService
             'statusLabel' => $this->statusLabel($status),
             'statusStyle' => $this->statusStyle($status),
             'paymentLabel' => $this->paymentLabel((string) $order->payment_method),
-            'paymentStatusLabel' => $this->statusLabel($paymentStatus),
+            'paymentStatusLabel' => $this->paymentStatusLabel($status, $paymentStatus),
             'lines' => $lines,
             'subtotal' => $fmt((int) $order->subtotal),
             'deliveryFee' => $fmt((int) $order->delivery_fee),
@@ -221,6 +221,16 @@ class OrderReceiptService
         };
     }
 
+    private function paymentStatusLabel(string $orderStatus, string $paymentStatus): string
+    {
+        if (in_array($paymentStatus, ['paye', 'paid'], true)
+            || ($orderStatus === 'livree' && $paymentStatus === 'en_attente')) {
+            return 'Paiement effectué';
+        }
+
+        return $this->statusLabel($paymentStatus);
+    }
+
     private function statusStyle(string $status): string
     {
         return match ($status) {
@@ -251,7 +261,7 @@ class OrderReceiptService
             'N° reçu : '.$order->reference,
             'Date : '.optional($order->created_at)->format('d/m/Y H:i'),
             'Statut : '.$this->statusLabel((string) $order->order_status),
-            'Paiement : '.$this->paymentLabel((string) $order->payment_method).' — '.$this->statusLabel((string) $order->payment_status),
+            'Paiement : '.$this->paymentLabel((string) $order->payment_method).' — '.$this->paymentStatusLabel((string) $order->order_status, (string) $order->payment_status),
             'Client : '.$order->customer_name.' | '.$order->phone.($order->email ? ' | '.$order->email : ''),
             'Livraison : '.$deliveryLabel,
         ];

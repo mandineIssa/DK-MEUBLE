@@ -192,7 +192,11 @@ class OrderService
                 }
             }
 
-            $order->update(['order_status' => $status]);
+            $changes = ['order_status' => $status];
+            if ($status === 'livree' && $order->payment_status === 'en_attente') {
+                $changes['payment_status'] = 'paye';
+            }
+            $order->update($changes);
             OrderStatusLog::query()->create([
                 'order_id' => $order->id,
                 'from_status' => $from,
