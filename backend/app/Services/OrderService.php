@@ -47,14 +47,20 @@ class OrderService
         $showroomId = null;
 
         if ($data['delivery_method'] === 'domicile') {
-            $zone = DeliveryZone::query()->active()->findOrFail($data['delivery_zone_id']);
+            $zone = DeliveryZone::query()->active()->find($data['delivery_zone_id'] ?? null);
+            if (! $zone) {
+                throw ValidationException::withMessages(['delivery_zone_id' => 'Choisissez votre zone de livraison.']);
+            }
             $deliveryFee = (int) $zone->delivery_fee;
             $zoneId = $zone->id;
             if (empty($data['address'])) {
                 throw ValidationException::withMessages(['address' => 'Adresse de livraison requise.']);
             }
         } else {
-            $showroom = Showroom::query()->active()->findOrFail($data['showroom_id']);
+            $showroom = Showroom::query()->active()->find($data['showroom_id'] ?? null);
+            if (! $showroom) {
+                throw ValidationException::withMessages(['showroom_id' => 'Choisissez le magasin de retrait.']);
+            }
             $showroomId = $showroom->id;
         }
 

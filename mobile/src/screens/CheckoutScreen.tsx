@@ -39,6 +39,23 @@ export default function CheckoutScreen() {
       Alert.alert("Commande", "Votre panier est vide.");
       return;
     }
+    const missing = !name.trim()
+      ? "Indiquez votre nom."
+      : !phone.trim()
+        ? "Indiquez votre numéro de téléphone."
+        : method === "domicile" && !address.trim()
+          ? "Indiquez votre adresse de livraison."
+          : method === "domicile" && zoneId === null
+            ? "Choisissez votre zone de livraison."
+            : method === "retrait_showroom" && showroomId === null
+              ? "Choisissez le magasin de retrait."
+              : !pay
+                ? "Choisissez un mode de paiement."
+                : null;
+    if (missing) {
+      Alert.alert("Commande", missing);
+      return;
+    }
     setBusy(true);
     try {
       const order = await api.checkout({
@@ -77,6 +94,9 @@ export default function CheckoutScreen() {
           <Choice label="À domicile" on={method === "domicile"} onPress={() => setMethod("domicile")} />
           <Choice label="Retrait magasin" on={method === "retrait_showroom"} onPress={() => setMethod("retrait_showroom")} />
         </View>
+        <Text style={{ fontSize: 13, color: colors.muted, marginBottom: 6 }}>
+          {method === "domicile" ? "Choisissez votre zone :" : "Choisissez le magasin :"}
+        </Text>
         {method === "domicile"
           ? zones.map((z) => (
               <Choice key={z.id} label={`${z.zone_name} · ${formatFcfa(z.delivery_fee)}`} on={zoneId === z.id} onPress={() => setZoneId(z.id)} />
@@ -97,18 +117,35 @@ function Choice({ label, on, onPress }: { label: string; on: boolean; onPress: (
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="radio"
+      accessibilityState={{ selected: on }}
       style={{
-        borderWidth: 1,
-        borderColor: on ? colors.navy : colors.line,
-        backgroundColor: on ? "#E8EEF8" : colors.white,
+        borderWidth: on ? 2 : 1,
+        borderColor: on ? colors.red : colors.line,
+        backgroundColor: on ? "#FFF4E8" : colors.white,
         borderRadius: 10,
         minHeight: 48,
-        justifyContent: "center",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
         padding: 10,
         marginBottom: 8,
       }}
     >
-      <Text style={{ fontWeight: "700", color: colors.navy }}>{label}</Text>
+      <View
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: 10,
+          borderWidth: 2,
+          borderColor: on ? colors.red : colors.line,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {on ? <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.red }} /> : null}
+      </View>
+      <Text style={{ flexShrink: 1, fontWeight: "700", color: colors.navy }}>{label}</Text>
     </Pressable>
   );
 }
